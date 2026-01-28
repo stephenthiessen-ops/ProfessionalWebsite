@@ -1,200 +1,220 @@
-# Setup Guide for Your Professional Website
+# Modern Website Setup Guide
 
-## Quick Start Checklist
+## Your New Website Features
 
-✅ Upload your professional photo  
-✅ Set up contact form service  
-✅ Configure LinkedIn blog integration  
-✅ Deploy to GitHub Pages  
-
----
-
-## 1. Adding Your Professional Photo
-
-### Option A: Use a Photo File
-1. Choose a professional headshot (square format works best)
-2. Name the file `profile.jpg` (or `profile.png`)
-3. Upload it to your GitHub repository in the same folder as `index.html`
-4. The site will automatically display it
-
-### Option B: Use a Different Filename
-If you want to use a different filename:
-1. Open `index.html`
-2. Find line with `<img src="profile.jpg"`
-3. Change `profile.jpg` to your filename (e.g., `headshot.png`)
-
-**Photo Tips:**
-- Square aspect ratio (1:1) works best
-- Minimum 500x500 pixels recommended
-- Professional business attire
-- Clean background
-- Good lighting
+✨ **Modern, Sleek Design** - Neutral color palette with sophisticated typography  
+✨ **Full Headshot Display** - Your professional photo shows completely  
+✨ **Clean Footer** - Just LinkedIn and email, no contact form  
+✨ **Article Feed** - Automatic LinkedIn article integration  
 
 ---
 
-## 2. Setting Up the Contact Form
+## Quick Deployment to GitHub Pages
 
-The contact form needs a backend service to send emails. Here are your options:
+### Step 1: Create GitHub Repository
 
-### Option A: Formspree (Recommended - Easiest)
+1. Go to https://github.com and sign in (or create a free account)
+2. Click the **"+"** icon → **"New repository"**
+3. Name it: `stephenthiessen.github.io` (use your GitHub username)
+4. Make it **Public**
+5. Click **"Create repository"**
 
-**Setup:**
-1. Go to https://formspree.io
-2. Sign up for a free account (50 submissions/month free)
-3. Create a new form
-4. Copy your form endpoint URL (looks like: `https://formspree.io/f/xwkgjpqr`)
-5. Open `script.js`
-6. Find this line: `const formspreeEndpoint = 'https://formspree.io/f/YOUR_FORM_ID';`
-7. Replace `YOUR_FORM_ID` with your actual form ID
+### Step 2: Upload Files
 
-**That's it!** Your form will now send emails to stephen.thiessen@gmail.com
+Upload these 4 files to your repository:
+- `index.html`
+- `styles.css`
+- `script.js`
+- `profile.jpg` (your headshot)
 
-### Option B: EmailJS
+**How to upload:**
+1. In your repository, click **"uploading an existing file"**
+2. Drag all 4 files or click to select them
+3. Add commit message: "Initial website"
+4. Click **"Commit changes"**
 
-**Setup:**
-1. Go to https://www.emailjs.com
-2. Sign up for free account
-3. Follow their setup wizard
-4. Replace the form code in `script.js` with EmailJS code (they provide examples)
+### Step 3: Enable GitHub Pages
 
-### Option C: Netlify Forms
+1. In your repository, click **"Settings"** (top menu)
+2. Click **"Pages"** in the left sidebar
+3. Under **"Source"**, select:
+   - Branch: **main**
+   - Folder: **/ (root)**
+4. Click **"Save"**
 
-**If deploying to Netlify instead of GitHub Pages:**
-1. Simply add `netlify` attribute to your form tag in `index.html`
-2. Forms automatically work - no other setup needed!
+### Step 4: Wait & Access
+
+Your site will be live in 5-10 minutes at:
+```
+https://stephenthiessen.github.io
+```
+(Replace with your actual GitHub username)
 
 ---
 
-## 3. LinkedIn Blog Integration
+## LinkedIn Article Integration
 
-### Understanding the Setup
+### How It Works
 
-The blog section attempts to automatically pull your LinkedIn posts. However, LinkedIn has restrictions on RSS feeds, so here's what you need to know:
+The website automatically attempts to pull your LinkedIn articles using RSS2JSON. 
 
-### Current Setup
-The code uses RSS2JSON service to fetch LinkedIn posts. This works for some profiles but not all.
+**Current Setup:**
+- Username configured: `stephenthiessen`
+- Tries to fetch your 6 most recent posts
+- Falls back to example articles if automatic fetch fails
 
-### Method 1: Try the Automatic Feed (Already Configured)
-1. The code already has your username: `stephen-thiessen`
-2. When you deploy, the site will attempt to load your posts automatically
-3. If it works, great! If not, proceed to Method 2.
+### If Automatic Feed Doesn't Work
 
-### Method 2: Manual Blog Posts (Fallback)
-If automatic loading doesn't work, you can manually add posts:
+LinkedIn's RSS feeds are inconsistent. If articles don't load automatically:
 
-1. Open `script.js`
-2. Find the `showFallbackPosts()` function (around line 95)
-3. Add your actual LinkedIn post URLs and content
-4. Example:
+**Option 1: Manual Update (Simplest)**
+
+Edit `script.js` and update the `fallbackArticles` array (around line 75):
+
 ```javascript
-<article class="blog-card">
-    <div class="blog-date">January 2026</div>
-    <h3>Your Article Title Here</h3>
-    <p>Brief description of your article (150 characters or less)</p>
-    <a href="YOUR_LINKEDIN_POST_URL" class="read-more" target="_blank">Read on LinkedIn →</a>
-</article>
+const fallbackArticles = [
+    {
+        date: 'Jan 15, 2026',
+        title: 'Your Actual Article Title',
+        description: 'Brief description of your article (150-180 characters)',
+        url: 'https://www.linkedin.com/pulse/your-article-url'
+    },
+    // Add more articles here
+];
 ```
 
-### Method 3: Use a Custom RSS Solution
-For the most reliable automatic updates:
-1. Use a service like Zapier or IFTTT
-2. Set up automation: "When I post to LinkedIn → Add to Google Sheets"
-3. Modify the JavaScript to read from a public Google Sheets CSV
-4. (I can help you set this up if you want this approach)
+**Option 2: Use a JSON File**
 
----
-
-## 4. Deploy to GitHub Pages
-
-### Step-by-Step Deployment
-
-1. **Create GitHub Repository**
-   - Go to https://github.com and sign in (or create account)
-   - Click "New repository"
-   - Name: `sthiessen.github.io` (replace `sthiessen` with your username)
-   - Set to Public
-   - Click "Create repository"
-
-2. **Upload Your Files**
-   - Click "uploading an existing file"
-   - Upload these files:
-     - `index.html`
-     - `styles.css`
-     - `script.js`
-     - `profile.jpg` (your photo)
-   - Commit changes
-
-3. **Enable GitHub Pages**
-   - Go to Settings → Pages
-   - Source: Deploy from branch
-   - Branch: main, /(root)
-   - Save
-
-4. **Wait 5-10 minutes**
-   - Your site will be live at: `https://sthiessen.github.io`
-
----
-
-## 5. Customization Guide
-
-### Update Your LinkedIn Profile URL
-In `index.html`, find and update:
-```html
-<a href="https://www.linkedin.com/in/stephen-thiessen" ...>
-```
-
-### Change Color Scheme
-In `styles.css`, modify the `:root` section:
-```css
-:root {
-    --primary-color: #1e3a5f;      /* Navy blue - main color */
-    --primary-dark: #0f2640;       /* Darker navy - hover states */
-    --accent-color: #d4af37;       /* Gold - accents */
-    --accent-light: #f0e5c4;       /* Light gold */
+1. Create a `articles.json` file:
+```json
+{
+  "articles": [
+    {
+      "date": "Jan 15, 2026",
+      "title": "Your Article Title",
+      "description": "Article description",
+      "url": "https://linkedin.com/pulse/..."
+    }
+  ]
 }
 ```
 
-**Other Professional Color Schemes:**
+2. Modify the fetch code in `script.js` to read from this file instead
 
-Modern Tech:
-```css
---primary-color: #0f172a;
---accent-color: #3b82f6;
-```
+**Option 3: Zapier/IFTTT Automation**
 
-Corporate Professional:
-```css
---primary-color: #1e40af;
---accent-color: #10b981;
-```
-
-Creative Professional:
-```css
---primary-color: #7c3aed;
---accent-color: #ec4899;
-```
-
-### Adding More Blog Posts Manually
-In `index.html` or `script.js`, copy the blog card template:
-```html
-<article class="blog-card">
-    <div class="blog-date">Month Year</div>
-    <h3>Article Title</h3>
-    <p>Brief description...</p>
-    <a href="LINKEDIN_URL" class="read-more" target="_blank">Read on LinkedIn →</a>
-</article>
-```
+Set up automation to update a Google Sheet when you post, then fetch from that sheet.
 
 ---
 
-## 6. Testing Your Site Locally (Optional)
+## Customization Options
 
-### Simple Method: Open in Browser
-Just double-click `index.html` to view locally
+### Change Colors
 
-### Advanced Method: Local Server
+The site uses a sophisticated neutral palette. To customize, edit `styles.css`:
+
+```css
+:root {
+    --color-primary: #2c2c2c;    /* Main dark text */
+    --color-secondary: #4a4a4a;  /* Body text */
+    --color-tertiary: #6b6b6b;   /* Muted text */
+    --color-accent: #8b8b8b;     /* Accents */
+    --color-light: #f5f5f5;      /* Light background */
+    --color-white: #ffffff;      /* White */
+}
+```
+
+**Alternative Color Palettes:**
+
+Warm Neutrals:
+```css
+--color-primary: #3d3935;
+--color-accent: #8a7968;
+```
+
+Cool Greys:
+```css
+--color-primary: #2d3748;
+--color-accent: #718096;
+```
+
+Modern Dark:
+```css
+--color-primary: #1a202c;
+--color-accent: #4a5568;
+```
+
+### Update LinkedIn URL
+
+Already configured to: `https://www.linkedin.com/in/stephenthiessen/`
+
+To change, edit `index.html` (line ~122):
+```html
+<a href="https://www.linkedin.com/in/YOUR_USERNAME/" ...>
+```
+
+### Update Email
+
+Already configured to: `stephen.thiessen@gmail.com`
+
+To change, edit `index.html` (line ~129):
+```html
+<a href="mailto:your.email@example.com" ...>
+```
+
+### Adding New Articles Manually
+
+When you publish a new article:
+
+1. Open `script.js`
+2. Find the `fallbackArticles` array
+3. Add your new article at the top:
+```javascript
+{
+    date: 'Jan 28, 2026',
+    title: 'Your New Article',
+    description: 'Description here',
+    url: 'https://www.linkedin.com/pulse/your-article'
+}
+```
+4. Commit to GitHub
+
+---
+
+## Using a Custom Domain (Optional)
+
+Want `stephenthiessen.com` instead?
+
+### Purchase Domain
+From GoDaddy, Namecheap, Google Domains, etc.
+
+### Configure GitHub Pages
+1. Go to Settings → Pages in your repository
+2. Enter your custom domain
+3. Check "Enforce HTTPS"
+4. Save
+
+### Update DNS Records
+In your domain registrar, add these A records:
+```
+185.199.108.153
+185.199.109.153
+185.199.110.153
+185.199.111.153
+```
+
+Wait 24-48 hours for DNS to propagate.
+
+---
+
+## Testing Locally (Optional)
+
+### Method 1: Double-Click
+Just double-click `index.html` to open in your browser
+
+### Method 2: Local Server
 ```bash
-# Using Python 3
+# Python 3
 python -m http.server 8000
 
 # Then visit: http://localhost:8000
@@ -202,102 +222,92 @@ python -m http.server 8000
 
 ---
 
-## 7. Using a Custom Domain (Optional)
-
-Want to use `stephenthiessen.com` instead?
-
-1. **Purchase domain** (GoDaddy, Namecheap, Google Domains, etc.)
-
-2. **In GitHub:**
-   - Settings → Pages → Custom domain
-   - Enter your domain
-   - Check "Enforce HTTPS"
-
-3. **In your domain registrar:**
-   - Add these A records:
-   ```
-   185.199.108.153
-   185.199.109.153
-   185.199.110.153
-   185.199.111.153
-   ```
-
-4. **Wait 24-48 hours** for DNS propagation
-
----
-
-## 8. Maintenance & Updates
-
-### Adding New Blog Posts
-1. Option A: Let automatic feed do it (if working)
-2. Option B: Edit `script.js` fallback section
-3. Commit changes to GitHub
-4. Site updates automatically
+## Maintenance
 
 ### Updating Your Bio
 1. Edit `index.html`
-2. Find the About section
-3. Update text
-4. Commit to GitHub
+2. Find the About section (around line 42)
+3. Update your text
+4. Commit changes to GitHub
 
-### Updating Contact Info
-1. Edit `index.html`
-2. Find Contact section
-3. Update LinkedIn URL and email
-4. Commit to GitHub
+### Adding Articles
+1. Post to LinkedIn
+2. Either wait for automatic fetch, or manually add to fallback array
+3. Commit changes
+
+### Updating Photo
+1. Replace `profile.jpg` in your repository
+2. Keep the same filename
+3. Recommended: Square format, 800x800px minimum
 
 ---
 
 ## Troubleshooting
 
-### Photo Not Showing
-- Check filename matches exactly (case-sensitive)
-- Ensure photo is uploaded to repository root
+### Site Not Showing
+- Wait 10 minutes after first deployment
+- Check Settings → Pages is enabled
+- Clear browser cache (Ctrl+Shift+R or Cmd+Shift+R)
+
+### Photo Not Loading
+- Verify file is named exactly `profile.jpg`
+- Check it's in the repository root folder
 - Try clearing browser cache
 
-### Contact Form Not Working
-- Verify Formspree endpoint is correct
-- Check browser console for errors
-- Test with a simple message first
+### Articles Not Loading
+- Check browser console for errors (F12)
+- If RSS2JSON fails, use manual fallback method
+- Verify LinkedIn username is correct in script
 
-### Blog Posts Not Loading
-- Check browser console for errors
-- Verify LinkedIn username is correct
-- Use fallback method if automatic fails
+### Updates Not Appearing
+- Wait 2-3 minutes after committing
+- Hard refresh browser (Ctrl+Shift+R)
+- Check GitHub Actions tab for build status
 
-### Site Not Updating
-- Wait 5 minutes after pushing changes
-- Clear browser cache (Ctrl+Shift+R)
-- Check GitHub Actions for build status
+---
+
+## Design Philosophy
+
+This website uses:
+- **Minimalist aesthetic** - Clean, uncluttered design
+- **Neutral palette** - Professional greys and blacks
+- **Generous whitespace** - Easy to read and scan
+- **Subtle animations** - Modern without being distracting
+- **Mobile-first** - Looks great on all devices
 
 ---
 
 ## Professional Tips
 
-**Content Strategy:**
+**Content:**
+- Keep your bio updated every 6 months
 - Post to LinkedIn regularly (1-2x per week)
-- Keep articles focused on your expertise
-- Update your bio every 6 months
-- Add new expertise areas as you grow
+- Each article title should be clear and compelling
+- Keep descriptions under 180 characters
 
-**SEO Optimization:**
-- Your name is already in the title tag
-- Consider adding meta description
-- Use LinkedIn posts to drive traffic
-- Share your website URL in your LinkedIn profile
+**SEO:**
+- Your name is in the page title
+- Consider adding a meta description
+- LinkedIn links provide social proof
+- Regular content updates improve ranking
 
 **Performance:**
-- Optimize your profile photo (use JPG, keep under 200KB)
-- The site loads fast by design
-- No heavy frameworks or dependencies
+- Site loads fast (no heavy frameworks)
+- Images are optimized
+- Clean, minimal code
+- Hosted on GitHub's fast servers
 
 ---
 
-## Need Help?
+## Support
 
-If you encounter issues:
-1. Check the Troubleshooting section above
-2. Review GitHub Pages documentation: https://docs.github.com/pages
-3. Check browser console for error messages
+**Common Resources:**
+- GitHub Pages Docs: https://docs.github.com/pages
+- Custom Domain Setup: https://docs.github.com/pages/configuring-a-custom-domain-for-your-github-pages-site
 
-Your website is now ready to showcase your professional brand!
+**Need Help?**
+- Check browser console for errors (F12)
+- Review this guide's troubleshooting section
+- Test locally before deploying
+
+Your professional website is ready to showcase your work!
