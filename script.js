@@ -1,188 +1,168 @@
-// Smooth scrolling for navigation links
+// Smooth scrolling for navigation
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
         const target = document.querySelector(this.getAttribute('href'));
         if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
+            const navHeight = document.querySelector('.navbar').offsetHeight;
+            const targetPosition = target.offsetTop - navHeight;
+            window.scrollTo({
+                top: targetPosition,
+                behavior: 'smooth'
             });
         }
     });
 });
 
-// Add active state to navigation on scroll
+// Active navigation state on scroll
 window.addEventListener('scroll', () => {
-    let current = '';
     const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-menu a');
     
+    let current = '';
     sections.forEach(section => {
-        const sectionTop = section.offsetTop;
-        const sectionHeight = section.clientHeight;
-        if (scrollY >= (sectionTop - 200)) {
+        const sectionTop = section.offsetTop - 100;
+        if (scrollY >= sectionTop) {
             current = section.getAttribute('id');
         }
     });
-
-    document.querySelectorAll('.nav-menu a').forEach(link => {
-        link.classList.remove('active');
+    
+    navLinks.forEach(link => {
+        link.style.color = '';
         if (link.getAttribute('href') === `#${current}`) {
-            link.classList.add('active');
+            link.style.color = 'var(--color-primary)';
         }
     });
 });
 
-// Contact Form Handling
-document.getElementById('contact-form').addEventListener('submit', async function(e) {
-    e.preventDefault();
+// LinkedIn Articles Feed
+async function loadLinkedInArticles() {
+    const articlesGrid = document.getElementById('articles-grid');
     
-    const submitBtn = this.querySelector('.submit-btn');
-    const statusDiv = document.getElementById('form-status');
-    const formData = new FormData(this);
+    // LinkedIn username
+    const username = 'stephenthiessen';
     
-    // Disable submit button
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Sending...';
-    statusDiv.style.display = 'none';
-    
-    // Using Formspree (you'll need to sign up for a free account)
-    // Alternative: Use EmailJS, Netlify Forms, or your own backend
-    const formspreeEndpoint = 'https://formspree.io/f/YOUR_FORM_ID'; // Replace with your Formspree ID
-    
+    // Try multiple methods to fetch articles
     try {
-        const response = await fetch(formspreeEndpoint, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'Accept': 'application/json'
-            }
-        });
-        
-        if (response.ok) {
-            statusDiv.className = 'form-status success';
-            statusDiv.textContent = 'Thank you for your message! I\'ll get back to you soon.';
-            statusDiv.style.display = 'block';
-            this.reset();
-        } else {
-            throw new Error('Form submission failed');
-        }
+        // Method 1: Try RSS2JSON (may or may not work)
+        await tryRSS2JSON(username, articlesGrid);
     } catch (error) {
-        statusDiv.className = 'form-status error';
-        statusDiv.textContent = 'Oops! There was a problem sending your message. Please try emailing me directly.';
-        statusDiv.style.display = 'block';
-    } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Send Message';
+        console.log('RSS2JSON failed, using fallback');
+        showFallbackArticles(articlesGrid);
     }
-});
+}
 
-// LinkedIn RSS Feed Integration
-async function loadLinkedInPosts() {
-    const blogGrid = document.getElementById('blog-grid');
+async function tryRSS2JSON(username, container) {
+    const rssUrl = `https://www.linkedin.com/in/${username}/recent-activity/`;
+    const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
     
-    // LinkedIn RSS feed URL (replace YOUR_PROFILE with your LinkedIn username)
-    // Note: LinkedIn's RSS feeds are limited. You may need to use a service like RSS2JSON
-    const linkedInUsername = 'stephen-thiessen'; // Replace with your actual username
-    const rssUrl = `https://www.linkedin.com/in/${linkedInUsername}/recent-activity/`;
+    const response = await fetch(apiUrl);
+    const data = await response.json();
     
-    // Using RSS2JSON API (free tier available)
-    const rss2jsonUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
-    
-    try {
-        const response = await fetch(rss2jsonUrl);
-        const data = await response.json();
+    if (data.status === 'ok' && data.items && data.items.length > 0) {
+        container.innerHTML = '';
         
-        if (data.status === 'ok' && data.items && data.items.length > 0) {
-            blogGrid.innerHTML = '';
-            
-            // Display up to 6 most recent posts
-            data.items.slice(0, 6).forEach(item => {
-                const date = new Date(item.pubDate);
-                const formattedDate = date.toLocaleDateString('en-US', { 
-                    month: 'long', 
-                    year: 'numeric' 
-                });
-                
-                const article = document.createElement('article');
-                article.className = 'blog-card';
-                article.innerHTML = `
-                    <div class="blog-date">${formattedDate}</div>
-                    <h3>${item.title}</h3>
-                    <p>${item.description ? item.description.substring(0, 150) + '...' : 'Read more on LinkedIn'}</p>
-                    <a href="${item.link}" class="read-more" target="_blank">Read on LinkedIn →</a>
-                `;
-                blogGrid.appendChild(article);
+        data.items.slice(0, 6).forEach((item, index) => {
+            const date = new Date(item.pubDate);
+            const formattedDate = date.toLocaleDateString('en-US', { 
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric' 
             });
-        } else {
-            // Fallback if RSS feed fails - show manual posts
-            showFallbackPosts();
-        }
-    } catch (error) {
-        console.error('Error loading LinkedIn posts:', error);
-        showFallbackPosts();
+            
+            const description = item.description 
+                ? stripHtml(item.description).substring(0, 180) + '...'
+                : 'Read the full article on LinkedIn';
+            
+            const article = createArticleCard(
+                formattedDate,
+                item.title,
+                description,
+                item.link,
+                index
+            );
+            
+            container.appendChild(article);
+        });
+    } else {
+        throw new Error('No articles found');
     }
 }
 
-// Fallback posts if LinkedIn RSS fails
-function showFallbackPosts() {
-    const blogGrid = document.getElementById('blog-grid');
-    blogGrid.innerHTML = `
-        <article class="blog-card">
-            <div class="blog-date">Recent</div>
-            <h3>Building Operating Systems That Scale</h3>
-            <p>
-                How to create frameworks and processes that grow with your organization. 
-                Key principles for designing systems that maintain clarity as complexity increases.
-            </p>
-            <a href="https://www.linkedin.com/in/stephen-thiessen" class="read-more" target="_blank">Read on LinkedIn →</a>
-        </article>
-        <article class="blog-card">
-            <div class="blog-date">Recent</div>
-            <h3>From Strategy to Execution: Bridging the Gap</h3>
-            <p>
-                Practical approaches to turning strategic vision into tangible outcomes. 
-                How to align teams and maintain momentum through implementation.
-            </p>
-            <a href="https://www.linkedin.com/in/stephen-thiessen" class="read-more" target="_blank">Read on LinkedIn →</a>
-        </article>
-        <article class="blog-card">
-            <div class="blog-date">Recent</div>
-            <h3>AI Integration in Modern Operations</h3>
-            <p>
-                How organizations can responsibly integrate AI into their operations—not just as a feature, 
-                but as a tool for better decision-making and execution at scale.
-            </p>
-            <a href="https://www.linkedin.com/in/stephen-thiessen" class="read-more" target="_blank">Read on LinkedIn →</a>
-        </article>
-    `;
+function showFallbackArticles(container) {
+    container.innerHTML = '';
+    
+    const fallbackArticles = [
+        {
+            date: 'Recent',
+            title: 'Building Operating Systems That Scale',
+            description: 'How to create frameworks and processes that grow with your organization. Key principles for designing systems that maintain clarity as complexity increases.',
+            url: 'https://www.linkedin.com/in/stephenthiessen/'
+        },
+        {
+            date: 'Recent',
+            title: 'From Strategy to Execution: Bridging the Gap',
+            description: 'Practical approaches to turning strategic vision into tangible outcomes. How to align teams and maintain momentum through implementation.',
+            url: 'https://www.linkedin.com/in/stephenthiessen/'
+        },
+        {
+            date: 'Recent',
+            title: 'AI Integration in Modern Operations',
+            description: 'How organizations can responsibly integrate AI into their operations—not just as a feature, but as a tool for better decision-making and execution at scale.',
+            url: 'https://www.linkedin.com/in/stephenthiessen/'
+        },
+        {
+            date: 'Recent',
+            title: 'The Force Multiplier Effect',
+            description: 'What it means to be a force multiplier for leadership teams and how to anticipate problems before they surface.',
+            url: 'https://www.linkedin.com/in/stephenthiessen/'
+        }
+    ];
+    
+    fallbackArticles.forEach((article, index) => {
+        const card = createArticleCard(
+            article.date,
+            article.title,
+            article.description,
+            article.url,
+            index
+        );
+        container.appendChild(card);
+    });
 }
 
-// Load blog posts when page loads
-document.addEventListener('DOMContentLoaded', () => {
-    loadLinkedInPosts();
+function createArticleCard(date, title, description, url, index) {
+    const article = document.createElement('article');
+    article.className = 'article-card';
+    article.style.opacity = '0';
+    article.style.transform = 'translateY(20px)';
     
-    // Optional: Add animation to blog cards
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
-            }
-        });
-    }, {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    });
+    article.innerHTML = `
+        <div class="article-date">${date}</div>
+        <h3>${title}</h3>
+        <p>${description}</p>
+        <a href="${url}" class="article-link" target="_blank">
+            Read on LinkedIn →
+        </a>
+    `;
     
-    // Observe blog cards as they're created
+    // Animate in
     setTimeout(() => {
-        const blogCards = document.querySelectorAll('.blog-card');
-        blogCards.forEach((card, index) => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(20px)';
-            card.style.transition = `opacity 0.5s ease ${index * 0.1}s, transform 0.5s ease ${index * 0.1}s`;
-            observer.observe(card);
-        });
-    }, 100);
+        article.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        article.style.opacity = '1';
+        article.style.transform = 'translateY(0)';
+    }, index * 100);
+    
+    return article;
+}
+
+function stripHtml(html) {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || '';
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+    loadLinkedInArticles();
 });
