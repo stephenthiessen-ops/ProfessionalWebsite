@@ -95,27 +95,39 @@ function showFallbackArticles(container) {
     const fallbackArticles = [
         {
             date: 'Recent',
-            title: 'Building Operating Systems That Scale',
-            description: 'How to create frameworks and processes that grow with your organization. Key principles for designing systems that maintain clarity as complexity increases.',
-            url: 'https://www.linkedin.com/in/stephenthiessen/'
+            title: 'The AI-Enabled Operating Stack™',
+            description: 'Are you embedding AI into execution systems — or layering it on top?',
+            url: 'https://www.linkedin.com/feed/update/urn:li:activity:7423033688734556161/?originTrackingId=GjI9ulsb6lizU6EbP1D%2B9Q%3D%3D'
         },
         {
             date: 'Recent',
-            title: 'From Strategy to Execution: Bridging the Gap',
-            description: 'Practical approaches to turning strategic vision into tangible outcomes. How to align teams and maintain momentum through implementation.',
-            url: 'https://www.linkedin.com/in/stephenthiessen/'
+            title: 'Designing Decision Pathways: Who Decides What, At What Altitude, and Why It Speeds Everything Up',
+            description: 'Organizations that scale well don’t just empower teams.They design how decisions flow.',
+            url: 'https://www.linkedin.com/pulse/designing-decision-pathways-who-decides-what-altitude-stephen-4lmgf/?trackingId=oKaSm97Z8dfVUHZIIrp4pw%3D%3D'
         },
         {
             date: 'Recent',
-            title: 'AI Integration in Modern Operations',
-            description: 'How organizations can responsibly integrate AI into their operations—not just as a feature, but as a tool for better decision-making and execution at scale.',
-            url: 'https://www.linkedin.com/in/stephenthiessen/'
+            title: 'The Operating System of Adaptability',
+            description: 'Tomorrow’s program and portfolio leaders will look less like coordinators and more like system architects.',
+            url: 'https://www.linkedin.com/pulse/operating-system-adaptability-stephen-thiessen-mba-pmp-asam-pilde/'
         },
         {
             date: 'Recent',
-            title: 'The Force Multiplier Effect',
-            description: 'What it means to be a force multiplier for leadership teams and how to anticipate problems before they surface.',
-            url: 'https://www.linkedin.com/in/stephenthiessen/'
+            title: 'The Trust Layer — Building Psychological Safety in a Data-Driven Organization',
+            description: 'Data can expose the truth — but only trust lets people talk about it.',
+            url: 'https://www.linkedin.com/pulse/trust-layer-building-psychological-safety-data-driven-stephen-lcxqe/'
+        },
+         {
+            date: 'Recent',
+            title: 'The Metric Layer: Turning Data Into Organizational Intelligence',
+            description: 'The metric layer transforms scattered data into organizational intelligence — enabling leaders to sense, decide, and adapt continuously.',
+            url: 'https://www.linkedin.com/pulse/metric-layer-turning-data-organizational-intelligence-stephen-kegxe/?trackingId=ODdXnh3tQAeMPHFGjwwH3w%3D%3D'
+        },
+         {
+            date: 'Recent',
+            title: 'Organizational Agility — Scaling Without Chaos',
+            description: 'Agility isn’t a methodology or a framework. It’s an organizational capability — the ability to sense change, adapt quickly, and still deliver consistently.',
+            url: 'https://www.linkedin.com/pulse/organizational-agility-scaling-without-chaos-stephen-x9eie/'
         }
     ];
     
