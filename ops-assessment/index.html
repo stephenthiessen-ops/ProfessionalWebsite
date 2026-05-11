@@ -1207,7 +1207,8 @@
     };
  
     const scoreLines = sorted.map(d => {
-      const bar = '█'.repeat(Math.round((d.score / 9) * 10)) + '░'.repeat(10 - Math.round((d.score / 9) * 10));
+      const filled = Math.round((d.score / 9) * 10);
+      const bar = '[' + '='.repeat(filled) + '-'.repeat(10 - filled) + ']';
       return dimLabels[d.key] + ': ' + d.score + '/9  ' + bar;
     }).join('\n');
  
@@ -1217,32 +1218,33 @@
       return tagLabel + ' — ' + dimLabels[d.key] + '\n' + insightMap[d.key][tier];
     }).join('\n\n');
  
+    const SEP = '----------------------------------';
     const fullResults = [
-      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      SEP,
       'RESPONDENT',
-      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      SEP,
       'Name:    ' + (name || 'Anonymous'),
       'Company: ' + (company || 'Not provided'),
       'Role:    ' + (role || 'Not provided'),
       '',
-      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      SEP,
       'MATURITY PROFILE: ' + profile.toUpperCase() + ' (' + total + '/54)',
-      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      SEP,
       diagnosis,
       '',
-      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      SEP,
       'SCORES BY DIMENSION',
-      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      SEP,
       scoreLines,
       '',
-      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      SEP,
       'WHERE TO FOCUS',
-      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      SEP,
       insightLines,
       '',
-      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      SEP,
       'Submitted: ' + new Date().toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' }),
-      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+      SEP
     ].join('\n');
  
     const payload = {
@@ -1254,7 +1256,12 @@
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify(payload)
-    }).catch(() => {});
+    })
+    .then(res => {
+      if (!res.ok) res.json().then(d => console.error('Formspree error:', d)).catch(() => console.error('Formspree HTTP error:', res.status));
+      else console.log('Formspree submission OK');
+    })
+    .catch(err => console.error('Formspree fetch failed:', err));
   }
  
   function resetAssessment() {
