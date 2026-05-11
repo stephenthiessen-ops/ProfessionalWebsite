@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Ops Intelligence — Stephen Thiessen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Geist:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+  :root {
+    --bg: #0a0a0a;
+    --bg2: #111111;
+    --bg3: #1a1a1a;
+    --border: rgba(255,255,255,0.08);
+    --border-hover: rgba(255,255,255,0.18);
+    --text: #f0ede8;
+    --text-muted: #7a7672;
+    --text-dim: #3d3b38;
+    --accent: #c8f55a;
+    --accent-dim: rgba(200,245,90,0.12);
+    --accent-border: rgba(200,245,90,0.3);
+    --red: #ff5a5a;
+    --amber: #f5a623;
+    --green: #c8f55a;
+    --serif: 'DM Serif Display', Georgia, serif;
+    --mono: 'DM Mono', monospace;
+    --sans: 'Geist', system-ui, sans-serif;
+  }
+ 
+  html { scroll-behavior: smooth; }
+ 
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+ 
+  /* ── Layout ── */
+  .shell {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+ 
+  /* ── Nav ── */
+  nav {
+    border-bottom: 1px solid var(--border);
+    padding: 20px 0;
+    position: sticky;
+    top: 0;
+    background: rgba(10,10,10,0.92);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+  .nav-inner {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .nav-logo {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--accent); }
+  .nav-link {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-family: var(--mono);
+    letter-spacing: 0.04em;
+    transition: color 0.2s;
+  }
+  .nav-link:hover { color: var(--text); }
+ 
+  /* ── Tool Switcher ── */
+  .tool-bar {
+    border-bottom: 1px solid var(--border);
+    padding: 0;
+  }
+  .tool-bar-inner {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tool-bar-inner::-webkit-scrollbar { display: none; }
+  .tool-tab {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 14px 20px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+    position: relative;
+    top: 1px;
+  }
+  .tool-tab:hover { color: var(--text); }
+  .tool-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tool-tab.soon { opacity: 0.4; cursor: default; }
+  .tool-tab.soon::after {
+    content: 'soon';
+    font-size: 9px;
+    color: var(--text-dim);
+    margin-left: 6px;
+    vertical-align: 1px;
+  }
+ 
+  /* ── Panels ── */
+  .panel { display: none; }
+  .panel.active { display: block; }
+ 
+  /* ── Hero ── */
+  .hero {
+    padding: 80px 0 60px;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 24px;
+  }
+  .hero h1 {
+    font-family: var(--serif);
+    font-size: clamp(36px, 6vw, 56px);
+    line-height: 1.08;
+    color: var(--text);
+    margin-bottom: 24px;
+    font-weight: 400;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--text-muted);
+  }
+  .hero-body {
+    font-size: 16px;
+    color: var(--text-muted);
+    max-width: 560px;
+    line-height: 1.7;
+    margin-bottom: 40px;
+  }
+  .hero-meta {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .hero-stat {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.06em;
+  }
+  .hero-stat strong {
+    display: block;
+    font-family: var(--serif);
+    font-size: 28px;
+    color: var(--text);
+    font-weight: 400;
+    letter-spacing: 0;
+    margin-bottom: 2px;
+  }
+ 
+  /* ── Progress ── */
+  .progress-bar-wrap {
+    padding: 32px 0 0;
+  }
+  .progress-track {
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  .progress-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.06em;
+    display: flex;
+    justify-content: space-between;
+  }
+ 
+  /* ── Dimensions ── */
+  .dim-section {
+    padding: 56px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .dim-header {
+    margin-bottom: 36px;
+  }
+  .dim-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+  }
+  .dim-title {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+  .dim-sub {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    max-width: 520px;
+  }
+ 
+  /* ── Questions ── */
+  .question {
+    margin-bottom: 32px;
+  }
+  .q-text {
+    font-size: 15px;
+    color: var(--text);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .q-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .q-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: transparent;
+    text-align: left;
+    width: 100%;
+    font-family: var(--sans);
+  }
+  .q-option:hover {
+    border-color: var(--border-hover);
+    background: var(--bg2);
+  }
+  .q-option.selected {
+    border-color: var(--accent-border);
+    background: var(--accent-dim);
+  }
+  .q-option-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border-hover);
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+  .q-option.selected .q-option-dot {
+    border-color: var(--accent);
+    background: var(--accent);
+  }
+  .q-option.selected .q-option-dot::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--bg);
+  }
+  .q-option-text {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    transition: color 0.15s;
+  }
+  .q-option.selected .q-option-text { color: var(--text); }
+ 
+  /* ── CTA Button ── */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--accent);
+    color: var(--bg);
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 14px 28px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+  .btn-primary:hover { background: #d4ff60; transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 14px 28px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { border-color: var(--border-hover); color: var(--text); }
+ 
+  /* ── Submit section ── */
+  .submit-section {
+    padding: 56px 0;
+  }
+  .submit-inner {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 40px;
+    background: var(--bg2);
+  }
+  .submit-title {
+    font-family: var(--serif);
+    font-size: 26px;
+    font-weight: 400;
+    margin-bottom: 10px;
+  }
+  .submit-sub {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+  .field-group { margin-bottom: 20px; }
+  .field-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    display: block;
+  }
+  .field-input {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .field-input:focus { border-color: var(--accent-border); }
+  .field-input::placeholder { color: var(--text-dim); }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .incomplete-msg {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--amber);
+    margin-bottom: 20px;
+    letter-spacing: 0.04em;
+    display: none;
+  }
+ 
+  /* ── Results ── */
+  #results { display: none; }
+  .results-hero {
+    padding: 80px 0 56px;
+    border-bottom: 1px solid var(--border);
+  }
+  .results-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+  .results-profile-name {
+    font-family: var(--serif);
+    font-size: clamp(40px, 7vw, 64px);
+    font-weight: 400;
+    line-height: 1.05;
+    margin-bottom: 20px;
+  }
+  .results-score-row {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .results-score-num {
+    font-family: var(--mono);
+    font-size: 48px;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .results-score-denom {
+    font-family: var(--mono);
+    font-size: 18px;
+    color: var(--text-dim);
+  }
+  .results-diagnosis {
+    font-size: 16px;
+    color: var(--text-muted);
+    max-width: 580px;
+    line-height: 1.75;
+    margin-bottom: 40px;
+  }
+ 
+  /* ── Dimension scores ── */
+  .dim-scores {
+    padding: 56px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .dim-scores-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 32px;
+  }
+  .dim-score-row {
+    display: grid;
+    grid-template-columns: 180px 1fr 48px;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .dim-score-label {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .dim-score-track {
+    height: 4px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .dim-score-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s ease;
+    width: 0%;
+  }
+  .fill-low { background: var(--red); }
+  .fill-mid { background: var(--amber); }
+  .fill-high { background: var(--accent); }
+  .dim-score-val {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: right;
+  }
+ 
+  /* ── Insight blocks ── */
+  .insights {
+    padding: 56px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .insights-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 32px;
+  }
+  .insight-block {
+    border-left: 2px solid var(--border);
+    padding: 4px 0 4px 24px;
+    margin-bottom: 28px;
+  }
+  .insight-block.critical { border-left-color: var(--red); }
+  .insight-block.warning { border-left-color: var(--amber); }
+  .insight-block.strong { border-left-color: var(--accent); }
+  .insight-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .tag-critical { color: var(--red); }
+  .tag-warning { color: var(--amber); }
+  .tag-strong { color: var(--accent); }
+  .insight-dim {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .insight-text {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.65;
+  }
+ 
+  /* ── CTA block ── */
+  .results-cta {
+    padding: 56px 0 80px;
+  }
+  .results-cta-inner {
+    border: 1px solid var(--accent-border);
+    border-radius: 12px;
+    padding: 48px;
+    background: var(--accent-dim);
+    text-align: center;
+  }
+  .results-cta h2 {
+    font-family: var(--serif);
+    font-size: 32px;
+    font-weight: 400;
+    margin-bottom: 14px;
+  }
+  .results-cta p {
+    font-size: 15px;
+    color: var(--text-muted);
+    margin-bottom: 32px;
+    line-height: 1.65;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .results-cta-btns {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+ 
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 0;
+  }
+  .footer-inner {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .footer-text {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.06em;
+  }
+  .footer-link {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    transition: color 0.2s;
+  }
+  .footer-link:hover { color: var(--accent); }
+ 
+  /* ── Coming soon panels ── */
+  .coming-soon {
+    padding: 120px 0;
+    text-align: center;
+  }
+  .coming-soon-icon {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+  }
+  .coming-soon h2 {
+    font-family: var(--serif);
+    font-size: 36px;
+    font-weight: 400;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+  }
+  .coming-soon p {
+    font-size: 14px;
+    color: var(--text-dim);
+    max-width: 360px;
+    margin: 0 auto;
+    line-height: 1.65;
+  }
+ 
+  @media (max-width: 600px) {
+    .dim-score-row { grid-template-columns: 120px 1fr 40px; gap: 12px; }
+    .field-row { grid-template-columns: 1fr; }
+    .submit-inner { padding: 28px 20px; }
+    .results-cta-inner { padding: 32px 20px; }
+    .hero { padding: 56px 0 40px; }
+  }
+</style>
+</head>
+<body>
+ 
+<nav>
+  <div class="nav-inner">
+    <a href="https://www.stephen-thiessen.com" class="nav-logo">Product Ops <span>Intelligence</span></a>
+    <a href="https://www.linkedin.com/in/stephenthiessen" target="_blank" class="nav-link">Stephen Thiessen ↗</a>
+  </div>
+</nav>
+ 
+<div class="tool-bar">
+  <div class="tool-bar-inner">
+    <button class="tool-tab active" onclick="switchTool('assessment', this)">Ops Maturity Assessment</button>
+    <button class="tool-tab soon" disabled>AI Workflow Audit</button>
+    <button class="tool-tab soon" disabled>Planning Session Facilitator</button>
+    <button class="tool-tab soon" disabled>AI Ops Playbook</button>
+  </div>
+</div>
+ 
+<!-- ══════════════════════════════════════
+     ASSESSMENT PANEL
+══════════════════════════════════════ -->
+<div id="panel-assessment" class="panel active">
+ 
+  <div id="assessment-form">
+    <div class="shell">
+      <div class="hero">
+        <div class="hero-eyebrow">Product ops maturity assessment</div>
+        <h1>How well does your<br>product org <em>actually</em> run?</h1>
+        <p class="hero-body">18 questions across six dimensions. No fluff. You'll get a scored diagnosis of where your operating model is strong, where it's breaking down, and what that pattern usually means.</p>
+        <div class="hero-meta">
+          <div class="hero-stat"><strong>6</strong> dimensions</div>
+          <div class="hero-stat"><strong>18</strong> questions</div>
+          <div class="hero-stat"><strong>~5</strong> minutes</div>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+          <div class="progress-label">
+            <span id="progress-text">0 of 18 answered</span>
+            <span id="progress-pct">0%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- DIMENSION 1 -->
+    <div class="dim-section" id="dim-1">
+      <div class="shell">
+        <div class="dim-header">
+          <div class="dim-num">Dimension 01 / 06</div>
+          <div class="dim-title">Strategic direction & OKR alignment</div>
+          <div class="dim-sub">Does the org know where it's going — and does product work actually connect to that direction?</div>
+        </div>
+ 
+        <div class="question">
+          <div class="q-text">How clearly defined is your product org's overall strategy — not a mission statement, but a specific view on where to win, what to build, and what to deprioritize?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this, 'd1q1', 1)"><span class="q-option-dot"></span><span class="q-option-text">Strategy is vague or absent. Work gets prioritized by urgency, loudest stakeholder, or what we can fit in a sprint.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd1q1', 2)"><span class="q-option-dot"></span><span class="q-option-text">There's a stated strategy, but it's high-level and doesn't consistently drive what gets built. Teams interpret it differently.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd1q1', 3)"><span class="q-option-dot"></span><span class="q-option-text">Strategy is specific, documented, and referenced in planning conversations. Teams can explain how their work connects to it.</span></button>
+          </div>
+        </div>
+ 
+        <div class="question">
+          <div class="q-text">Do your OKRs actually drive product decisions — or are they written after the roadmap is already set?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this, 'd1q2', 1)"><span class="q-option-dot"></span><span class="q-option-text">OKRs are either absent, ignored, or written retroactively to match work we planned to do anyway.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd1q2', 2)"><span class="q-option-dot"></span><span class="q-option-text">OKRs exist and some teams reference them, but they don't consistently gate what gets on the roadmap.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd1q2', 3)"><span class="q-option-dot"></span><span class="q-option-text">OKRs are set before planning begins and are the primary filter for what makes it onto the roadmap.</span></button>
+          </div>
+        </div>
+ 
+        <div class="question">
+          <div class="q-text">If you picked three items off your current roadmap, could a PM clearly explain how each one maps to a strategic goal or OKR?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this, 'd1q3', 1)"><span class="q-option-dot"></span><span class="q-option-text">No — most items would trace back to a customer request, technical debt, or "we've always done this."</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd1q3', 2)"><span class="q-option-dot"></span><span class="q-option-text">Some items could. Others would require a stretch to connect to anything strategic.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd1q3', 3)"><span class="q-option-dot"></span><span class="q-option-text">Yes — every item has a documented rationale that connects to strategy or a specific OKR.</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- DIMENSION 2 -->
+    <div class="dim-section" id="dim-2">
+      <div class="shell">
+        <div class="dim-header">
+          <div class="dim-num">Dimension 02 / 06</div>
+          <div class="dim-title">Planning rhythm</div>
+          <div class="dim-sub">Is planning a consistent, owned process — or does it happen differently every quarter depending on who has bandwidth?</div>
+        </div>
+ 
+        <div class="question">
+          <div class="q-text">How consistently does your product org run a formal planning cycle — and how far in advance are teams working?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this, 'd2q1', 1)"><span class="q-option-dot"></span><span class="q-option-text">Planning is ad hoc. We're mostly planning 2–4 weeks out and reacting as things change.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd2q1', 2)"><span class="q-option-dot"></span><span class="q-option-text">There's a quarterly cycle in theory, but it varies in structure and depth depending on the quarter.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd2q1', 3)"><span class="q-option-dot"></span><span class="q-option-text">Planning follows a consistent, documented cadence. Teams know when it starts, what's expected, and who owns it.</span></button>
+          </div>
+        </div>
+ 
+        <div class="question">
+          <div class="q-text">When priorities shift mid-quarter, how is that communicated and decided?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this, 'd2q2', 1)"><span class="q-option-dot"></span><span class="q-option-text">It surfaces in Slack or a standup. There's no formal process — whoever raises it loudest tends to win.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd2q2', 2)"><span class="q-option-dot"></span><span class="q-option-text">There's some process, but it's inconsistent and decisions don't always get communicated clearly downstream.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd2q2', 3)"><span class="q-option-dot"></span><span class="q-option-text">There's a defined intake and decision process. Changes are documented, trade-offs are explicit, and the team is informed.</span></button>
+          </div>
+        </div>
+ 
+        <div class="question">
+          <div class="q-text">Is there a designated owner for how the planning process itself runs — someone accountable for improving it, not just participating in it?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this, 'd2q3', 1)"><span class="q-option-dot"></span><span class="q-option-text">No. Planning coordination falls to whoever has time, usually a PM or eng manager by default.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd2q3', 2)"><span class="q-option-dot"></span><span class="q-option-text">Someone informally owns it, but it's not a formal responsibility and it doesn't get improved systematically.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd2q3', 3)"><span class="q-option-dot"></span><span class="q-option-text">Yes — there's a clear owner for the planning process who runs retrospectives and continuously refines it.</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- DIMENSION 3 -->
+    <div class="dim-section" id="dim-3">
+      <div class="shell">
+        <div class="dim-header">
+          <div class="dim-num">Dimension 03 / 06</div>
+          <div class="dim-title">Roadmap process</div>
+          <div class="dim-sub">Is the roadmap a live decision-making tool — or a presentation artifact that gets updated before board meetings?</div>
+        </div>
+ 
+        <div class="question">
+          <div class="q-text">How closely does your current roadmap reflect what the team is actually working on versus what was committed to stakeholders?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this, 'd3q1', 1)"><span class="q-option-dot"></span><span class="q-option-text">They're often out of sync. The roadmap is what we told stakeholders; actual work has diverged.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd3q1', 2)"><span class="q-option-dot"></span><span class="q-option-text">Mostly aligned, but there's drift. We update it periodically but it's not a real-time source of truth.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd3q1', 3)"><span class="q-option-dot"></span><span class="q-option-text">The roadmap is a live document. It reflects current reality and stakeholders know how to read it.</span></button>
+          </div>
+        </div>
+ 
+        <div class="question">
+          <div class="q-text">Is there a shared prioritization framework your PMs consistently use — or does each PM prioritize in their own way?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this, 'd3q2', 1)"><span class="q-option-dot"></span><span class="q-option-text">Each PM prioritizes differently. There's no shared framework — decisions are mostly based on gut or stakeholder pressure.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd3q2', 2)"><span class="q-option-dot"></span><span class="q-option-text">There's a loose framework but inconsistent adoption. Some PMs use it, others don't.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd3q2', 3)"><span class="q-option-dot"></span><span class="q-option-text">Yes — there's a consistent framework with documented criteria. PMs can explain trade-offs in the same language.</span></button>
+          </div>
+        </div>
+ 
+        <div class="question">
+          <div class="q-text">How are items added to or removed from the roadmap — and is it clear who has authority to make those calls?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this, 'd3q3', 1)"><span class="q-option-dot"></span><span class="q-option-text">It's unclear. Items get added informally and removing things creates friction with stakeholders.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd3q3', 2)"><span class="q-option-dot"></span><span class="q-option-text">There's some process, but authority isn't always clear and trade-offs aren't always made explicit.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd3q3', 3)"><span class="q-option-dot"></span><span class="q-option-text">There's a clear intake process and explicit decision authority. Adding something means removing something else.</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- DIMENSION 4 -->
+    <div class="dim-section" id="dim-4">
+      <div class="shell">
+        <div class="dim-header">
+          <div class="dim-num">Dimension 04 / 06</div>
+          <div class="dim-title">Cross-functional alignment</div>
+          <div class="dim-sub">Do product, engineering, design, and go-to-market actually move together — or does alignment happen in Slack threads after the fact?</div>
+        </div>
+ 
+        <div class="question">
+          <div class="q-text">How does your product org share context with sales, marketing, and customer success on what's shipping and when?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this, 'd4q1', 1)"><span class="q-option-dot"></span><span class="q-option-text">It's reactive. GTM teams find out when something ships or when a customer asks about it.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd4q1', 2)"><span class="q-option-dot"></span><span class="q-option-text">There are some mechanisms (release notes, Slack channels) but they're inconsistent and often incomplete.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd4q1', 3)"><span class="q-option-dot"></span><span class="q-option-text">There's a structured enablement process. GTM has advance notice and consistent context before anything ships.</span></button>
+          </div>
+        </div>
+ 
+        <div class="question">
+          <div class="q-text">When there's a disagreement between product and engineering on scope or timeline, how is it resolved?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this, 'd4q2', 1)"><span class="q-option-dot"></span><span class="q-option-text">It escalates or stalls. There's no clear process — it depends on relationships and who has more leverage.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd4q2', 2)"><span class="q-option-dot"></span><span class="q-option-text">Usually resolved, but the path is informal. It relies on specific individuals rather than a shared process.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd4q2', 3)"><span class="q-option-dot"></span><span class="q-option-text">There's a defined escalation and trade-off process with clear decision rights. Disagreements get resolved without drama.</span></button>
+          </div>
+        </div>
+ 
+        <div class="question">
+          <div class="q-text">Do stakeholders outside of product generally feel informed — or do they regularly find out about changes after they happen?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this, 'd4q3', 1)"><span class="q-option-dot"></span><span class="q-option-text">Finding out late is the norm. Surprises are a recurring source of friction with leadership and GTM.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd4q3', 2)"><span class="q-option-dot"></span><span class="q-option-text">Most stakeholders are reasonably informed, but there are gaps depending on the team or the quarter.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd4q3', 3)"><span class="q-option-dot"></span><span class="q-option-text">Stakeholders consistently have what they need. Surprises are rare and usually minor.</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- DIMENSION 5 -->
+    <div class="dim-section" id="dim-5">
+      <div class="shell">
+        <div class="dim-header">
+          <div class="dim-num">Dimension 05 / 06</div>
+          <div class="dim-title">AI adoption</div>
+          <div class="dim-sub">Is AI changing how your product org actually works — or is it a talking point in all-hands but absent from daily workflows?</div>
+        </div>
+ 
+        <div class="question">
+          <div class="q-text">Are your PMs actively using AI tools as part of their regular work — writing, research, synthesis, customer feedback analysis, planning?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this, 'd5q1', 1)"><span class="q-option-dot"></span><span class="q-option-text">A few individuals experiment on their own. There's no shared adoption or expectation.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd5q1', 2)"><span class="q-option-dot"></span><span class="q-option-text">Several PMs use AI tools regularly but there's no consistency in how, and it's mostly individual choice.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd5q1', 3)"><span class="q-option-dot"></span><span class="q-option-text">AI tools are embedded in how the team works. There are shared workflows and expectations around using them.</span></button>
+          </div>
+        </div>
+ 
+        <div class="question">
+          <div class="q-text">Does your org have any shared guidance or standards around how AI tools are used in product work — prompts, outputs, quality bar?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this, 'd5q2', 1)"><span class="q-option-dot"></span><span class="q-option-text">None. AI use is entirely ad hoc — everyone figures it out themselves.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd5q2', 2)"><span class="q-option-dot"></span><span class="q-option-text">Some informal norms exist, but nothing documented or consistently applied.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd5q2', 3)"><span class="q-option-dot"></span><span class="q-option-text">Yes — there are documented standards, shared prompt libraries, or workflow templates the team uses.</span></button>
+          </div>
+        </div>
+ 
+        <div class="question">
+          <div class="q-text">Has AI meaningfully changed any recurring process in your product org in the last 12 months — not just saved time, but changed how something actually works?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this, 'd5q3', 1)"><span class="q-option-dot"></span><span class="q-option-text">Not really. AI is used for occasional tasks but hasn't changed any core workflows.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd5q3', 2)"><span class="q-option-dot"></span><span class="q-option-text">One or two things have changed, but it's not systematic — depends on who's driving it.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd5q3', 3)"><span class="q-option-dot"></span><span class="q-option-text">Yes — multiple workflows have been redesigned around AI capabilities in a deliberate, org-wide way.</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- DIMENSION 6 -->
+    <div class="dim-section" id="dim-6">
+      <div class="shell">
+        <div class="dim-header">
+          <div class="dim-num">Dimension 06 / 06</div>
+          <div class="dim-title">Ops infrastructure</div>
+          <div class="dim-sub">Does your product org run on documented, shared systems — or does institutional knowledge live in people's heads and leave with them?</div>
+        </div>
+ 
+        <div class="question">
+          <div class="q-text">Do your PMs use shared templates for specs, PRDs, or planning artifacts — or does every PM have their own format?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this, 'd6q1', 1)"><span class="q-option-dot"></span><span class="q-option-text">Every PM does it differently. There's no shared format and documents vary significantly in quality and structure.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd6q1', 2)"><span class="q-option-dot"></span><span class="q-option-text">Templates exist but adoption is inconsistent. Some PMs use them, others don't.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd6q1', 3)"><span class="q-option-dot"></span><span class="q-option-text">Shared templates are the norm. There's a documented standard and most PMs follow it consistently.</span></button>
+          </div>
+        </div>
+ 
+        <div class="question">
+          <div class="q-text">How does your org onboard a new PM to your processes — is there a playbook, or do they shadow and figure it out?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this, 'd6q2', 1)"><span class="q-option-dot"></span><span class="q-option-text">Shadow and figure it out. Onboarding is informal and the quality depends on who they sit next to.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd6q2', 2)"><span class="q-option-dot"></span><span class="q-option-text">There's some documentation but it's incomplete and often out of date.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd6q2', 3)"><span class="q-option-dot"></span><span class="q-option-text">There's a real onboarding playbook. A new PM can get up to speed on how we work without relying on tribal knowledge.</span></button>
+          </div>
+        </div>
+ 
+        <div class="question">
+          <div class="q-text">When a process breaks down or a retrospective surfaces a gap, is there a clear owner who fixes it — or does it go on a list and stay there?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this, 'd6q3', 1)"><span class="q-option-dot"></span><span class="q-option-text">It goes on a list. Process gaps get identified but rarely fixed because nobody owns fixing the system itself.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd6q3', 2)"><span class="q-option-dot"></span><span class="q-option-text">Some gaps get addressed, but it's inconsistent and depends on who's motivated at the time.</span></button>
+            <button class="q-option" onclick="selectOption(this, 'd6q3', 3)"><span class="q-option-dot"></span><span class="q-option-text">There's a clear owner for process health. Gaps get triaged, assigned, and closed with documented changes.</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- SUBMIT -->
+    <div class="submit-section">
+      <div class="shell">
+        <div class="submit-inner">
+          <div class="submit-title">Get your diagnosis</div>
+          <div class="submit-sub">Your results stay on this page — nothing is stored or published. Optional: leave your name and company to receive a follow-up with context specific to your industry and stage.</div>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label" for="f-name">Your name</label>
+              <input type="text" id="f-name" class="field-input" placeholder="Optional">
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="f-company">Company</label>
+              <input type="text" id="f-company" class="field-input" placeholder="Optional">
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="f-role">Your role</label>
+            <input type="text" id="f-role" class="field-input" placeholder="Optional — e.g. VP Product, CPO, Head of Product">
+          </div>
+          <div class="incomplete-msg" id="incomplete-msg">Please answer all 18 questions before submitting.</div>
+          <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <button class="btn-primary" onclick="submitAssessment()">See my results →</button>
+            <button class="btn-secondary" onclick="checkProgress()">Check progress</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- ══ RESULTS ══ -->
+  <div id="results">
+    <div class="shell">
+      <div class="results-hero">
+        <div class="results-eyebrow" id="r-eyebrow">Assessment complete</div>
+        <div class="results-profile-name" id="r-profile-name">Reactive</div>
+        <div class="results-score-row">
+          <div class="results-score-num" id="r-score">—</div>
+          <div class="results-score-denom">/ 54</div>
+        </div>
+        <div class="results-diagnosis" id="r-diagnosis"></div>
+      </div>
+ 
+      <div class="dim-scores">
+        <div class="dim-scores-title">Score by dimension</div>
+        <div id="dim-score-rows"></div>
+      </div>
+ 
+      <div class="insights">
+        <div class="insights-title">Where to focus</div>
+        <div id="insight-blocks"></div>
+      </div>
+ 
+      <div class="results-cta">
+        <div class="results-cta-inner">
+          <h2>Want to talk through what this means for your org?</h2>
+          <p>I work with product orgs to design operating models that actually hold up — planning rhythms, roadmap processes, AI-augmented workflows, and the infrastructure to scale them. Let's connect.</p>
+          <div class="results-cta-btns">
+            <a href="https://www.linkedin.com/in/stephenthiessen" target="_blank" class="btn-primary">Connect on LinkedIn →</a>
+            <button class="btn-secondary" onclick="resetAssessment()">Retake assessment</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+ 
+</div>
+ 
+<!-- ══ COMING SOON PANELS ══ -->
+<div id="panel-audit" class="panel">
+  <div class="shell">
+    <div class="coming-soon">
+      <div class="coming-soon-icon">// Coming soon</div>
+      <h2>AI Workflow Audit</h2>
+      <p>Walk your product org through an honest audit of where AI is and isn't embedded in how you work — and what that gap is costing you.</p>
+    </div>
+  </div>
+</div>
+ 
+<div id="panel-facilitator" class="panel">
+  <div class="shell">
+    <div class="coming-soon">
+      <div class="coming-soon-icon">// Coming soon</div>
+      <h2>Planning Session Facilitator</h2>
+      <p>An interactive guide for running a tight quarterly planning session — from inputs to prioritized output, with no wasted time.</p>
+    </div>
+  </div>
+</div>
+ 
+<div id="panel-playbook" class="panel">
+  <div class="shell">
+    <div class="coming-soon">
+      <div class="coming-soon-icon">// Coming soon</div>
+      <h2>AI Ops Playbook</h2>
+      <p>A living framework for building AI-augmented product operations from scratch — covering tooling, workflows, governance, and measurement.</p>
+    </div>
+  </div>
+</div>
+ 
+<footer>
+  <div class="footer-inner">
+    <span class="footer-text">Product Ops Intelligence — built by Stephen Thiessen</span>
+    <a href="https://www.linkedin.com/in/stephenthiessen" target="_blank" class="footer-link">LinkedIn ↗</a>
+  </div>
+</footer>
+ 
+<script>
+  const answers = {};
+ 
+  const DIMS = [
+    { key: 'd1', label: 'Strategic direction' },
+    { key: 'd2', label: 'Planning rhythm' },
+    { key: 'd3', label: 'Roadmap process' },
+    { key: 'd4', label: 'Cross-functional alignment' },
+    { key: 'd5', label: 'AI adoption' },
+    { key: 'd6', label: 'Ops infrastructure' },
+  ];
+ 
+  const QUESTIONS = [
+    'd1q1','d1q2','d1q3',
+    'd2q1','d2q2','d2q3',
+    'd3q1','d3q2','d3q3',
+    'd4q1','d4q2','d4q3',
+    'd5q1','d5q2','d5q3',
+    'd6q1','d6q2','d6q3',
+  ];
+ 
+  function selectOption(btn, qKey, val) {
+    const parent = btn.closest('.q-options');
+    parent.querySelectorAll('.q-option').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    answers[qKey] = val;
+    updateProgress();
+  }
+ 
+  function updateProgress() {
+    const count = Object.keys(answers).length;
+    const pct = Math.round((count / 18) * 100);
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-text').textContent = count + ' of 18 answered';
+    document.getElementById('progress-pct').textContent = pct + '%';
+  }
+ 
+  function checkProgress() {
+    const unanswered = QUESTIONS.filter(q => !answers[q]);
+    if (unanswered.length === 0) {
+      document.getElementById('incomplete-msg').style.display = 'none';
+      return;
+    }
+    const firstDim = unanswered[0].slice(0, 2);
+    const dimNum = parseInt(firstDim[1]);
+    const el = document.getElementById('dim-' + dimNum);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+ 
+  function dimScore(key) {
+    return (answers[key + 'q1'] || 0) + (answers[key + 'q2'] || 0) + (answers[key + 'q3'] || 0);
+  }
+ 
+  function submitAssessment() {
+    const unanswered = QUESTIONS.filter(q => !answers[q]);
+    if (unanswered.length > 0) {
+      const msg = document.getElementById('incomplete-msg');
+      msg.style.display = 'block';
+      msg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    document.getElementById('incomplete-msg').style.display = 'none';
+ 
+    const scores = {};
+    let total = 0;
+    DIMS.forEach(d => {
+      scores[d.key] = dimScore(d.key);
+      total += scores[d.key];
+    });
+ 
+    const stratScore = scores['d1'];
+    let profile, diagnosis;
+ 
+    if (stratScore <= 4) {
+      profile = 'Capacity-driven';
+      diagnosis = 'Your planning system is filling quarters, not making bets. Without a clear strategic foundation, the other five dimensions are running in the wrong direction — efficiently executing work that may not matter. This is the most common pattern in fast-growing product orgs that scaled their team before they scaled their operating model. The fix starts at the top: strategy and OKR alignment has to come first, or no amount of process improvement downstream will change the output.';
+    } else if (total <= 27) {
+      profile = 'Reactive';
+      diagnosis = 'Your product org is operating primarily in response mode. Planning is happening, but it\'s mostly driven by urgency, stakeholder pressure, and what fits in a sprint rather than a clear strategic direction. This is survivable at early stage, but it compounds quickly as the team grows. Every PM you add without a shared operating model makes coordination harder and strategic drift more likely.';
+    } else if (total <= 38) {
+      profile = 'Developing';
+      diagnosis = 'Your org has built some of the right infrastructure — there are planning rituals, some process documentation, and at least partial OKR adoption. But the system isn\'t coherent yet. Dimensions are advancing at different rates, which means the weakest links are creating drag on the stronger ones. A strong roadmap process without strategic alignment is just organized busy work. A good planning rhythm without cross-functional visibility means teams are executing in silos.';
+    } else if (total <= 48) {
+      profile = 'Scaling';
+      diagnosis = 'Your operating model is working. You have real infrastructure — consistent planning, a roadmap that drives decisions, cross-functional alignment, and growing AI integration. The gaps that remain are likely in the dimensions where complexity outpaced your systems. The risk at this stage isn\'t collapse — it\'s the operating model becoming a constraint on the org\'s ambition rather than an enabler of it.';
+    } else {
+      profile = 'Optimized';
+      diagnosis = 'Your product org is running a mature operating model across all six dimensions. Strategic direction drives planning, the roadmap is a live decision tool, cross-functional teams move together, and AI is embedded in how the org works — not just talked about. The question at this stage is whether the system scales with your ambitions. Optimized operating models can calcify — the goal is staying adaptive, not just consistent.';
+    }
+ 
+    document.getElementById('r-profile-name').textContent = profile;
+    document.getElementById('r-score').textContent = total;
+    document.getElementById('r-diagnosis').textContent = diagnosis;
+ 
+    const name = document.getElementById('f-name').value.trim();
+    if (name) {
+      document.getElementById('r-eyebrow').textContent = name + '\'s assessment';
+    }
+ 
+    const rowsEl = document.getElementById('dim-score-rows');
+    rowsEl.innerHTML = '';
+    DIMS.forEach(d => {
+      const s = scores[d.key];
+      const pct = Math.round((s / 9) * 100);
+      const fillClass = s <= 3 ? 'fill-low' : s <= 6 ? 'fill-mid' : 'fill-high';
+      rowsEl.innerHTML += `
+        <div class="dim-score-row">
+          <div class="dim-score-label">${d.label}</div>
+          <div class="dim-score-track"><div class="dim-score-fill ${fillClass}" style="width:0%" data-pct="${pct}"></div></div>
+          <div class="dim-score-val">${s} / 9</div>
+        </div>`;
+    });
+ 
+    const insightsEl = document.getElementById('insight-blocks');
+    insightsEl.innerHTML = '';
+    const sorted = DIMS.map(d => ({ ...d, score: scores[d.key] })).sort((a,b) => a.score - b.score);
+ 
+    const insightMap = {
+      d1: {
+        low: 'Work is being planned without a strategic filter. Quarters fill with requests and technical debt rather than deliberate bets. This doesn\'t get fixed by improving planning rhythm — it requires leadership alignment on where the product is actually trying to win.',
+        mid: 'Strategy exists but isn\'t consistently operationalized. OKRs are written but don\'t gate the roadmap. The gap between stated direction and daily decisions is where trust with stakeholders erodes over time.',
+        high: 'Strategic direction is a genuine strength. Planning decisions connect to a coherent view of where the product needs to go. This is the foundation that makes every other dimension more effective.'
+      },
+      d2: {
+        low: 'Planning happens to the team rather than by it. Without a consistent, owned cadence, every quarter is a fresh coordination problem. Teams spend energy re-establishing process instead of executing against it.',
+        mid: 'The cadence exists but lacks ownership. Planning improves or regresses based on who\'s engaged that quarter rather than a system that runs regardless.',
+        high: 'Planning rhythm is a strength. The cadence is consistent, owned, and gets better over time. This is the operational backbone that makes strategy executable.'
+      },
+      d3: {
+        low: 'The roadmap is a presentation artifact, not a decision tool. Stakeholder commitments have diverged from actual work, which means trust is eroding. When the roadmap isn\'t trusted internally, external credibility follows.',
+        mid: 'The roadmap functions but isn\'t fully trusted. Drift between committed and actual work is a recurring tension that consumes energy to manage.',
+        high: 'The roadmap is a live, trusted decision tool. This is rare and valuable — most orgs treat it as a snapshot rather than a system.'
+      },
+      d4: {
+        low: 'GTM teams are operating on incomplete information. Surprises are a recurring source of friction and they compound — missed enablement, reactive positioning, and stakeholder credibility issues that are hard to recover from.',
+        mid: 'Alignment is happening but inconsistently. The gaps tend to surface at the worst times — launches, board reviews, customer escalations.',
+        high: 'Cross-functional alignment is a genuine differentiator. Teams move together, which compresses time-to-market and reduces coordination overhead.'
+      },
+      d5: {
+        low: 'AI is a topic, not a capability. Individual experimentation without shared workflows means the org can\'t compound on what individuals learn. The gap between AI-native orgs and this state is widening faster than most teams realize.',
+        mid: 'AI adoption is emerging but hasn\'t become systematic. The risk is it stays a personal productivity tool rather than an org-level capability.',
+        high: 'AI is embedded in how the org works. This is a genuine competitive advantage — it compounds over time as workflows improve and the team builds institutional knowledge around AI-augmented processes.'
+      },
+      d6: {
+        low: 'Institutional knowledge lives in people\'s heads. Every departure is a process regression. Onboarding is expensive. Quality varies by PM. This is the most invisible form of ops debt because it never shows up on a dashboard.',
+        mid: 'Documentation exists but isn\'t trusted or maintained. The org has the right instinct but hasn\'t committed the ownership needed to make it durable.',
+        high: 'Ops infrastructure is systematized. Processes are documented, onboarding is structured, and gaps get fixed rather than accumulated. This scales.'
+      }
+    };
+ 
+    sorted.forEach((d, i) => {
+      const tier = d.score <= 3 ? 'low' : d.score <= 6 ? 'mid' : 'high';
+      const blockClass = tier === 'low' ? 'critical' : tier === 'mid' ? 'warning' : 'strong';
+      const tagClass = tier === 'low' ? 'tag-critical' : tier === 'mid' ? 'tag-warning' : 'tag-strong';
+      const tagLabel = tier === 'low' ? 'Needs attention' : tier === 'mid' ? 'Developing' : 'Strength';
+      const text = insightMap[d.key][tier];
+      if (i < 4) {
+        insightsEl.innerHTML += `
+          <div class="insight-block ${blockClass}">
+            <div class="insight-tag ${tagClass}">${tagLabel}</div>
+            <div class="insight-dim">${d.label}</div>
+            <div class="insight-text">${text}</div>
+          </div>`;
+      }
+    });
+ 
+    document.getElementById('assessment-form').style.display = 'none';
+    document.getElementById('results').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+ 
+    setTimeout(() => {
+      document.querySelectorAll('.dim-score-fill').forEach(el => {
+        el.style.width = el.dataset.pct + '%';
+      });
+    }, 300);
+ 
+    sendToFormspree(total, scores, name,
+      document.getElementById('f-company').value.trim(),
+      document.getElementById('f-role').value.trim(),
+      profile
+    );
+  }
+ 
+  function sendToFormspree(total, scores, name, company, role, profile) {
+    const payload = {
+      profile,
+      total_score: total,
+      name: name || 'Anonymous',
+      company: company || 'Not provided',
+      role: role || 'Not provided',
+      d1_strategic_direction: scores.d1,
+      d2_planning_rhythm: scores.d2,
+      d3_roadmap_process: scores.d3,
+      d4_crossfunctional_alignment: scores.d4,
+      d5_ai_adoption: scores.d5,
+      d6_ops_infrastructure: scores.d6,
+      timestamp: new Date().toISOString()
+    };
+ 
+    fetch('https://formspree.io/f/YOUR_FORM_ID', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(() => {});
+  }
+ 
+  function resetAssessment() {
+    Object.keys(answers).forEach(k => delete answers[k]);
+    document.querySelectorAll('.q-option').forEach(b => b.classList.remove('selected'));
+    document.getElementById('results').style.display = 'none';
+    document.getElementById('assessment-form').style.display = 'block';
+    updateProgress();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+ 
+  function switchTool(tool, btn) {
+    if (btn.classList.contains('soon')) return;
+    document.querySelectorAll('.tool-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + tool).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
