@@ -1203,17 +1203,18 @@
  
   function sendToFormspree(total, scores, name, company, role, profile) {
     const payload = {
+      _subject: 'New ops assessment: ' + profile + ' (' + total + '/54)',
       profile,
-      total_score: total,
+      total_score: total + ' / 54',
       name: name || 'Anonymous',
       company: company || 'Not provided',
       role: role || 'Not provided',
-      d1_strategic_direction: scores.d1,
-      d2_planning_rhythm: scores.d2,
-      d3_roadmap_process: scores.d3,
-      d4_crossfunctional_alignment: scores.d4,
-      d5_ai_adoption: scores.d5,
-      d6_ops_infrastructure: scores.d6,
+      d1_strategic_direction: scores.d1 + ' / 9',
+      d2_planning_rhythm: scores.d2 + ' / 9',
+      d3_roadmap_process: scores.d3 + ' / 9',
+      d4_crossfunctional_alignment: scores.d4 + ' / 9',
+      d5_ai_adoption: scores.d5 + ' / 9',
+      d6_ops_infrastructure: scores.d6 + ' / 9',
       timestamp: new Date().toISOString()
     };
  
