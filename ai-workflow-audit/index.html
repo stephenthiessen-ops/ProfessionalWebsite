@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Ops Intelligence — Stephen Thiessen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Geist:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0a0a0a; --bg2: #111111; --bg3: #1a1a1a;
+  --border: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.18);
+  --text: #f0ede8; --text-muted: #7a7672; --text-dim: #3d3b38;
+  --accent: #c8f55a; --accent-dim: rgba(200,245,90,0.10); --accent-border: rgba(200,245,90,0.28);
+  --red: #ff5a5a; --amber: #f5a623;
+  --serif: 'DM Serif Display', Georgia, serif;
+  --mono: 'DM Mono', monospace;
+  --sans: 'Geist', system-ui, sans-serif;
+}
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15px; line-height: 1.6; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+ 
+nav { border-bottom: 1px solid var(--border); padding: 20px 0; position: sticky; top: 0; background: rgba(10,10,10,0.92); backdrop-filter: blur(12px); z-index: 100; }
+.nav-inner { max-width: 760px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; }
+.nav-logo { font-family: var(--mono); font-size: 12px; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; }
+.nav-logo span { color: var(--accent); }
+.nav-link { font-size: 12px; color: var(--text-muted); text-decoration: none; font-family: var(--mono); letter-spacing: 0.04em; transition: color 0.2s; }
+.nav-link:hover { color: var(--text); }
+ 
+.tool-bar { border-bottom: 1px solid var(--border); }
+.tool-bar-inner { max-width: 760px; margin: 0 auto; padding: 0 24px; display: flex; gap: 0; overflow-x: auto; scrollbar-width: none; }
+.tool-bar-inner::-webkit-scrollbar { display: none; }
+.tool-tab { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); padding: 14px 20px; border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; position: relative; top: 1px; }
+.tool-tab:hover { color: var(--text); }
+.tool-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tool-tab.soon { opacity: 0.4; cursor: default; }
+.tool-tab.soon::after { content: 'soon'; font-size: 9px; color: var(--text-dim); margin-left: 6px; vertical-align: 1px; }
+ 
+.panel { display: none; }
+.panel.active { display: block; }
+ 
+.shell { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+ 
+/* Hero */
+.hero { padding: 80px 0 60px; border-bottom: 1px solid var(--border); }
+.hero-eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 24px; }
+.hero h1 { font-family: var(--serif); font-size: clamp(36px, 6vw, 52px); line-height: 1.08; color: var(--text); margin-bottom: 24px; font-weight: 400; }
+.hero h1 em { font-style: italic; color: var(--text-muted); }
+.hero-body { font-size: 16px; color: var(--text-muted); max-width: 560px; line-height: 1.7; margin-bottom: 40px; }
+.hero-meta { display: flex; gap: 32px; flex-wrap: wrap; }
+.hero-stat { font-family: var(--mono); font-size: 11px; color: var(--text-muted); letter-spacing: 0.06em; }
+.hero-stat strong { display: block; font-family: var(--serif); font-size: 28px; color: var(--text); font-weight: 400; letter-spacing: 0; margin-bottom: 2px; }
+ 
+/* Progress */
+.progress-bar-wrap { padding: 32px 0 0; }
+.progress-track { height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; margin-bottom: 12px; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.4s ease; width: 0%; }
+.progress-label { font-family: var(--mono); font-size: 11px; color: var(--text-muted); letter-spacing: 0.06em; display: flex; justify-content: space-between; }
+ 
+/* Workflow sections */
+.workflow-section { padding: 56px 0; border-bottom: 1px solid var(--border); }
+.workflow-header { margin-bottom: 36px; }
+.workflow-num { font-family: var(--mono); font-size: 11px; color: var(--text-dim); letter-spacing: 0.1em; margin-bottom: 10px; }
+.workflow-title { font-family: var(--serif); font-size: 28px; font-weight: 400; color: var(--text); margin-bottom: 8px; line-height: 1.2; }
+.workflow-sub { font-size: 14px; color: var(--text-muted); line-height: 1.6; max-width: 520px; }
+ 
+/* Questions */
+.question { margin-bottom: 32px; }
+.q-text { font-size: 15px; color: var(--text); margin-bottom: 14px; line-height: 1.5; }
+.q-options { display: flex; flex-direction: column; gap: 8px; }
+.q-option { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.15s; background: transparent; text-align: left; width: 100%; font-family: var(--sans); }
+.q-option:hover { border-color: var(--border-hover); background: var(--bg2); }
+.q-option.selected { border-color: var(--accent-border); background: var(--accent-dim); }
+.q-option-dot { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--border-hover); flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.q-option.selected .q-option-dot { border-color: var(--accent); background: var(--accent); }
+.q-option.selected .q-option-dot::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--bg); }
+.q-option-text { font-size: 14px; color: var(--text-muted); line-height: 1.5; transition: color 0.15s; }
+.q-option.selected .q-option-text { color: var(--text); }
+ 
+/* Submit */
+.submit-section { padding: 56px 0; }
+.submit-inner { border: 1px solid var(--border); border-radius: 12px; padding: 40px; background: var(--bg2); }
+.submit-title { font-family: var(--serif); font-size: 26px; font-weight: 400; margin-bottom: 10px; }
+.submit-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 28px; line-height: 1.6; }
+.field-group { margin-bottom: 20px; }
+.field-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; display: block; }
+.field-input { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 12px 16px; font-family: var(--sans); font-size: 14px; color: var(--text); outline: none; transition: border-color 0.2s; }
+.field-input:focus { border-color: var(--accent-border); }
+.field-input::placeholder { color: var(--text-dim); }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.incomplete-msg { font-family: var(--mono); font-size: 11px; color: var(--amber); margin-bottom: 20px; letter-spacing: 0.04em; display: none; }
+.btn-primary { display: inline-flex; align-items: center; gap: 10px; background: var(--accent); color: var(--bg); font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; padding: 14px 28px; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-weight: 500; }
+.btn-primary:hover { background: #d4ff60; transform: translateY(-1px); }
+.btn-secondary { display: inline-flex; align-items: center; gap: 10px; background: transparent; color: var(--text-muted); font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; padding: 14px 28px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; transition: all 0.2s; text-decoration: none; }
+.btn-secondary:hover { border-color: var(--border-hover); color: var(--text); }
+ 
+/* Results */
+#audit-results { display: none; }
+.results-hero { padding: 80px 0 56px; border-bottom: 1px solid var(--border); }
+.results-eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 20px; }
+.results-state-name { font-family: var(--serif); font-size: clamp(40px, 7vw, 60px); font-weight: 400; line-height: 1.05; margin-bottom: 20px; }
+.results-score-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 24px; }
+.results-score-num { font-family: var(--mono); font-size: 48px; color: var(--accent); line-height: 1; }
+.results-score-denom { font-family: var(--mono); font-size: 18px; color: var(--text-dim); }
+.results-diagnosis { font-size: 16px; color: var(--text-muted); max-width: 580px; line-height: 1.75; margin-bottom: 40px; }
+ 
+/* Workflow scores */
+.workflow-scores { padding: 56px 0; border-bottom: 1px solid var(--border); }
+.section-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 32px; }
+.wf-score-row { display: grid; grid-template-columns: 200px 1fr 48px; align-items: center; gap: 20px; margin-bottom: 20px; }
+.wf-score-label { font-size: 13px; color: var(--text-muted); }
+.wf-score-track { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.wf-score-fill { height: 100%; border-radius: 4px; transition: width 1s ease; width: 0%; }
+.fill-low { background: var(--red); }
+.fill-mid { background: var(--amber); }
+.fill-high { background: var(--accent); }
+.wf-score-val { font-family: var(--mono); font-size: 12px; color: var(--text-muted); text-align: right; }
+ 
+/* Recommendations */
+.recommendations { padding: 56px 0; border-bottom: 1px solid var(--border); }
+.rec-card { border: 1px solid var(--border); border-radius: 12px; padding: 28px; background: var(--bg2); margin-bottom: 16px; }
+.rec-card.critical { border-left: 3px solid var(--red); border-radius: 0 12px 12px 0; }
+.rec-card.opportunity { border-left: 3px solid var(--amber); border-radius: 0 12px 12px 0; }
+.rec-card.strength { border-left: 3px solid var(--accent); border-radius: 0 12px 12px 0; }
+.rec-tag { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+.tag-critical { color: var(--red); }
+.tag-opportunity { color: var(--amber); }
+.tag-strength { color: var(--accent); }
+.rec-workflow { font-size: 16px; font-weight: 500; color: var(--text); margin-bottom: 8px; }
+.rec-finding { font-size: 14px; color: var(--text-muted); line-height: 1.65; margin-bottom: 16px; }
+.rec-action { background: var(--bg3); border-radius: 8px; padding: 16px; }
+.rec-action-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; }
+.rec-action-text { font-size: 13px; color: var(--text-muted); line-height: 1.65; }
+.rec-action-text strong { color: var(--text); font-weight: 500; }
+.before-after { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.ba-block { background: var(--bg); border-radius: 6px; padding: 12px; }
+.ba-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px; }
+.ba-text { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+.ba-block.after .ba-text { color: var(--text); }
+ 
+/* CTA */
+.results-cta { padding: 56px 0 80px; }
+.results-cta-inner { border: 1px solid var(--accent-border); border-radius: 12px; padding: 48px; background: var(--accent-dim); text-align: center; }
+.results-cta h2 { font-family: var(--serif); font-size: 32px; font-weight: 400; margin-bottom: 14px; }
+.results-cta p { font-size: 15px; color: var(--text-muted); margin-bottom: 32px; line-height: 1.65; max-width: 480px; margin-left: auto; margin-right: auto; }
+.results-cta-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+ 
+footer { border-top: 1px solid var(--border); padding: 32px 0; }
+.footer-inner { max-width: 760px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.footer-text { font-family: var(--mono); font-size: 11px; color: var(--text-dim); letter-spacing: 0.06em; }
+.footer-link { font-family: var(--mono); font-size: 11px; color: var(--text-muted); text-decoration: none; letter-spacing: 0.06em; transition: color 0.2s; }
+.footer-link:hover { color: var(--accent); }
+ 
+.coming-soon { padding: 120px 0; text-align: center; }
+.coming-soon-icon { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 20px; }
+.coming-soon h2 { font-family: var(--serif); font-size: 36px; font-weight: 400; color: var(--text-muted); margin-bottom: 14px; }
+.coming-soon p { font-size: 14px; color: var(--text-dim); max-width: 360px; margin: 0 auto; line-height: 1.65; }
+ 
+@media (max-width: 600px) {
+  .field-row { grid-template-columns: 1fr; }
+  .submit-inner { padding: 28px 20px; }
+  .wf-score-row { grid-template-columns: 140px 1fr 40px; gap: 12px; }
+  .before-after { grid-template-columns: 1fr; }
+  .results-cta-inner { padding: 32px 20px; }
+}
+</style>
+</head>
+<body>
+ 
+<nav>
+  <div class="nav-inner">
+    <a href="https://www.stephen-thiessen.com" class="nav-logo">Product Ops <span>Intelligence</span></a>
+    <a href="https://www.linkedin.com/in/stephenthiessen" target="_blank" class="nav-link">Stephen Thiessen ↗</a>
+  </div>
+</nav>
+ 
+<div class="tool-bar">
+  <div class="tool-bar-inner">
+    <button class="tool-tab" onclick="switchTool('assessment', this)">Ops Maturity Assessment</button>
+    <button class="tool-tab active" onclick="switchTool('audit', this)">AI Workflow Audit</button>
+    <button class="tool-tab soon" disabled>Planning Session Facilitator</button>
+    <button class="tool-tab soon" disabled>AI Ops Playbook</button>
+  </div>
+</div>
+ 
+<div id="panel-assessment" class="panel">
+  <div class="shell">
+    <div class="coming-soon">
+      <div class="coming-soon-icon">// Separate tool</div>
+      <h2>Ops Maturity Assessment</h2>
+      <p>Already live. Takes 5 minutes to diagnose your product org's operating model across six dimensions.</p>
+      <br>
+      <a href="../ops-assessment/" class="btn-primary">Take the assessment →</a>
+    </div>
+  </div>
+</div>
+ 
+<div id="panel-audit" class="panel active">
+ 
+  <div id="audit-form">
+    <div class="shell">
+      <div class="hero">
+        <div class="hero-eyebrow">AI Workflow Audit</div>
+        <h1>Where is AI actually<br><em>changing</em> how you work?</h1>
+        <p class="hero-body">Most product orgs say they're using AI. Few have it embedded in the workflows that matter. This audit maps exactly where AI is working, where it's absent, and where the highest-leverage gaps are.</p>
+        <div class="hero-meta">
+          <div class="hero-stat"><strong>5</strong> workflow areas</div>
+          <div class="hero-stat"><strong>15</strong> questions</div>
+          <div class="hero-stat"><strong>~4</strong> minutes</div>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+          <div class="progress-label">
+            <span id="progress-text">0 of 15 answered</span>
+            <span id="progress-pct">0%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- WORKFLOW 1: DISCOVERY & RESEARCH -->
+    <div class="workflow-section">
+      <div class="shell">
+        <div class="workflow-header">
+          <div class="workflow-num">Workflow 01 / 05</div>
+          <div class="workflow-title">Discovery & customer research</div>
+          <div class="workflow-sub">How customer signals get captured, synthesized, and turned into product decisions.</div>
+        </div>
+        <div class="question">
+          <div class="q-text">When your team synthesizes customer feedback — interviews, support tickets, NPS responses — how much of that work involves AI?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this,'w1q1',1)"><span class="q-option-dot"></span><span class="q-option-text">None — a PM reads through it manually and writes up themes.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w1q1',2)"><span class="q-option-dot"></span><span class="q-option-text">Some PMs use AI to help summarize, but it's not consistent across the team.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w1q1',3)"><span class="q-option-dot"></span><span class="q-option-text">AI is a standard part of how we synthesize customer signals — most PMs use it regularly.</span></button>
+          </div>
+        </div>
+        <div class="question">
+          <div class="q-text">Do you have any automated workflow that categorizes or scores customer calls, tickets, or feedback before a human reviews it?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this,'w1q2',1)"><span class="q-option-dot"></span><span class="q-option-text">No — everything is manually triaged.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w1q2',2)"><span class="q-option-dot"></span><span class="q-option-text">We have something basic — keyword tagging or simple categorization — but it's not AI-driven.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w1q2',3)"><span class="q-option-dot"></span><span class="q-option-text">Yes — AI categorizes and scores incoming signals so the team is working from pre-processed data.</span></button>
+          </div>
+        </div>
+        <div class="question">
+          <div class="q-text">How quickly can your team answer the question: "What are the top three themes in customer feedback this month?"</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this,'w1q3',1)"><span class="q-option-dot"></span><span class="q-option-text">Days — someone needs to pull and read through the data.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w1q3',2)"><span class="q-option-dot"></span><span class="q-option-text">Hours — we have some tooling but it still requires manual synthesis.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w1q3',3)"><span class="q-option-dot"></span><span class="q-option-text">Minutes — we have an automated view that surfaces themes on demand.</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- WORKFLOW 2: PLANNING & PRIORITIZATION -->
+    <div class="workflow-section">
+      <div class="shell">
+        <div class="workflow-header">
+          <div class="workflow-num">Workflow 02 / 05</div>
+          <div class="workflow-title">Planning & prioritization</div>
+          <div class="workflow-sub">How the team decides what to build next and how planning cycles actually run.</div>
+        </div>
+        <div class="question">
+          <div class="q-text">During quarterly planning, does AI play any role in analyzing capacity, surfacing tradeoffs, or stress-testing the plan?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this,'w2q1',1)"><span class="q-option-dot"></span><span class="q-option-text">No — planning is done manually in spreadsheets or Jira.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w2q1',2)"><span class="q-option-dot"></span><span class="q-option-text">Someone uses AI to help draft planning docs or summarize inputs, but not systematically.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w2q1',3)"><span class="q-option-dot"></span><span class="q-option-text">AI is embedded in our planning process — capacity modeling, risk flagging, or tradeoff analysis.</span></button>
+          </div>
+        </div>
+        <div class="question">
+          <div class="q-text">When a PM makes a prioritization decision, is there any AI-assisted framework or scoring model backing that decision?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this,'w2q2',1)"><span class="q-option-dot"></span><span class="q-option-text">No — it's judgment-based with maybe a spreadsheet or RICE score done manually.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w2q2',2)"><span class="q-option-dot"></span><span class="q-option-text">Some PMs use AI to help evaluate options, but there's no shared model.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w2q2',3)"><span class="q-option-dot"></span><span class="q-option-text">Yes — we have a shared AI-assisted prioritization model PMs use consistently.</span></button>
+          </div>
+        </div>
+        <div class="question">
+          <div class="q-text">When priorities shift mid-cycle, how does your team assess the downstream impact?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this,'w2q3',1)"><span class="q-option-dot"></span><span class="q-option-text">Manually — someone maps out the impact in a doc or Slack thread.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w2q3',2)"><span class="q-option-dot"></span><span class="q-option-text">We use tooling to see dependencies but AI isn't part of the impact analysis.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w2q3',3)"><span class="q-option-dot"></span><span class="q-option-text">AI helps us model downstream impact — surfacing dependencies, risks, and capacity effects quickly.</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- WORKFLOW 3: SPEC & DOCUMENTATION -->
+    <div class="workflow-section">
+      <div class="shell">
+        <div class="workflow-header">
+          <div class="workflow-num">Workflow 03 / 05</div>
+          <div class="workflow-title">Spec & documentation</div>
+          <div class="workflow-sub">How product specs, PRDs, and documentation get written, reviewed, and maintained.</div>
+        </div>
+        <div class="question">
+          <div class="q-text">When a PM writes a PRD or product spec, how does AI factor into that process?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this,'w3q1',1)"><span class="q-option-dot"></span><span class="q-option-text">It doesn't — specs are written from scratch by the PM.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w3q1',2)"><span class="q-option-dot"></span><span class="q-option-text">Some PMs use AI to help draft sections, but it varies widely by person.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w3q1',3)"><span class="q-option-dot"></span><span class="q-option-text">AI is part of our standard spec workflow — drafting, reviewing for gaps, or checking against templates.</span></button>
+          </div>
+        </div>
+        <div class="question">
+          <div class="q-text">Is there any automated review that checks a spec for missing risks, open questions, dependencies, or acceptance criteria before it goes to engineering?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this,'w3q2',1)"><span class="q-option-dot"></span><span class="q-option-text">No — spec quality depends on the PM's own thoroughness and peer review.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w3q2',2)"><span class="q-option-dot"></span><span class="q-option-text">We have a checklist or template, but no automated quality check.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w3q2',3)"><span class="q-option-dot"></span><span class="q-option-text">Yes — AI reviews specs against a quality standard before they leave product's hands.</span></button>
+          </div>
+        </div>
+        <div class="question">
+          <div class="q-text">After a feature ships, how is documentation — release notes, internal wikis, customer-facing content — kept current?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this,'w3q3',1)"><span class="q-option-dot"></span><span class="q-option-text">Manually, inconsistently — docs often lag or go stale.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w3q3',2)"><span class="q-option-dot"></span><span class="q-option-text">There's a process but it's manual and relies on people remembering to update things.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w3q3',3)"><span class="q-option-dot"></span><span class="q-option-text">AI helps generate or draft documentation from specs or tickets as part of the ship process.</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- WORKFLOW 4: REPORTING & VISIBILITY -->
+    <div class="workflow-section">
+      <div class="shell">
+        <div class="workflow-header">
+          <div class="workflow-num">Workflow 04 / 05</div>
+          <div class="workflow-title">Reporting & visibility</div>
+          <div class="workflow-sub">How leadership gets visibility into what's shipping, what's at risk, and what's blocked.</div>
+        </div>
+        <div class="question">
+          <div class="q-text">How does your team produce executive-level updates on product progress — what's shipping, what's at risk, what's blocked?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this,'w4q1',1)"><span class="q-option-dot"></span><span class="q-option-text">Someone manually compiles updates from Jira, Slack, and team check-ins each week.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w4q1',2)"><span class="q-option-dot"></span><span class="q-option-text">We have dashboards but the narrative summary still requires manual effort.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w4q1',3)"><span class="q-option-dot"></span><span class="q-option-text">AI aggregates signals from our tools and generates the summary — a human reviews and approves.</span></button>
+          </div>
+        </div>
+        <div class="question">
+          <div class="q-text">When a project is running late or at risk, how does leadership find out?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this,'w4q2',1)"><span class="q-option-dot"></span><span class="q-option-text">Someone escalates it — leadership finds out reactively.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w4q2',2)"><span class="q-option-dot"></span><span class="q-option-text">We have status indicators but risk surfacing still depends on someone noticing and flagging it.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w4q2',3)"><span class="q-option-dot"></span><span class="q-option-text">AI monitors signals across our tools and proactively surfaces at-risk items before they escalate.</span></button>
+          </div>
+        </div>
+        <div class="question">
+          <div class="q-text">How much time does your team spend per week on reporting, status updates, and keeping stakeholders informed?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this,'w4q3',1)"><span class="q-option-dot"></span><span class="q-option-text">Several hours — it's a meaningful tax on PM and ops time.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w4q3',2)"><span class="q-option-dot"></span><span class="q-option-text">About an hour — we've optimized somewhat but it's still manual.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w4q3',3)"><span class="q-option-dot"></span><span class="q-option-text">Minimal — AI handles most of the aggregation and our humans just validate.</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- WORKFLOW 5: CROSS-FUNCTIONAL COMMUNICATION -->
+    <div class="workflow-section">
+      <div class="shell">
+        <div class="workflow-header">
+          <div class="workflow-num">Workflow 05 / 05</div>
+          <div class="workflow-title">Cross-functional communication</div>
+          <div class="workflow-sub">How product context flows to engineering, design, sales, and customer success.</div>
+        </div>
+        <div class="question">
+          <div class="q-text">When something ships, how does product communicate what's changed to engineering, CS, and sales?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this,'w5q1',1)"><span class="q-option-dot"></span><span class="q-option-text">Manually — a PM or ops person writes up the release notes and sends them out.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w5q1',2)"><span class="q-option-dot"></span><span class="q-option-text">We have a process but drafting the comms is still a manual task.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w5q1',3)"><span class="q-option-dot"></span><span class="q-option-text">AI drafts release notes and internal comms from specs or tickets — humans review before sending.</span></button>
+          </div>
+        </div>
+        <div class="question">
+          <div class="q-text">When a customer-facing team (CS, sales, support) needs context on a product decision or recent change, how do they get it?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this,'w5q2',1)"><span class="q-option-dot"></span><span class="q-option-text">They ask a PM — it's pull-based and interrupts product work.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w5q2',2)"><span class="q-option-dot"></span><span class="q-option-text">We have a wiki or knowledge base but it's inconsistently maintained.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w5q2',3)"><span class="q-option-dot"></span><span class="q-option-text">There's an AI-powered knowledge layer they can query — product context on demand without interrupting PMs.</span></button>
+          </div>
+        </div>
+        <div class="question">
+          <div class="q-text">After a retrospective or planning session, how do action items and decisions get documented and followed up on?</div>
+          <div class="q-options">
+            <button class="q-option" onclick="selectOption(this,'w5q3',1)"><span class="q-option-dot"></span><span class="q-option-text">Someone takes notes manually — follow-up is inconsistent.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w5q3',2)"><span class="q-option-dot"></span><span class="q-option-text">We document them but tracking follow-through still requires manual effort.</span></button>
+            <button class="q-option" onclick="selectOption(this,'w5q3',3)"><span class="q-option-dot"></span><span class="q-option-text">AI captures and structures decisions and action items from sessions, and tracks follow-through automatically.</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- SUBMIT -->
+    <div class="submit-section">
+      <div class="shell">
+        <div class="submit-inner">
+          <div class="submit-title">Get your audit results</div>
+          <div class="submit-sub">You'll see a workflow-by-workflow breakdown, your adoption state, and specific recommendations for each gap — not generic advice, but concrete workflow changes with before/after context.</div>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label" for="f-name">Your name</label>
+              <input type="text" id="f-name" class="field-input" placeholder="Optional">
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="f-company">Company</label>
+              <input type="text" id="f-company" class="field-input" placeholder="Optional">
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="f-role">Your role</label>
+            <input type="text" id="f-role" class="field-input" placeholder="Optional">
+          </div>
+          <div class="incomplete-msg" id="incomplete-msg">Please answer all 15 questions before submitting.</div>
+          <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <button class="btn-primary" onclick="submitAudit()">See my results →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- RESULTS -->
+  <div id="audit-results">
+    <div class="shell">
+      <div class="results-hero">
+        <div class="results-eyebrow" id="r-eyebrow">Audit complete</div>
+        <div class="results-state-name" id="r-state"></div>
+        <div class="results-score-row">
+          <div class="results-score-num" id="r-score">—</div>
+          <div class="results-score-denom">/ 45</div>
+        </div>
+        <div class="results-diagnosis" id="r-diagnosis"></div>
+      </div>
+ 
+      <div class="workflow-scores">
+        <div class="section-label">Adoption by workflow area</div>
+        <div id="wf-score-rows"></div>
+      </div>
+ 
+      <div class="recommendations">
+        <div class="section-label">Specific recommendations</div>
+        <div id="rec-blocks"></div>
+      </div>
+ 
+      <div class="results-cta">
+        <div class="results-cta-inner">
+          <h2>Want to implement these workflows?</h2>
+          <p>I design and build AI-augmented product operations from scratch — the exact workflows surfaced in this audit. Let's connect.</p>
+          <div class="results-cta-btns">
+            <a href="https://www.linkedin.com/in/stephenthiessen" target="_blank" class="btn-primary">Connect on LinkedIn →</a>
+            <button class="btn-secondary" onclick="resetAudit()">Retake audit</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+ 
+</div>
+ 
+<div id="panel-facilitator" class="panel">
+  <div class="shell"><div class="coming-soon"><div class="coming-soon-icon">// Coming soon</div><h2>Planning Session Facilitator</h2><p>An interactive guide for running a tight quarterly planning session — from inputs to prioritized output, with no wasted cycles.</p></div></div>
+</div>
+ 
+<div id="panel-playbook" class="panel">
+  <div class="shell"><div class="coming-soon"><div class="coming-soon-icon">// Coming soon</div><h2>AI Ops Playbook</h2><p>A living framework for building AI-augmented product operations from scratch — tooling, workflows, governance, measurement.</p></div></div>
+</div>
+ 
+<footer>
+  <div class="footer-inner">
+    <span class="footer-text">Product Ops Intelligence — built by Stephen Thiessen</span>
+    <a href="https://www.linkedin.com/in/stephenthiessen" target="_blank" class="footer-link">LinkedIn ↗</a>
+  </div>
+</footer>
+ 
+<script>
+const answers = {};
+const QUESTIONS = ['w1q1','w1q2','w1q3','w2q1','w2q2','w2q3','w3q1','w3q2','w3q3','w4q1','w4q2','w4q3','w5q1','w5q2','w5q3'];
+const WORKFLOWS = [
+  { key: 'w1', label: 'Discovery & research' },
+  { key: 'w2', label: 'Planning & prioritization' },
+  { key: 'w3', label: 'Spec & documentation' },
+  { key: 'w4', label: 'Reporting & visibility' },
+  { key: 'w5', label: 'Cross-functional comms' }
+];
+ 
+const RECS = {
+  w1: {
+    low: {
+      finding: 'Customer signals are being processed manually — a PM reads through feedback, takes notes, and writes up themes. This is the most time-consuming and inconsistent form of synthesis, and the most replaceable.',
+      action: 'Build a categorization workflow that processes incoming customer signals before a human sees them. Connect your call recordings or support tickets to an AI layer that tags sentiment, extracts themes, and scores urgency. At Drata, this cut synthesis time by roughly 70% and surfaced churn signals weeks earlier than manual review.',
+      before: 'PM spends 3–4 hours reading through call notes and tickets to write a monthly theme summary.',
+      after: 'AI categorizes and scores signals daily. PM reviews a pre-processed summary in 20 minutes and validates the themes.'
+    },
+    mid: {
+      finding: 'AI is being used for synthesis but inconsistently — some PMs use it, others don\'t. The value doesn\'t compound when it\'s individual rather than systematic.',
+      action: 'Standardize the synthesis workflow across the PM team. Create a shared prompt library and a consistent intake process so every PM is working from the same AI-assisted foundation. The goal is institutional capability, not individual shortcuts.',
+      before: 'Two PMs use AI for research synthesis, three don\'t — output quality and speed varies significantly.',
+      after: 'Shared prompt library and workflow means all PMs produce consistent, AI-assisted synthesis regardless of individual tool fluency.'
+    },
+    high: { finding: 'Discovery and research workflows are AI-embedded. Customer signals are being processed systematically before humans touch them.', action: 'This is a genuine strength. The next lever is connecting your synthesis output directly into your planning process — so themes from customer feedback automatically surface in prioritization conversations without manual translation.', before: '', after: '' }
+  },
+  w2: {
+    low: {
+      finding: 'Planning is done manually — spreadsheets, Jira, gut feel. This is where the most expensive planning mistakes happen: overcommitting capacity, missing dependencies, and making tradeoffs without full information.',
+      action: 'Start with one AI integration in planning: capacity modeling. Before finalizing a quarterly plan, run your committed initiatives through an AI prompt that checks historical delivery rates against current commitments and flags overcommitment. At DoubleVerify, this single intervention cut planned quarterly scope nearly in half.',
+      before: 'Leadership approves a plan with 60 initiatives. By week 6, the team is visibly behind and tradeoff conversations start.',
+      after: 'AI capacity check flags overcommitment before sign-off. Plan goes in at 30 initiatives — achievable, credible, and trusted.'
+    },
+    mid: {
+      finding: 'Some AI is present in planning but it\'s not systematic. The highest-leverage gap is usually dependency and risk analysis — not drafting, but stress-testing.',
+      action: 'Add an AI-powered risk review step to your planning cycle. Before the plan is finalized, run a structured prompt that identifies: which initiatives have unresolved dependencies, which are scoped without engineering input, and which are adjacent to historically late work. Surface these before commitment, not during execution.',
+      before: 'Risks emerge during execution when they\'re expensive to address.',
+      after: 'Structured AI risk review catches the top 3–5 risks before the plan is locked — teams enter the quarter eyes open.'
+    },
+    high: { finding: 'Planning has real AI integration. Capacity modeling, risk analysis, and tradeoff support are active.', action: 'The frontier here is connecting planning outputs to live execution — so when actuals diverge from plan, AI surfaces the delta and suggests re-prioritization options before leadership asks.', before: '', after: '' }
+  },
+  w3: {
+    low: {
+      finding: 'Specs are written from scratch by PMs with no AI assist. This means spec quality varies by person, gaps get caught late (or not at all), and documentation falls behind after ship.',
+      action: 'Implement a two-step AI workflow for specs: generation and review. For generation, use a structured prompt that drafts PRD sections from a brief. For review, run every spec through a gap-check prompt before it leaves product\'s hands — checking for missing acceptance criteria, unaddressed risks, and open questions. This is one of the highest-ROI AI integrations available to a product team.',
+      before: 'PM writes spec from scratch in 3 hours. Engineering discovers missing edge cases in sprint planning.',
+      after: 'PM drafts in 45 minutes using AI assist. AI gap-check catches 4 missing items before engineering sees it.'
+    },
+    mid: {
+      finding: 'Some AI is present in spec writing but there\'s no quality gate. The gap-check step — AI reviewing specs before they go to engineering — is typically the highest-leverage missing piece.',
+      action: 'Build the spec quality gate: a shared prompt that every PM runs before marking a spec ready for engineering review. Train it on your most common failure modes — the things that typically come back from engineering as missing or unclear. Make it a team norm, not optional.',
+      before: 'Spec quality varies by PM. Engineering review cycles are longer for specs from less experienced PMs.',
+      after: 'Quality gate runs before every spec. Gaps caught at the product layer, not the engineering layer.'
+    },
+    high: { finding: 'Spec and documentation workflows are AI-embedded. Generation, review, and post-ship documentation are all covered.', action: 'The next layer is institutional memory — connecting documentation to a queryable knowledge layer so CS, sales, and support can self-serve product context without interrupting PMs.', before: '', after: '' }
+  },
+  w4: {
+    low: {
+      finding: 'Reporting is a significant manual tax — someone spends hours each week compiling updates from Jira, Slack, and team check-ins. This is high-effort, low-value work that AI can almost entirely replace.',
+      action: 'Build an executive summary agent that pulls from your existing tools. A workflow that queries Jira for status changes, Slack for blockers, and Confluence for initiative updates — then generates a structured weekly summary — can replace 3–4 hours of manual work with a 10-minute review. This was one of the first AI workflows built at DoubleVerify and had immediate, visible impact.',
+      before: 'Ops person spends 3 hours every Friday pulling together the weekly product update for leadership.',
+      after: 'Agent runs automatically Thursday night. Ops reviews and approves a pre-drafted summary in 15 minutes Friday morning.'
+    },
+    mid: {
+      finding: 'Dashboards exist but the narrative summary is still manual. The highest-leverage gap is usually proactive risk surfacing — identifying at-risk items before someone escalates them.',
+      action: 'Add a risk monitoring layer to your existing dashboards. A workflow that runs daily against your Jira data — flagging items that have been blocked for more than N days, initiatives with approaching deadlines and no recent updates, or tickets that have been reassigned more than twice — surfaces risk before it becomes an escalation.',
+      before: 'Leadership finds out a project is at risk when a PM brings it up in a weekly meeting.',
+      after: 'Risk monitor flags the issue 5 days earlier. Conversation moves from escalation to options.'
+    },
+    high: { finding: 'Reporting and visibility are AI-automated. Summary generation and risk surfacing are systematized.', action: 'The frontier is predictive — using historical delivery data to forecast which current initiatives are likely to slip before any signals appear. This moves the conversation from reactive risk management to proactive capacity adjustment.', before: '', after: '' }
+  },
+  w5: {
+    low: {
+      finding: 'Cross-functional communication is manual and pull-based — GTM teams interrupt PMs to get context, release notes get written from scratch, and retrospective actions go undocumented. This is a coordination tax that scales badly as the org grows.',
+      action: 'Start with automated release notes. A workflow that drafts release notes from merged tickets or completed specs — using a prompt trained on your preferred format and audience — can eliminate 80% of the manual effort and ensure GTM teams always have current context. The second step is building a queryable knowledge layer so CS and sales can self-serve without interrupting product.',
+      before: 'PM spends 45 minutes writing release notes after each sprint. CS still messages asking for context on changes.',
+      after: 'AI drafts release notes from merged tickets in 5 minutes. PM reviews and ships. CS queries the knowledge base for context on demand.'
+    },
+    mid: {
+      finding: 'Some communication workflows exist but drafting is still manual and the knowledge layer isn\'t queryable. The self-serve knowledge layer is typically the highest-leverage missing piece at this stage.',
+      action: 'Build a lightweight internal knowledge agent. Connect your product wiki, release notes, and spec library to an AI layer that CS, sales, and support can query in natural language. This eliminates a significant category of PM interruptions and gives GTM teams better context than they typically get from manual comms.',
+      before: 'CS messages the PM channel 8 times a day for context on product changes.',
+      after: 'CS queries the knowledge agent and gets instant, accurate context. PM interruptions for product questions drop by 60%.'
+    },
+    high: { finding: 'Cross-functional communication is systematized and AI-assisted. Release notes, knowledge access, and decision documentation are all covered.', action: 'The next layer is closing the loop from customer conversations back into planning — an automated signal that flags when CS or sales interactions surface product gaps, and routes those signals into the prioritization process without manual translation.', before: '', after: '' }
+  }
+};
+ 
+function selectOption(btn, qKey, val) {
+  btn.closest('.q-options').querySelectorAll('.q-option').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  answers[qKey] = val;
+  updateProgress();
+}
+ 
+function updateProgress() {
+  const count = Object.keys(answers).length;
+  const pct = Math.round((count / 15) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = count + ' of 15 answered';
+  document.getElementById('progress-pct').textContent = pct + '%';
+}
+ 
+function wfScore(key) {
+  return (answers[key+'q1']||0) + (answers[key+'q2']||0) + (answers[key+'q3']||0);
+}
+ 
+function submitAudit() {
+  const unanswered = QUESTIONS.filter(q => !answers[q]);
+  if (unanswered.length > 0) {
+    const msg = document.getElementById('incomplete-msg');
+    msg.style.display = 'block';
+    msg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  document.getElementById('incomplete-msg').style.display = 'none';
+ 
+  const scores = {};
+  let total = 0;
+  WORKFLOWS.forEach(w => { scores[w.key] = wfScore(w.key); total += scores[w.key]; });
+ 
+  let state, diagnosis;
+  if (total <= 18) {
+    state = 'Absent';
+    diagnosis = 'AI is not meaningfully embedded in how your product org works. Individual tools may exist but there are no shared workflows, no systematic adoption, and no compounding value. This is the most common state — and the highest-opportunity. The workflows that would change your org\'s output most are also the most straightforward to build. The gap between where you are and where AI-native product orgs operate is widening fast.';
+  } else if (total <= 30) {
+    state = 'Emerging';
+    diagnosis = 'AI has a foothold but it\'s fragmented — some individuals use tools, a workflow or two exists, but there\'s no coherent system. The value isn\'t compounding because adoption is individual rather than institutional. The risk at this stage is stalling here: the org feels like it\'s "doing AI" without capturing the leverage that comes from systematic workflow redesign.';
+  } else if (total <= 40) {
+    state = 'Embedded';
+    diagnosis = 'AI is working inside your product org. Multiple workflow areas have meaningful adoption, some processes have been genuinely redesigned rather than just assisted. The gaps that remain are likely in the areas that require more coordination — cross-functional workflows or reporting systems that touch multiple teams. The question at this stage is how to systematize what\'s working and close the remaining gaps.';
+  } else {
+    state = 'Optimized';
+    diagnosis = 'AI is a genuine capability of your product org, not just a set of individual tools. Workflows are designed around AI rather than having AI layered on top. The value is compounding — each workflow that runs automatically creates capacity for the next improvement. The frontier here is predictive: using operational data to anticipate problems rather than just respond to them faster.';
+  }
+ 
+  document.getElementById('r-state').textContent = state;
+  document.getElementById('r-score').textContent = total;
+  document.getElementById('r-diagnosis').textContent = diagnosis;
+ 
+  const name = document.getElementById('f-name').value.trim();
+  if (name) document.getElementById('r-eyebrow').textContent = name + '\'s audit';
+ 
+  const rowsEl = document.getElementById('wf-score-rows');
+  rowsEl.innerHTML = '';
+  WORKFLOWS.forEach(w => {
+    const s = scores[w.key];
+    const pct = Math.round((s / 9) * 100);
+    const fillClass = s <= 3 ? 'fill-low' : s <= 6 ? 'fill-mid' : 'fill-high';
+    rowsEl.innerHTML += `<div class="wf-score-row">
+      <div class="wf-score-label">${w.label}</div>
+      <div class="wf-score-track"><div class="wf-score-fill ${fillClass}" style="width:0%" data-pct="${pct}"></div></div>
+      <div class="wf-score-val">${s} / 9</div>
+    </div>`;
+  });
+ 
+  const recsEl = document.getElementById('rec-blocks');
+  recsEl.innerHTML = '';
+  const sorted = WORKFLOWS.map(w => ({ ...w, score: scores[w.key] })).sort((a,b) => a.score - b.score);
+ 
+  sorted.forEach(w => {
+    const tier = w.score <= 3 ? 'low' : w.score <= 6 ? 'mid' : 'high';
+    const rec = RECS[w.key][tier];
+    const cardClass = tier === 'low' ? 'critical' : tier === 'mid' ? 'opportunity' : 'strength';
+    const tagClass = tier === 'low' ? 'tag-critical' : tier === 'mid' ? 'tag-opportunity' : 'tag-strength';
+    const tagLabel = tier === 'low' ? 'High-leverage gap' : tier === 'mid' ? 'Opportunity' : 'Strength';
+ 
+    const baHtml = (rec.before && tier !== 'high') ? `
+      <div class="before-after">
+        <div class="ba-block before"><div class="ba-label">Before</div><div class="ba-text">${rec.before}</div></div>
+        <div class="ba-block after"><div class="ba-label">After</div><div class="ba-text">${rec.after}</div></div>
+      </div>` : '';
+ 
+    recsEl.innerHTML += `<div class="rec-card ${cardClass}">
+      <div class="rec-tag ${tagClass}">${tagLabel}</div>
+      <div class="rec-workflow">${w.label}</div>
+      <div class="rec-finding">${rec.finding}</div>
+      <div class="rec-action">
+        <div class="rec-action-label">// Recommended workflow change</div>
+        <div class="rec-action-text">${rec.action}${baHtml}</div>
+      </div>
+    </div>`;
+  });
+ 
+  document.getElementById('audit-form').style.display = 'none';
+  document.getElementById('audit-results').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+ 
+  setTimeout(() => {
+    document.querySelectorAll('.wf-score-fill').forEach(el => {
+      el.style.width = el.dataset.pct + '%';
+    });
+  }, 300);
+ 
+  sendToFormspree(total, scores, state, diagnosis, sorted, name,
+    document.getElementById('f-company').value.trim(),
+    document.getElementById('f-role').value.trim()
+  );
+}
+ 
+function sendToFormspree(total, scores, state, diagnosis, sorted, name, company, role) {
+  const SEP = '----------------------------------';
+ 
+  const wfLines = WORKFLOWS.map(w => {
+    const s = scores[w.key];
+    const filled = Math.round((s/9)*10);
+    return w.label + ': ' + s + '/9  [' + '='.repeat(filled) + '-'.repeat(10-filled) + ']';
+  }).join('\n');
+ 
+  const recLines = sorted.map(w => {
+    const tier = w.score <= 3 ? 'low' : w.score <= 6 ? 'mid' : 'high';
+    const tagLabel = tier === 'low' ? 'High-leverage gap' : tier === 'mid' ? 'Opportunity' : 'Strength';
+    const rec = RECS[w.key][tier];
+    const lines = [tagLabel + ' -- ' + w.label, rec.finding, 'Recommendation: ' + rec.action];
+    if (rec.before && tier !== 'high') {
+      lines.push('Before: ' + rec.before);
+      lines.push('After:  ' + rec.after);
+    }
+    return lines.join('\n');
+  }).join('\n\n');
+ 
+  const payload = {
+    _subject: 'AI Workflow Audit: ' + state + ' -- ' + (name||'Anonymous') + (company ? ' @ '+company : '') + ' (' + total + '/45)',
+    results: [
+      SEP, 'RESPONDENT', SEP,
+      'Name:    ' + (name||'Anonymous'),
+      'Company: ' + (company||'Not provided'),
+      'Role:    ' + (role||'Not provided'),
+      '',
+      SEP, 'ADOPTION STATE: ' + state.toUpperCase() + ' (' + total + '/45)', SEP,
+      diagnosis,
+      '',
+      SEP, 'SCORES BY WORKFLOW', SEP,
+      wfLines,
+      '',
+      SEP, 'RECOMMENDATIONS', SEP,
+      recLines,
+      '',
+      SEP,
+      'Submitted: ' + new Date().toLocaleString('en-US', {dateStyle:'full',timeStyle:'short'}),
+      SEP
+    ].join('\n')
+  };
+ 
+  fetch('https://formspree.io/f/xjgljlpv', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify(payload)
+  }).then(res => {
+    if (!res.ok) res.json().then(d => console.error('Formspree error:', d)).catch(()=>{});
+    else console.log('Formspree OK');
+  }).catch(err => console.error('Formspree error:', err));
+}
+ 
+function resetAudit() {
+  Object.keys(answers).forEach(k => delete answers[k]);
+  document.querySelectorAll('.q-option').forEach(b => b.classList.remove('selected'));
+  document.getElementById('audit-results').style.display = 'none';
+  document.getElementById('audit-form').style.display = 'block';
+  updateProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+ 
+function switchTool(tool, btn) {
+  if (btn.classList.contains('soon')) return;
+  document.querySelectorAll('.tool-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const panelMap = { assessment: 'panel-assessment', audit: 'panel-audit', facilitator: 'panel-facilitator', playbook: 'panel-playbook' };
+  document.getElementById(panelMap[tool]).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
