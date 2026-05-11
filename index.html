@@ -1,126 +1,1088 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stephen Thiessen - Strategic Product & Operations Leader</title>
-    <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stephen Thiessen — Product Ops & Strategy Leader</title>
+<meta name="description" content="Stephen Thiessen turns product ambition into execution infrastructure. Strategic product operations leader with 15+ years across ad tech, SaaS, data, and AI.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Geist:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+:root {
+  --bg: #0a0a0a;
+  --bg2: #111111;
+  --bg3: #1a1a1a;
+  --border: rgba(255,255,255,0.07);
+  --border-hover: rgba(255,255,255,0.16);
+  --text: #f0ede8;
+  --text-muted: #7a7672;
+  --text-dim: #3a3835;
+  --accent: #c8f55a;
+  --accent-dim: rgba(200,245,90,0.10);
+  --accent-border: rgba(200,245,90,0.28);
+  --serif: 'DM Serif Display', Georgia, serif;
+  --mono: 'DM Mono', monospace;
+  --sans: 'Geist', system-ui, sans-serif;
+}
+ 
+html { scroll-behavior: smooth; }
+ 
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+ 
+/* ── Grain overlay ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+ 
+/* ── Nav ── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  border-bottom: 1px solid var(--border);
+  background: rgba(10,10,10,0.88);
+  backdrop-filter: blur(16px);
+}
+.nav-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 32px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.nav-logo {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  text-decoration: none;
+  text-transform: uppercase;
+}
+.nav-logo span { color: var(--accent); }
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  list-style: none;
+}
+.nav-links a {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--text); }
+.nav-cta {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent) !important;
+  border: 1px solid var(--accent-border);
+  padding: 7px 16px;
+  border-radius: 4px;
+  transition: background 0.2s !important;
+}
+.nav-cta:hover { background: var(--accent-dim) !important; }
+ 
+/* ── Sections ── */
+section { position: relative; z-index: 1; }
+.shell {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+.shell-narrow {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+ 
+/* ── Hero ── */
+#home {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 120px 0 80px;
+  border-bottom: 1px solid var(--border);
+}
+.hero-grid {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 80px;
+  align-items: center;
+}
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 28px;
+  opacity: 0;
+  animation: fadeUp 0.6s ease 0.1s forwards;
+}
+.hero-name {
+  font-family: var(--serif);
+  font-size: clamp(52px, 7vw, 88px);
+  line-height: 0.95;
+  font-weight: 400;
+  margin-bottom: 28px;
+  opacity: 0;
+  animation: fadeUp 0.6s ease 0.2s forwards;
+}
+.hero-name em {
+  font-style: italic;
+  color: var(--text-muted);
+  display: block;
+}
+.hero-tagline {
+  font-size: 18px;
+  color: var(--text-muted);
+  line-height: 1.65;
+  max-width: 520px;
+  margin-bottom: 48px;
+  opacity: 0;
+  animation: fadeUp 0.6s ease 0.3s forwards;
+}
+.hero-tagline strong {
+  color: var(--text);
+  font-weight: 500;
+}
+.hero-actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  opacity: 0;
+  animation: fadeUp 0.6s ease 0.4s forwards;
+}
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent);
+  color: var(--bg);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 13px 24px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+.btn-primary:hover { background: #d4ff60; transform: translateY(-1px); }
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 13px 24px;
+  border: 1px solid var(--border-hover);
+  border-radius: 5px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.btn-outline:hover { border-color: var(--text-muted); color: var(--text); }
+ 
+/* Hero right — stat card */
+.hero-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg2);
+  padding: 36px;
+  opacity: 0;
+  animation: fadeUp 0.6s ease 0.5s forwards;
+}
+.hero-card-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 24px;
+}
+.hero-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+.hero-stat-val {
+  font-family: var(--serif);
+  font-size: 36px;
+  color: var(--text);
+  font-weight: 400;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.hero-stat-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.hero-card-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0 0 24px;
+}
+.cert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cert-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cert-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+.cert-text {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+ 
+/* ── Ticker ── */
+.ticker-wrap {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 0;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+.ticker-track {
+  display: flex;
+  gap: 0;
+  animation: ticker 24s linear infinite;
+  width: max-content;
+}
+.ticker-item {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding: 0 40px;
+  white-space: nowrap;
+}
+.ticker-item span { color: var(--text-muted); }
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+ 
+/* ── About ── */
+#about {
+  padding: 120px 0;
+  border-bottom: 1px solid var(--border);
+}
+.about-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 80px;
+  align-items: start;
+}
+.about-left { position: sticky; top: 80px; }
+.section-eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+.section-title {
+  font-family: var(--serif);
+  font-size: 42px;
+  font-weight: 400;
+  line-height: 1.05;
+  color: var(--text);
+  margin-bottom: 24px;
+}
+.section-title em { font-style: italic; color: var(--text-muted); }
+.about-photo-wrap {
+  margin-top: 32px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  aspect-ratio: 4/5;
+  background: var(--bg3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.about-photo-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: grayscale(20%) contrast(1.05);
+}
+.photo-placeholder {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.06em;
+  text-align: center;
+  padding: 20px;
+}
+.about-body p {
+  font-size: 16px;
+  color: var(--text-muted);
+  line-height: 1.8;
+  margin-bottom: 22px;
+}
+.about-body p strong { color: var(--text); font-weight: 500; }
+.about-body p:first-child { font-size: 18px; color: var(--text); }
+ 
+.pillars {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 48px;
+}
+.pillar {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  transition: border-color 0.2s;
+}
+.pillar:hover { border-color: var(--border-hover); }
+.pillar-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.pillar-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+ 
+/* Companies */
+.companies {
+  margin-top: 56px;
+  padding-top: 40px;
+  border-top: 1px solid var(--border);
+}
+.companies-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 20px;
+}
+.company-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.company-tag {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 14px;
+  transition: all 0.2s;
+}
+.company-tag:hover { border-color: var(--border-hover); color: var(--text); }
+ 
+/* ── Tools ── */
+#tools {
+  padding: 120px 0;
+  border-bottom: 1px solid var(--border);
+}
+.tools-header {
+  margin-bottom: 56px;
+}
+.tools-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.tool-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 32px;
+  background: var(--bg2);
+  text-decoration: none;
+  display: block;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.tool-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+.tool-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+.tool-card:hover::before { transform: scaleX(1); }
+.tool-card.soon { opacity: 0.5; cursor: default; }
+.tool-card.soon:hover { transform: none; }
+.tool-card.soon::before { display: none; }
+.tool-card-eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+.tool-card.soon .tool-card-eyebrow { color: var(--text-dim); }
+.tool-card-title {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--text);
+  margin-bottom: 10px;
+  line-height: 1.2;
+}
+.tool-card-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+.tool-card-link {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+.tool-card.soon .tool-card-link { color: var(--text-dim); }
+ 
+/* Featured tool — full width */
+.tool-card.featured {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 40px;
+  align-items: center;
+  border-color: var(--accent-border);
+  background: var(--accent-dim);
+}
+.tool-card.featured:hover { border-color: rgba(200,245,90,0.5); }
+.tool-featured-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: right;
+  flex-shrink: 0;
+}
+.tool-stat-val {
+  font-family: var(--serif);
+  font-size: 32px;
+  color: var(--text);
+  font-weight: 400;
+  line-height: 1;
+}
+.tool-stat-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+ 
+/* ── Articles ── */
+#articles {
+  padding: 120px 0;
+  border-bottom: 1px solid var(--border);
+}
+.articles-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 56px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.articles-link {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.articles-link:hover { color: var(--accent); }
+.articles-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.article-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 24px;
+  background: var(--bg2);
+  text-decoration: none;
+  display: block;
+  transition: all 0.2s;
+}
+.article-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+.article-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+.article-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.4;
+  margin-bottom: 10px;
+}
+.article-excerpt {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 16px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.article-read {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+.article-card:hover .article-read { color: var(--accent); }
+ 
+/* Loading state */
+.articles-loading {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+ 
+/* ── Connect ── */
+#connect {
+  padding: 120px 0 140px;
+}
+.connect-inner {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 32px;
+  text-align: center;
+}
+.connect-title {
+  font-family: var(--serif);
+  font-size: clamp(40px, 6vw, 64px);
+  font-weight: 400;
+  line-height: 1.05;
+  margin-bottom: 20px;
+}
+.connect-title em { font-style: italic; color: var(--text-muted); }
+.connect-sub {
+  font-size: 16px;
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin-bottom: 48px;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.connect-actions {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+ 
+/* ── Footer ── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 28px 0;
+  position: relative;
+  z-index: 1;
+}
+.footer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.footer-text {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.06em;
+}
+.footer-links {
+  display: flex;
+  gap: 24px;
+}
+.footer-link {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  text-decoration: none;
+  letter-spacing: 0.06em;
+  transition: color 0.2s;
+}
+.footer-link:hover { color: var(--accent); }
+ 
+/* ── Animations ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+ 
+/* ── Mobile ── */
+@media (max-width: 900px) {
+  .hero-grid { grid-template-columns: 1fr; gap: 48px; }
+  .hero-card { display: none; }
+  .about-grid { grid-template-columns: 1fr; gap: 48px; }
+  .about-left { position: static; }
+  .about-photo-wrap { max-width: 280px; }
+  .tools-grid { grid-template-columns: 1fr; }
+  .tool-card.featured { grid-template-columns: 1fr; }
+  .tool-featured-stats { flex-direction: row; text-align: left; }
+  .articles-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .shell, .shell-narrow { padding: 0 20px; }
+  .nav-inner { padding: 0 20px; }
+  .hero-grid { padding: 0 20px; }
+  .hero-grid { padding: 0 20px; }
+  nav .nav-links li:not(:last-child) { display: none; }
+  .articles-grid { grid-template-columns: 1fr; }
+  .pillars { grid-template-columns: 1fr; }
+  .section-title { font-size: 34px; }
+  .connect-title { font-size: 34px; }
+}
+</style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="container">
-            <div class="nav-brand">Stephen Thiessen</div>
-            <ul class="nav-menu">
-                <li><a href="#home">Home</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#articles">Articles</a></li>
-            </ul>
+ 
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#home" class="nav-logo">S<span>.</span>Thiessen</a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#tools">Tools</a></li>
+      <li><a href="#articles">Articles</a></li>
+      <li><a href="https://www.linkedin.com/in/stephenthiessen" target="_blank" class="nav-cta">Connect ↗</a></li>
+    </ul>
+  </div>
+</nav>
+ 
+<!-- HERO -->
+<section id="home">
+  <div class="hero-grid">
+    <div class="hero-left">
+      <div class="hero-eyebrow">Product Ops & Strategy Leader</div>
+      <h1 class="hero-name">
+        Stephen<br>
+        <em>Thiessen</em>
+      </h1>
+      <p class="hero-tagline">
+        I turn <strong>product ambition into execution infrastructure</strong> — the operating systems, planning rhythms, and AI-augmented workflows that let product orgs move with precision instead of noise.
+      </p>
+      <div class="hero-actions">
+        <a href="#tools" class="btn-primary">See the tools →</a>
+        <a href="#about" class="btn-outline">About me</a>
+      </div>
+    </div>
+    <div class="hero-card">
+      <div class="hero-card-label">// Career snapshot</div>
+      <div class="hero-stats">
+        <div>
+          <div class="hero-stat-val">15+</div>
+          <div class="hero-stat-label">Years operating</div>
         </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <section id="home" class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <div class="hero-image-container">
-                    <img src="profile.jpg" alt="Stephen Thiessen" class="hero-image">
-                </div>
-                <div class="hero-text">
-                    <h1>Stephen Thiessen</h1>
-                    <p class="title">Strategic Product & Operations Leader</p>
-                    <div class="hero-description">
-                        <p class="question">"What do you actually do?"</p>
-                        <p>I help product and technology leaders turn ambition into execution.</p>
-                        <p>I've spent the last decade operating at the intersection of product, engineering, and leadership, building the systems, rhythms, and clarity that allow teams to move faster — without chaos.</p>
-                        <p>My work sits one level above delivery and one level below strategy: translating complex goals into decisions, operating models, and outcomes that scale.</p>
-                    </div>
-                </div>
-            </div>
+        <div>
+          <div class="hero-stat-val">5</div>
+          <div class="hero-stat-label">Industry verticals</div>
         </div>
-    </section>
-
-    <!-- About Section -->
-    <section id="about" class="about">
-        <div class="container">
-            <div class="section-header">
-                <h2>About</h2>
-                <div class="divider"></div>
-            </div>
-            
-            <div class="about-content">
-                <p>I'm a strategic product and operations leader with over a decade of experience helping fast-growing companies scale execution without losing focus.</p>
-                
-                <p>I've worked inside public companies, high-growth SaaS organizations, and venture-backed startups — including joining Peloton before its IPO and operating through its hypergrowth during COVID. Across these environments, my role has been consistent: bring clarity where there's ambiguity, alignment where there's friction, and momentum where things stall.</p>
-                
-                <p>While my background includes technical program management, my impact has always extended beyond delivery. I partner closely with product, engineering, security, and go-to-market leaders to shape operating systems, planning rhythms, decision frameworks, and cross-functional execution models that scale.</p>
-                
-                <p>I'm known for acting as a force multiplier for leadership — anticipating problems before they surface, translating complex signals into clear options, and ensuring that strategy turns into real outcomes. I'm equally comfortable framing executive narratives as I am working with teams to unblock execution.</p>
-                
-                <p>More recently, I've focused on helping organizations responsibly integrate AI into how they operate — not just as a product feature, but as a way to improve decision-making, synthesis, and execution at scale.</p>
-                
-                <p>I'm now intentionally moving into roles where I can operate with broader scope and leverage: as a strategic partner to senior leaders, a builder of operating systems, and a leader who helps organizations move faster by making better decisions.</p>
-            </div>
-
-            <div class="expertise-grid">
-                <div class="expertise-item">
-                    <h3>Strategic Leadership</h3>
-                    <p>Product & operations at scale</p>
-                </div>
-                <div class="expertise-item">
-                    <h3>Operating Systems</h3>
-                    <p>Frameworks that enable execution</p>
-                </div>
-                <div class="expertise-item">
-                    <h3>AI Integration</h3>
-                    <p>Responsible implementation at scale</p>
-                </div>
-                <div class="expertise-item">
-                    <h3>Cross-Functional</h3>
-                    <p>Alignment across product, eng, GTM</p>
-                </div>
-            </div>
+        <div>
+          <div class="hero-stat-val">$1B+</div>
+          <div class="hero-stat-label">Org scale navigated</div>
         </div>
-    </section>
-
-    <!-- Articles Section -->
-    <section id="articles" class="articles">
-        <div class="container">
-            <div class="section-header">
-                <h2>Latest Articles</h2>
-                <div class="divider"></div>
-            </div>
-            
-            <div id="articles-grid" class="articles-grid">
-                <div class="loading">Loading articles from LinkedIn...</div>
-            </div>
+        <div>
+          <div class="hero-stat-val">IC→</div>
+          <div class="hero-stat-label">To strategic lead</div>
         </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-links">
-                    <a href="https://www.linkedin.com/in/stephenthiessen/" target="_blank" class="footer-link">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-                        </svg>
-                        <span>LinkedIn</span>
-                    </a>
-                    <a href="mailto:stephen.thiessen@gmail.com" class="footer-link">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                            <polyline points="22,6 12,13 2,6"/>
-                        </svg>
-                        <span>stephen.thiessen@gmail.com</span>
-                    </a>
-                </div>
-                <p class="copyright">&copy; 2026 Stephen Thiessen</p>
-            </div>
+      </div>
+      <hr class="hero-card-divider">
+      <div class="cert-list">
+        <div class="cert-item">
+          <div class="cert-dot"></div>
+          <span class="cert-text">PMP — Project Management Professional</span>
         </div>
-    </footer>
-
-    <script src="script.js"></script>
+        <div class="cert-item">
+          <div class="cert-dot"></div>
+          <span class="cert-text">Advanced Certified Scrum Master</span>
+        </div>
+        <div class="cert-item">
+          <div class="cert-dot"></div>
+          <span class="cert-text">AI Product Management — Certified</span>
+        </div>
+        <div class="cert-item">
+          <div class="cert-dot"></div>
+          <span class="cert-text">Prompt Engineering & AI Workflow Design</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+ 
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker-track">
+    <span class="ticker-item">DoubleVerify <span>—</span></span>
+    <span class="ticker-item">Drata <span>—</span></span>
+    <span class="ticker-item">Peloton <span>—</span></span>
+    <span class="ticker-item">Capital One <span>—</span></span>
+    <span class="ticker-item">Oracle <span>—</span></span>
+    <span class="ticker-item">Operating Model Design <span>—</span></span>
+    <span class="ticker-item">Planning Rhythms <span>—</span></span>
+    <span class="ticker-item">Roadmap Facilitation <span>—</span></span>
+    <span class="ticker-item">AI-Augmented Workflows <span>—</span></span>
+    <span class="ticker-item">Cross-Functional Alignment <span>—</span></span>
+    <span class="ticker-item">DoubleVerify <span>—</span></span>
+    <span class="ticker-item">Drata <span>—</span></span>
+    <span class="ticker-item">Peloton <span>—</span></span>
+    <span class="ticker-item">Capital One <span>—</span></span>
+    <span class="ticker-item">Oracle <span>—</span></span>
+    <span class="ticker-item">Operating Model Design <span>—</span></span>
+    <span class="ticker-item">Planning Rhythms <span>—</span></span>
+    <span class="ticker-item">Roadmap Facilitation <span>—</span></span>
+    <span class="ticker-item">AI-Augmented Workflows <span>—</span></span>
+    <span class="ticker-item">Cross-Functional Alignment <span>—</span></span>
+  </div>
+</div>
+ 
+<!-- ABOUT -->
+<section id="about">
+  <div class="shell">
+    <div class="about-grid">
+      <div class="about-left reveal">
+        <div class="section-eyebrow">About</div>
+        <div class="section-title">Built for the<br>messy <em>middle</em></div>
+        <div class="about-photo-wrap">
+          <img src="profile.jpg" alt="Stephen Thiessen" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div class="photo-placeholder" style="display:none;">profile.jpg</div>
+        </div>
+      </div>
+      <div class="about-body reveal">
+        <p>I'm a strategic product and operations leader with 15+ years operating at the intersection of product, engineering, and go-to-market — across ad tech, security and compliance SaaS, data infrastructure, and AI.</p>
+ 
+        <p>My work lives <strong>one level above delivery and one level below strategy</strong>: translating complex goals into operating models, planning systems, and cross-functional rhythms that hold up under pressure and scale with the org.</p>
+ 
+        <p>I've built and rebuilt product operating systems inside some of the most demanding environments in tech — <strong>joining Peloton pre-IPO</strong> and operating through hypergrowth, building compliance infrastructure at Drata during its scale-up, and driving verification platform programs at DoubleVerify.</p>
+ 
+        <p>More recently I've focused on one question: <strong>how do AI-native workflows change what product ops looks like?</strong> Not AI as a feature, but AI as the backbone of how a product org plans, decides, and executes. That's what the tools on this site are built around.</p>
+ 
+        <p>I'm looking for roles where I can own the operating model — not manage the execution layer, not chase teams for updates, but <strong>design and run the system</strong> that makes excellent product work possible.</p>
+ 
+        <div class="pillars">
+          <div class="pillar">
+            <div class="pillar-title">Operating model design</div>
+            <div class="pillar-sub">How product teams plan, decide, and run</div>
+          </div>
+          <div class="pillar">
+            <div class="pillar-title">Planning rhythms</div>
+            <div class="pillar-sub">Quarterly cycles that connect to strategy</div>
+          </div>
+          <div class="pillar">
+            <div class="pillar-title">Roadmap facilitation</div>
+            <div class="pillar-sub">Prioritization as a decision process, not a list</div>
+          </div>
+          <div class="pillar">
+            <div class="pillar-title">AI-augmented workflows</div>
+            <div class="pillar-sub">Embedding AI into how orgs actually work</div>
+          </div>
+        </div>
+ 
+        <div class="companies">
+          <div class="companies-label">// Previously operated at</div>
+          <div class="company-list">
+            <span class="company-tag">DoubleVerify</span>
+            <span class="company-tag">Drata</span>
+            <span class="company-tag">Peloton</span>
+            <span class="company-tag">Capital One</span>
+            <span class="company-tag">Oracle</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+ 
+<!-- TOOLS -->
+<section id="tools">
+  <div class="shell">
+    <div class="tools-header reveal">
+      <div class="section-eyebrow">Product Ops Intelligence</div>
+      <div class="section-title">Tools I built.<br><em>Use them.</em></div>
+      <p style="font-size:15px; color:var(--text-muted); max-width:520px; margin-top:16px; line-height:1.7;">These aren't portfolio pieces. They're working tools built on the frameworks I use to diagnose and fix product operating models. If you run a product org, they'll tell you something real.</p>
+    </div>
+    <div class="tools-grid">
+      <!-- Featured -->
+      <a href="./ops-assessment/" class="tool-card featured reveal">
+        <div>
+          <div class="tool-card-eyebrow">// Live now</div>
+          <div class="tool-card-title">Product Ops Maturity Assessment</div>
+          <div class="tool-card-desc">18 questions across six dimensions — strategic direction, planning rhythm, roadmap process, cross-functional alignment, AI adoption, and ops infrastructure. You get a scored diagnosis, not generic advice.</div>
+          <div class="tool-card-link">Take the assessment →</div>
+        </div>
+        <div class="tool-featured-stats">
+          <div>
+            <div class="tool-stat-val">6</div>
+            <div class="tool-stat-label">Dimensions</div>
+          </div>
+          <div>
+            <div class="tool-stat-val">18</div>
+            <div class="tool-stat-label">Questions</div>
+          </div>
+          <div>
+            <div class="tool-stat-val">~5</div>
+            <div class="tool-stat-label">Minutes</div>
+          </div>
+        </div>
+      </a>
+      <!-- Coming soon cards -->
+      <div class="tool-card soon">
+        <div class="tool-card-eyebrow">// Coming soon</div>
+        <div class="tool-card-title">AI Workflow Audit</div>
+        <div class="tool-card-desc">An honest audit of where AI is and isn't embedded in how your product org works — and what that gap is costing you.</div>
+        <div class="tool-card-link">Coming soon</div>
+      </div>
+      <div class="tool-card soon">
+        <div class="tool-card-eyebrow">// Coming soon</div>
+        <div class="tool-card-title">Planning Session Facilitator</div>
+        <div class="tool-card-desc">An interactive guide for running a tight quarterly planning session — from inputs to prioritized output, with no wasted cycles.</div>
+        <div class="tool-card-link">Coming soon</div>
+      </div>
+      <div class="tool-card soon">
+        <div class="tool-card-eyebrow">// Coming soon</div>
+        <div class="tool-card-title">AI Ops Playbook</div>
+        <div class="tool-card-desc">A living framework for building AI-augmented product operations from scratch — tooling, workflows, governance, measurement.</div>
+        <div class="tool-card-link">Coming soon</div>
+      </div>
+    </div>
+  </div>
+</section>
+ 
+<!-- ARTICLES -->
+<section id="articles">
+  <div class="shell">
+    <div class="articles-header reveal">
+      <div>
+        <div class="section-eyebrow">Writing</div>
+        <div class="section-title">Latest <em>thinking</em></div>
+      </div>
+      <a href="https://www.linkedin.com/in/stephenthiessen" target="_blank" class="articles-link">All articles on LinkedIn ↗</a>
+    </div>
+    <div class="articles-grid" id="articles-grid">
+      <div class="articles-loading">Loading articles from LinkedIn...</div>
+    </div>
+  </div>
+</section>
+ 
+<!-- CONNECT -->
+<section id="connect">
+  <div class="connect-inner">
+    <div class="reveal">
+      <h2 class="connect-title">Let's talk about<br>your <em>operating model</em></h2>
+      <p class="connect-sub">I'm selectively exploring roles where I can own the operating model for a product org — planning systems, roadmap infrastructure, AI-augmented workflows, and the rhythm that makes strategy executable.</p>
+      <div class="connect-actions">
+        <a href="https://www.linkedin.com/in/stephenthiessen" target="_blank" class="btn-primary">Connect on LinkedIn →</a>
+        <a href="#tools" class="btn-outline">Explore the tools</a>
+      </div>
+    </div>
+  </div>
+</section>
+ 
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <span class="footer-text">© 2026 Stephen Thiessen — Product Ops Intelligence</span>
+    <div class="footer-links">
+      <a href="https://www.linkedin.com/in/stephenthiessen" target="_blank" class="footer-link">LinkedIn ↗</a>
+      <a href="./ops-assessment/" class="footer-link">Ops Assessment</a>
+    </div>
+  </div>
+</footer>
+ 
+<script>
+/* ── Scroll reveal ── */
+const revealEls = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), i * 80);
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+revealEls.forEach(el => observer.observe(el));
+ 
+/* ── Articles — LinkedIn RSS via rss2json ── */
+const LINKEDIN_URL = 'https://www.linkedin.com/in/stephenthiessen/recent-activity/articles/';
+const RSS2JSON = 'https://api.rss2json.com/v1/api.json?rss_url=';
+ 
+const FALLBACK_ARTICLES = [
+  {
+    title: 'The AI-Enabled Operating Stack',
+    excerpt: 'Are you embedding AI into execution systems — or layering it on top? The difference determines whether it compounds or complicates.',
+    link: 'https://www.linkedin.com/in/stephenthiessen'
+  },
+  {
+    title: 'Designing Decision Pathways: Who Decides What, At What Altitude',
+    excerpt: 'Organizations that scale well don\'t just empower teams. They design how decisions flow — and who owns each layer.',
+    link: 'https://www.linkedin.com/in/stephenthiessen'
+  },
+  {
+    title: 'The Operating System of Adaptability',
+    excerpt: 'Tomorrow\'s program and portfolio leaders will look less like coordinators and more like system architects.',
+    link: 'https://www.linkedin.com/in/stephenthiessen'
+  },
+  {
+    title: 'The Trust Layer: Building Psychological Safety in Data-Driven Orgs',
+    excerpt: 'Data can expose the truth — but only trust lets people talk about it. Building both at the same time is the real challenge.',
+    link: 'https://www.linkedin.com/in/stephenthiessen'
+  },
+  {
+    title: 'The Metric Layer: Turning Data Into Organizational Intelligence',
+    excerpt: 'The metric layer transforms scattered data into organizational intelligence — enabling leaders to sense change, decide, and adapt continuously.',
+    link: 'https://www.linkedin.com/in/stephenthiessen'
+  },
+  {
+    title: 'Organizational Agility — Scaling Without Chaos',
+    excerpt: 'Agility isn\'t a methodology or a framework. It\'s an organizational capability — the ability to sense change, adapt quickly, and still deliver consistently.',
+    link: 'https://www.linkedin.com/in/stephenthiessen'
+  }
+];
+ 
+function renderArticles(articles) {
+  const grid = document.getElementById('articles-grid');
+  grid.innerHTML = '';
+  articles.slice(0, 6).forEach(a => {
+    grid.innerHTML += `
+      <a href="${a.link}" target="_blank" class="article-card reveal">
+        <div class="article-tag">// Recent</div>
+        <div class="article-title">${a.title}</div>
+        <div class="article-excerpt">${a.excerpt || a.description || ''}</div>
+        <div class="article-read">Read on LinkedIn →</div>
+      </a>`;
+  });
+  document.querySelectorAll('#articles-grid .reveal').forEach(el => observer.observe(el));
+}
+ 
+async function loadArticles() {
+  try {
+    const res = await fetch(`${RSS2JSON}${encodeURIComponent('https://www.linkedin.com/feed/update/urn:li:share:stephenthiessen')}`, { signal: AbortSignal.timeout(5000) });
+    const data = await res.json();
+    if (data.status === 'ok' && data.items && data.items.length > 0) {
+      renderArticles(data.items.map(item => ({
+        title: item.title,
+        excerpt: item.description ? item.description.replace(/<[^>]*>/g, '').slice(0, 160) + '...' : '',
+        link: item.link
+      })));
+    } else { renderArticles(FALLBACK_ARTICLES); }
+  } catch { renderArticles(FALLBACK_ARTICLES); }
+}
+ 
+loadArticles();
+ 
+/* ── Active nav on scroll ── */
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.getAttribute('id');
+  });
+  navLinks.forEach(a => {
+    a.style.color = a.getAttribute('href') === '#' + current
+      ? 'var(--text)'
+      : 'var(--text-muted)';
+  });
+}, { passive: true });
+</script>
 </body>
 </html>
