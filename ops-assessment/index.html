@@ -1194,28 +1194,60 @@
       });
     }, 300);
  
-    sendToFormspree(total, scores, name,
-      document.getElementById('f-company').value.trim(),
-      document.getElementById('f-role').value.trim(),
-      profile
-    );
+    const company = document.getElementById('f-company').value.trim();
+    const role = document.getElementById('f-role').value.trim();
+    sendToFormspree(total, scores, name, company, role, profile, diagnosis, sorted, insightMap);
   }
  
-  function sendToFormspree(total, scores, name, company, role, profile) {
+  function sendToFormspree(total, scores, name, company, role, profile, diagnosis, sorted, insightMap) {
+    const dimLabels = {
+      d1: 'Strategic direction', d2: 'Planning rhythm',
+      d3: 'Roadmap process', d4: 'Cross-functional alignment',
+      d5: 'AI adoption', d6: 'Ops infrastructure'
+    };
+ 
+    const scoreLines = sorted.map(d => {
+      const bar = '█'.repeat(Math.round((d.score / 9) * 10)) + '░'.repeat(10 - Math.round((d.score / 9) * 10));
+      return dimLabels[d.key] + ': ' + d.score + '/9  ' + bar;
+    }).join('\n');
+ 
+    const insightLines = sorted.slice(0, 4).map(d => {
+      const tier = d.score <= 3 ? 'low' : d.score <= 6 ? 'mid' : 'high';
+      const tagLabel = tier === 'low' ? '⚠ Needs attention' : tier === 'mid' ? '→ Developing' : '✓ Strength';
+      return tagLabel + ' — ' + dimLabels[d.key] + '\n' + insightMap[d.key][tier];
+    }).join('\n\n');
+ 
+    const fullResults = [
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      'RESPONDENT',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      'Name:    ' + (name || 'Anonymous'),
+      'Company: ' + (company || 'Not provided'),
+      'Role:    ' + (role || 'Not provided'),
+      '',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      'MATURITY PROFILE: ' + profile.toUpperCase() + ' (' + total + '/54)',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      diagnosis,
+      '',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      'SCORES BY DIMENSION',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      scoreLines,
+      '',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      'WHERE TO FOCUS',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      insightLines,
+      '',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      'Submitted: ' + new Date().toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' }),
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    ].join('\n');
+ 
     const payload = {
-      _subject: 'New ops assessment: ' + profile + ' (' + total + '/54)',
-      profile,
-      total_score: total + ' / 54',
-      name: name || 'Anonymous',
-      company: company || 'Not provided',
-      role: role || 'Not provided',
-      d1_strategic_direction: scores.d1 + ' / 9',
-      d2_planning_rhythm: scores.d2 + ' / 9',
-      d3_roadmap_process: scores.d3 + ' / 9',
-      d4_crossfunctional_alignment: scores.d4 + ' / 9',
-      d5_ai_adoption: scores.d5 + ' / 9',
-      d6_ops_infrastructure: scores.d6 + ' / 9',
-      timestamp: new Date().toISOString()
+      _subject: 'Ops assessment: ' + profile + ' — ' + (name || 'Anonymous') + (company ? ' @ ' + company : '') + ' (' + total + '/54)',
+      results: fullResults
     };
  
     fetch('https://formspree.io/f/xjgljlpv', {
