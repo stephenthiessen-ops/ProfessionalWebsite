@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Ops Intelligence — Stephen Thiessen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Geist:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0a0a0a; --bg2: #111111; --bg3: #1a1a1a;
+  --border: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.18);
+  --text: #f0ede8; --text-muted: #7a7672; --text-dim: #3d3b38;
+  --accent: #c8f55a; --accent-dim: rgba(200,245,90,0.10); --accent-border: rgba(200,245,90,0.28);
+  --red: #ff5a5a; --amber: #f5a623; --blue: #5a9fff;
+  --serif: 'DM Serif Display', Georgia, serif;
+  --mono: 'DM Mono', monospace;
+  --sans: 'Geist', system-ui, sans-serif;
+}
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15px; line-height: 1.6; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+ 
+/* Nav */
+nav { border-bottom: 1px solid var(--border); padding: 20px 0; position: sticky; top: 0; background: rgba(10,10,10,0.92); backdrop-filter: blur(12px); z-index: 100; }
+.nav-inner { max-width: 760px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; }
+.nav-logo { font-family: var(--mono); font-size: 12px; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; }
+.nav-logo span { color: var(--accent); }
+.nav-link { font-size: 12px; color: var(--text-muted); text-decoration: none; font-family: var(--mono); letter-spacing: 0.04em; transition: color 0.2s; }
+.nav-link:hover { color: var(--text); }
+ 
+/* Tool bar */
+.tool-bar { border-bottom: 1px solid var(--border); }
+.tool-bar-inner { max-width: 760px; margin: 0 auto; padding: 0 24px; display: flex; gap: 0; overflow-x: auto; scrollbar-width: none; }
+.tool-bar-inner::-webkit-scrollbar { display: none; }
+.tool-tab { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); padding: 14px 20px; border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; position: relative; top: 1px; }
+.tool-tab:hover { color: var(--text); }
+.tool-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tool-tab.soon { opacity: 0.4; cursor: default; }
+.tool-tab.soon::after { content: 'soon'; font-size: 9px; color: var(--text-dim); margin-left: 6px; vertical-align: 1px; }
+ 
+.panel { display: none; }
+.panel.active { display: block; }
+.shell { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+ 
+/* Hero */
+.hero { padding: 80px 0 60px; border-bottom: 1px solid var(--border); }
+.hero-eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 24px; }
+.hero h1 { font-family: var(--serif); font-size: clamp(36px, 6vw, 52px); line-height: 1.08; color: var(--text); margin-bottom: 24px; font-weight: 400; }
+.hero h1 em { font-style: italic; color: var(--text-muted); }
+.hero-body { font-size: 16px; color: var(--text-muted); max-width: 560px; line-height: 1.7; margin-bottom: 40px; }
+ 
+/* Step system */
+.steps-wrap { padding: 56px 0 80px; }
+.step-block { display: none; }
+.step-block.active { display: block; }
+ 
+.step-num { font-family: var(--mono); font-size: 11px; color: var(--text-dim); letter-spacing: 0.1em; margin-bottom: 12px; }
+.step-title { font-family: var(--serif); font-size: 32px; font-weight: 400; color: var(--text); margin-bottom: 10px; line-height: 1.1; }
+.step-sub { font-size: 14px; color: var(--text-muted); line-height: 1.65; margin-bottom: 36px; max-width: 520px; }
+ 
+/* Cadence selector */
+.cadence-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 40px; }
+.cadence-card { border: 1px solid var(--border); border-radius: 12px; padding: 28px; cursor: pointer; transition: all 0.2s; background: var(--bg2); text-align: left; width: 100%; }
+.cadence-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+.cadence-card.selected { border-color: var(--accent-border); background: var(--accent-dim); }
+.cadence-icon { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 12px; }
+.cadence-card.selected .cadence-icon { color: var(--accent); }
+.cadence-title { font-family: var(--serif); font-size: 22px; font-weight: 400; color: var(--text); margin-bottom: 8px; }
+.cadence-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+ 
+/* Form fields */
+.field-group { margin-bottom: 24px; }
+.field-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; display: block; }
+.field-hint { font-size: 12px; color: var(--text-dim); margin-bottom: 10px; line-height: 1.5; }
+.field-input { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 13px 16px; font-family: var(--sans); font-size: 14px; color: var(--text); outline: none; transition: border-color 0.2s; }
+.field-input:focus { border-color: var(--accent-border); }
+.field-input::placeholder { color: var(--text-dim); }
+textarea.field-input { resize: vertical; min-height: 100px; line-height: 1.6; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+ 
+/* Chip selectors */
+.chip-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.chip { font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em; padding: 7px 14px; border: 1px solid var(--border); border-radius: 20px; cursor: pointer; transition: all 0.15s; color: var(--text-muted); background: transparent; }
+.chip:hover { border-color: var(--border-hover); color: var(--text); }
+.chip.selected { border-color: var(--accent-border); background: var(--accent-dim); color: var(--text); }
+ 
+/* Slider */
+.slider-wrap { margin-top: 8px; }
+.slider { width: 100%; -webkit-appearance: none; height: 3px; border-radius: 3px; background: var(--border); outline: none; }
+.slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); cursor: pointer; }
+.slider::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--accent); cursor: pointer; border: none; }
+.slider-labels { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-top: 8px; letter-spacing: 0.06em; }
+.slider-val { font-family: var(--mono); font-size: 13px; color: var(--accent); margin-top: 6px; }
+ 
+/* Step nav */
+.step-nav { display: flex; gap: 12px; align-items: center; margin-top: 40px; }
+.btn-primary { display: inline-flex; align-items: center; gap: 10px; background: var(--accent); color: var(--bg); font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; padding: 14px 28px; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-weight: 500; }
+.btn-primary:hover { background: #d4ff60; transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+.btn-back { display: inline-flex; align-items: center; gap: 8px; background: transparent; color: var(--text-muted); font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; padding: 14px 20px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+.btn-back:hover { border-color: var(--border-hover); color: var(--text); }
+.step-progress { font-family: var(--mono); font-size: 11px; color: var(--text-dim); letter-spacing: 0.06em; margin-left: auto; }
+ 
+/* Output */
+#output { display: none; padding: 56px 0 100px; }
+.output-header { margin-bottom: 48px; padding-bottom: 32px; border-bottom: 1px solid var(--border); }
+.output-eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; }
+.output-title { font-family: var(--serif); font-size: clamp(32px, 5vw, 48px); font-weight: 400; line-height: 1.08; margin-bottom: 16px; }
+.output-meta { display: flex; gap: 24px; flex-wrap: wrap; }
+.output-tag { font-family: var(--mono); font-size: 11px; color: var(--text-muted); letter-spacing: 0.06em; border: 1px solid var(--border); border-radius: 4px; padding: 5px 12px; }
+ 
+/* Session summary */
+.session-summary { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 28px; margin-bottom: 32px; }
+.summary-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 16px; }
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 20px; }
+.summary-item-label { font-family: var(--mono); font-size: 10px; color: var(--text-dim); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+.summary-item-val { font-size: 14px; color: var(--text); line-height: 1.4; }
+ 
+/* Agenda blocks */
+.agenda-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 24px; }
+.agenda-block { border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin-bottom: 14px; background: var(--bg2); transition: border-color 0.2s; }
+.agenda-block:hover { border-color: var(--border-hover); }
+.agenda-block.highlight { border-color: var(--accent-border); background: var(--accent-dim); }
+.agenda-block.warning { border-left: 3px solid var(--amber); border-radius: 0 10px 10px 0; }
+.agenda-block.critical { border-left: 3px solid var(--red); border-radius: 0 10px 10px 0; }
+.agenda-row { display: flex; gap: 20px; align-items: flex-start; }
+.agenda-time { font-family: var(--mono); font-size: 11px; color: var(--text-dim); letter-spacing: 0.06em; flex-shrink: 0; width: 60px; padding-top: 2px; }
+.agenda-block.highlight .agenda-time { color: var(--accent); }
+.agenda-content { flex: 1; }
+.agenda-block-title { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+.agenda-desc { font-size: 13px; color: var(--text-muted); line-height: 1.65; }
+.agenda-bullets { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; }
+.agenda-bullet { font-size: 13px; color: var(--text-muted); padding-left: 14px; position: relative; line-height: 1.5; }
+.agenda-bullet::before { content: '–'; position: absolute; left: 0; color: var(--text-dim); }
+ 
+/* Framework section */
+.framework-section { margin-top: 40px; }
+.framework-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 24px; }
+.framework-card { border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin-bottom: 14px; background: var(--bg2); }
+.framework-card-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+.framework-num { font-family: var(--mono); font-size: 10px; color: var(--text-dim); width: 20px; height: 20px; border: 1px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.framework-text { font-size: 13px; color: var(--text-muted); line-height: 1.65; }
+.framework-example { font-family: var(--mono); font-size: 12px; color: var(--text-dim); background: var(--bg3); border-radius: 6px; padding: 10px 14px; margin-top: 10px; line-height: 1.5; }
+ 
+/* Watchouts */
+.watchouts { margin-top: 40px; }
+.watchout-item { display: flex; gap: 14px; padding: 16px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+.watchout-item:last-child { border-bottom: none; }
+.watchout-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--amber); flex-shrink: 0; margin-top: 5px; }
+.watchout-dot.critical { background: var(--red); }
+.watchout-text { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+.watchout-text strong { color: var(--text); font-weight: 500; }
+ 
+/* CTA */
+.output-cta { margin-top: 56px; border: 1px solid var(--accent-border); border-radius: 12px; padding: 40px; background: var(--accent-dim); text-align: center; }
+.output-cta h2 { font-family: var(--serif); font-size: 28px; font-weight: 400; margin-bottom: 12px; }
+.output-cta p { font-size: 14px; color: var(--text-muted); margin-bottom: 28px; line-height: 1.65; max-width: 440px; margin-left: auto; margin-right: auto; }
+.cta-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.btn-secondary { display: inline-flex; align-items: center; gap: 8px; background: transparent; color: var(--text-muted); font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; padding: 13px 24px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; transition: all 0.2s; text-decoration: none; }
+.btn-secondary:hover { border-color: var(--border-hover); color: var(--text); }
+ 
+/* Print / copy */
+.output-actions { display: flex; gap: 10px; margin-bottom: 32px; flex-wrap: wrap; }
+.action-btn { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); background: var(--bg2); border: 1px solid var(--border); border-radius: 5px; padding: 8px 16px; cursor: pointer; transition: all 0.2s; }
+.action-btn:hover { border-color: var(--border-hover); color: var(--text); }
+.action-btn.copied { color: var(--accent); border-color: var(--accent-border); }
+ 
+.coming-soon { padding: 120px 0; text-align: center; }
+.coming-soon-icon { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 20px; }
+.coming-soon h2 { font-family: var(--serif); font-size: 36px; font-weight: 400; color: var(--text-muted); margin-bottom: 14px; }
+.coming-soon p { font-size: 14px; color: var(--text-dim); max-width: 360px; margin: 0 auto; line-height: 1.65; }
+ 
+footer { border-top: 1px solid var(--border); padding: 32px 0; }
+.footer-inner { max-width: 760px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.footer-text { font-family: var(--mono); font-size: 11px; color: var(--text-dim); letter-spacing: 0.06em; }
+.footer-link { font-family: var(--mono); font-size: 11px; color: var(--text-muted); text-decoration: none; letter-spacing: 0.06em; transition: color 0.2s; }
+.footer-link:hover { color: var(--accent); }
+ 
+@media (max-width: 600px) {
+  .cadence-grid { grid-template-columns: 1fr; }
+  .field-row { grid-template-columns: 1fr; }
+  .agenda-row { flex-direction: column; gap: 6px; }
+  .agenda-time { width: auto; }
+  .summary-grid { grid-template-columns: 1fr 1fr; }
+  .output-cta { padding: 28px 20px; }
+}
+</style>
+</head>
+<body>
+ 
+<nav>
+  <div class="nav-inner">
+    <a href="https://www.stephen-thiessen.com" class="nav-logo">Product Ops <span>Intelligence</span></a>
+    <a href="https://www.linkedin.com/in/stephenthiessen" target="_blank" class="nav-link">Stephen Thiessen ↗</a>
+  </div>
+</nav>
+ 
+<div class="tool-bar">
+  <div class="tool-bar-inner">
+    <button class="tool-tab" onclick="switchTool('assessment',this)">Ops Maturity Assessment</button>
+    <button class="tool-tab" onclick="switchTool('audit',this)">AI Workflow Audit</button>
+    <button class="tool-tab active" onclick="switchTool('facilitator',this)">Planning Session Facilitator</button>
+    <button class="tool-tab soon" disabled>AI Ops Playbook</button>
+  </div>
+</div>
+ 
+<div id="panel-assessment" class="panel">
+  <div class="shell"><div class="coming-soon"><div class="coming-soon-icon">// Separate tool</div><h2>Ops Maturity Assessment</h2><p>Already live. Takes 5 minutes to diagnose your product org's operating model across six dimensions.</p><br><a href="../ops-assessment/" class="btn-primary">Take the assessment →</a></div></div>
+</div>
+<div id="panel-audit" class="panel">
+  <div class="shell"><div class="coming-soon"><div class="coming-soon-icon">// Separate tool</div><h2>AI Workflow Audit</h2><p>Already live. Maps where AI is and isn't working in your product workflows.</p><br><a href="../ai-workflow-audit/" class="btn-primary">Take the audit →</a></div></div>
+</div>
+<div id="panel-playbook" class="panel">
+  <div class="shell"><div class="coming-soon"><div class="coming-soon-icon">// Coming soon</div><h2>AI Ops Playbook</h2><p>A living framework for building AI-augmented product operations from scratch — tooling, workflows, governance, measurement.</p></div></div>
+</div>
+ 
+<div id="panel-facilitator" class="panel active">
+  <div id="facilitator-form">
+    <div class="shell">
+      <div class="hero">
+        <div class="hero-eyebrow">Planning Session Facilitator</div>
+        <h1>Walk in with a plan.<br><em>Not a blank page.</em></h1>
+        <p class="hero-body">Answer a few questions about your team and context. You'll get a structured session agenda, a prioritization framework calibrated to your situation, and the questions that matter most to ask in the room.</p>
+      </div>
+ 
+      <div class="steps-wrap">
+ 
+        <!-- STEP 1: Cadence -->
+        <div class="step-block active" id="step-1">
+          <div class="step-num">Step 01 / 04</div>
+          <div class="step-title">What kind of session are you planning?</div>
+          <div class="step-sub">The structure, time allocation, and key decisions look different depending on the cadence. Choose one to calibrate the output.</div>
+          <div class="cadence-grid">
+            <button class="cadence-card" id="cadence-quarterly" onclick="selectCadence('quarterly')">
+              <div class="cadence-icon">// Quarterly</div>
+              <div class="cadence-title">Quarterly planning</div>
+              <div class="cadence-desc">The big cycle. Setting strategic direction, committing capacity, aligning across teams. Usually a half-day to full day.</div>
+            </button>
+            <button class="cadence-card" id="cadence-sprint" onclick="selectCadence('sprint')">
+              <div class="cadence-icon">// Sprint / iteration</div>
+              <div class="cadence-title">Sprint planning</div>
+              <div class="cadence-desc">Tactical commitment for a 1–2 week sprint. Scoping, assigning, and aligning on what ships. Usually 1–2 hours.</div>
+            </button>
+          </div>
+          <div class="step-nav">
+            <button class="btn-primary" id="step1-next" onclick="goToStep(2)" disabled>Next →</button>
+            <span class="step-progress">1 of 4</span>
+          </div>
+        </div>
+ 
+        <!-- STEP 2: Team context -->
+        <div class="step-block" id="step-2">
+          <div class="step-num">Step 02 / 04</div>
+          <div class="step-title">Tell me about your team</div>
+          <div class="step-sub">The agenda and framework scale to your team's size and structure. Be specific — generic inputs produce generic output.</div>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label" for="f-pm-count">Number of PMs in the session</label>
+              <input type="number" id="f-pm-count" class="field-input" placeholder="e.g. 6" min="1" max="50">
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="f-duration">Session length (hours)</label>
+              <input type="number" id="f-duration" class="field-input" placeholder="e.g. 4" min="1" max="8" step="0.5">
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Who else is in the room?</label>
+            <div class="chip-group" id="attendee-chips">
+              <button class="chip" onclick="toggleChip(this,'Engineering leadership')">Engineering leadership</button>
+              <button class="chip" onclick="toggleChip(this,'Design leadership')">Design leadership</button>
+              <button class="chip" onclick="toggleChip(this,'CPO / VP Product')">CPO / VP Product</button>
+              <button class="chip" onclick="toggleChip(this,'CEO')">CEO</button>
+              <button class="chip" onclick="toggleChip(this,'Sales / GTM')">Sales / GTM</button>
+              <button class="chip" onclick="toggleChip(this,'Data / Analytics')">Data / Analytics</button>
+              <button class="chip" onclick="toggleChip(this,'Customer Success')">Customer Success</button>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Where does your team operate?</label>
+            <div class="chip-group">
+              <button class="chip" onclick="selectSingleChip(this,'work-mode','remote')">Fully remote</button>
+              <button class="chip" onclick="selectSingleChip(this,'work-mode','hybrid')">Hybrid</button>
+              <button class="chip" onclick="selectSingleChip(this,'work-mode','inperson')">In person</button>
+            </div>
+          </div>
+          <div class="step-nav">
+            <button class="btn-back" onclick="goToStep(1)">← Back</button>
+            <button class="btn-primary" onclick="goToStep(3)">Next →</button>
+            <span class="step-progress">2 of 4</span>
+          </div>
+        </div>
+ 
+        <!-- STEP 3: Planning context -->
+        <div class="step-block" id="step-3">
+          <div class="step-num">Step 03 / 04</div>
+          <div class="step-title">What's the context going in?</div>
+          <div class="step-sub">The more honest you are here, the more useful the output. This is the stuff that changes how a session needs to be run.</div>
+          <div class="field-group">
+            <label class="field-label" for="f-okrs">Do you have OKRs or strategic goals set for this period?</label>
+            <div class="chip-group">
+              <button class="chip" onclick="selectSingleChip(this,'okr-status','yes')">Yes — clear and shared</button>
+              <button class="chip" onclick="selectSingleChip(this,'okr-status','partial')">Partially — some teams do</button>
+              <button class="chip" onclick="selectSingleChip(this,'okr-status','no')">No — we're setting direction in this session</button>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="f-initiatives">Roughly how many initiatives or items are going into this session?</label>
+            <div class="slider-wrap">
+              <input type="range" class="slider" id="f-initiatives" min="5" max="80" value="20" oninput="updateSlider(this,'initiatives-val')">
+              <div class="slider-val" id="initiatives-val">20 initiatives</div>
+              <div class="slider-labels"><span>5</span><span>20</span><span>40</span><span>60</span><span>80+</span></div>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label">What are the biggest tensions going into this session?</label>
+            <div class="chip-group" id="tension-chips">
+              <button class="chip" onclick="toggleChip(this,'Too much work vs capacity')">Too much work vs capacity</button>
+              <button class="chip" onclick="toggleChip(this,'Competing priorities across teams')">Competing priorities across teams</button>
+              <button class="chip" onclick="toggleChip(this,'Strategy not clearly defined')">Strategy not clearly defined</button>
+              <button class="chip" onclick="toggleChip(this,'Stakeholder pressure vs PM judgment')">Stakeholder pressure vs PM judgment</button>
+              <button class="chip" onclick="toggleChip(this,'Tech debt vs new features')">Tech debt vs new features</button>
+              <button class="chip" onclick="toggleChip(this,'Short-term revenue vs long-term platform')">Short-term revenue vs platform</button>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="f-last-session">What didn't work in your last planning session?</label>
+            <div class="field-hint">Optional — but this is what most calibrates the agenda. Be direct.</div>
+            <textarea id="f-last-session" class="field-input" placeholder="e.g. We ran out of time before finishing prioritization. Too much status update, not enough decision-making. The same debates came up again without resolution."></textarea>
+          </div>
+          <div class="step-nav">
+            <button class="btn-back" onclick="goToStep(2)">← Back</button>
+            <button class="btn-primary" onclick="goToStep(4)">Next →</button>
+            <span class="step-progress">3 of 4</span>
+          </div>
+        </div>
+ 
+        <!-- STEP 4: Confirm -->
+        <div class="step-block" id="step-4">
+          <div class="step-num">Step 04 / 04</div>
+          <div class="step-title">One last thing</div>
+          <div class="step-sub">What's the single most important outcome for this session? If the meeting ended and only one thing got decided or resolved — what would make it a success?</div>
+          <div class="field-group">
+            <textarea id="f-outcome" class="field-input" style="min-height:80px;" placeholder="e.g. We walk out with a committed plan everyone trusts. / We resolve the prioritization debate between team A and team B. / Leadership buys into the capacity constraints and adjusts expectations."></textarea>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="f-facilitator-name">Who's facilitating? (optional)</label>
+            <input type="text" id="f-facilitator-name" class="field-input" placeholder="Your name — appears on the agenda">
+          </div>
+          <div class="step-nav">
+            <button class="btn-back" onclick="goToStep(3)">← Back</button>
+            <button class="btn-primary" onclick="buildSession()">Build my session →</button>
+            <span class="step-progress">4 of 4</span>
+          </div>
+        </div>
+ 
+      </div>
+    </div>
+  </div>
+ 
+  <!-- OUTPUT -->
+  <div id="output">
+    <div class="shell">
+ 
+      <div class="output-header">
+        <div class="output-eyebrow">Your session plan</div>
+        <div class="output-title" id="out-title">Quarterly Planning Session</div>
+        <div class="output-meta" id="out-meta"></div>
+      </div>
+ 
+      <div class="output-actions">
+        <button class="action-btn" onclick="copyAgenda()" id="copy-btn">Copy agenda</button>
+        <button class="action-btn" onclick="window.print()">Print</button>
+        <button class="action-btn" onclick="resetFacilitator()">Start over</button>
+      </div>
+ 
+      <div class="session-summary" id="out-summary"></div>
+ 
+      <div class="agenda-label">// Session agenda</div>
+      <div id="out-agenda"></div>
+ 
+      <div class="framework-section">
+        <div class="framework-label">// Prioritization framework for this session</div>
+        <div id="out-framework"></div>
+      </div>
+ 
+      <div class="watchouts">
+        <div class="framework-label">// Watch out for these</div>
+        <div id="out-watchouts"></div>
+      </div>
+ 
+      <div class="output-cta">
+        <h2>Need help designing the system around this session?</h2>
+        <p>A planning session is one moment in an operating model. I build the full infrastructure — the cadences, the frameworks, the AI workflows that make planning like this repeatable and trusted.</p>
+        <div class="cta-btns">
+          <a href="https://www.linkedin.com/in/stephenthiessen" target="_blank" class="btn-primary">Connect on LinkedIn →</a>
+          <button class="btn-secondary" onclick="resetFacilitator()">Build another session</button>
+        </div>
+      </div>
+ 
+    </div>
+  </div>
+</div>
+ 
+<footer>
+  <div class="footer-inner">
+    <span class="footer-text">Product Ops Intelligence — built by Stephen Thiessen</span>
+    <a href="https://www.linkedin.com/in/stephenthiessen" target="_blank" class="footer-link">LinkedIn ↗</a>
+  </div>
+</footer>
+ 
+<script>
+let cadence = null;
+let selectedChips = {};
+let singleChips = {};
+ 
+function selectCadence(c) {
+  cadence = c;
+  document.querySelectorAll('.cadence-card').forEach(el => el.classList.remove('selected'));
+  document.getElementById('cadence-' + c).classList.add('selected');
+  document.getElementById('step1-next').disabled = false;
+}
+ 
+function toggleChip(el, val) {
+  el.classList.toggle('selected');
+  if (!selectedChips[val]) selectedChips[val] = true;
+  else delete selectedChips[val];
+}
+ 
+function selectSingleChip(el, group, val) {
+  document.querySelectorAll('[onclick*="' + group + '"]').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  singleChips[group] = val;
+}
+ 
+function updateSlider(el, valId) {
+  const v = el.value;
+  document.getElementById(valId).textContent = v + (v >= 80 ? '+ initiatives' : ' initiatives');
+}
+ 
+function goToStep(n) {
+  document.querySelectorAll('.step-block').forEach(b => b.classList.remove('active'));
+  document.getElementById('step-' + n).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+ 
+function pad(n) { return n < 10 ? '0'+n : n; }
+ 
+function timeAdd(base, mins) {
+  const [h, m] = base.split(':').map(Number);
+  const total = h * 60 + m + mins;
+  return pad(Math.floor(total/60)) + ':' + pad(total%60);
+}
+ 
+function buildSession() {
+  const pmCount = parseInt(document.getElementById('f-pm-count').value) || 6;
+  const duration = parseFloat(document.getElementById('f-duration').value) || (cadence === 'quarterly' ? 4 : 2);
+  const totalMins = Math.round(duration * 60);
+  const initiatives = parseInt(document.getElementById('f-initiatives').value) || 20;
+  const okrStatus = singleChips['okr-status'] || 'partial';
+  const workMode = singleChips['work-mode'] || 'hybrid';
+  const tensions = Object.keys(selectedChips);
+  const lastSession = document.getElementById('f-last-session').value.trim();
+  const outcome = document.getElementById('f-outcome').value.trim();
+  const facilitatorName = document.getElementById('f-facilitator-name').value.trim();
+  const attendees = ['PMs (' + pmCount + ')'].concat(
+    document.querySelectorAll('#attendee-chips .chip.selected')
+      ? Array.from(document.querySelectorAll('#attendee-chips .chip.selected')).map(c => c.textContent)
+      : []
+  );
+ 
+  const overloaded = initiatives > 30;
+  const noStrategy = okrStatus === 'no';
+  const hasCapacityTension = tensions.includes('Too much work vs capacity');
+  const hasStrategyTension = tensions.includes('Strategy not clearly defined');
+ 
+  document.getElementById('out-title').textContent =
+    (cadence === 'quarterly' ? 'Quarterly' : 'Sprint') + ' Planning Session' +
+    (facilitatorName ? ' — Facilitated by ' + facilitatorName : '');
+ 
+  const metaEl = document.getElementById('out-meta');
+  metaEl.innerHTML = [
+    cadence === 'quarterly' ? 'Quarterly' : 'Sprint / iteration',
+    duration + ' hours',
+    pmCount + ' PMs',
+    workMode === 'remote' ? 'Remote' : workMode === 'inperson' ? 'In person' : 'Hybrid'
+  ].map(t => `<span class="output-tag">${t}</span>`).join('');
+ 
+  // Summary
+  const summaryEl = document.getElementById('out-summary');
+  summaryEl.innerHTML = `
+    <div class="summary-label">// Session context</div>
+    <div class="summary-grid">
+      <div><div class="summary-item-label">Attendees</div><div class="summary-item-val">${attendees.join(', ')}</div></div>
+      <div><div class="summary-item-label">Initiatives in scope</div><div class="summary-item-val">${initiatives}${initiatives >= 80 ? '+' : ''}</div></div>
+      <div><div class="summary-item-label">OKR status</div><div class="summary-item-val">${okrStatus === 'yes' ? 'Set and shared' : okrStatus === 'partial' ? 'Partial' : 'Setting in session'}</div></div>
+      ${tensions.length ? `<div><div class="summary-item-label">Key tensions</div><div class="summary-item-val">${tensions.join(', ')}</div></div>` : ''}
+      ${outcome ? `<div style="grid-column:1/-1"><div class="summary-item-label">Success looks like</div><div class="summary-item-val">${outcome}</div></div>` : ''}
+    </div>`;
+ 
+  // Build agenda
+  const agendaEl = document.getElementById('out-agenda');
+  agendaEl.innerHTML = '';
+ 
+  const START = '09:00';
+  let cursor = START;
+  const blocks = cadence === 'quarterly'
+    ? buildQuarterlyAgenda(totalMins, okrStatus, overloaded, hasCapacityTension, hasStrategyTension, noStrategy, lastSession, pmCount, attendees)
+    : buildSprintAgenda(totalMins, okrStatus, overloaded, hasCapacityTension, initiatives, pmCount);
+ 
+  blocks.forEach(b => {
+    const start = cursor;
+    cursor = timeAdd(cursor, b.mins);
+    const end = cursor;
+    const highlight = b.highlight ? 'highlight' : b.warning ? 'warning' : b.critical ? 'critical' : '';
+    const bulletsHtml = b.bullets ? b.bullets.map(bl => `<div class="agenda-bullet">${bl}</div>`).join('') : '';
+    agendaEl.innerHTML += `
+      <div class="agenda-block ${highlight}">
+        <div class="agenda-row">
+          <div class="agenda-time">${start}–${end}<br><span style="color:var(--text-dim);font-size:10px;">${b.mins}m</span></div>
+          <div class="agenda-content">
+            <div class="agenda-block-title">${b.title}</div>
+            <div class="agenda-desc">${b.desc}</div>
+            ${bulletsHtml ? `<div class="agenda-bullets">${bulletsHtml}</div>` : ''}
+          </div>
+        </div>
+      </div>`;
+  });
+ 
+  // Framework
+  buildFramework(cadence, okrStatus, overloaded, tensions, initiatives);
+ 
+  // Watchouts
+  buildWatchouts(cadence, overloaded, noStrategy, hasCapacityTension, lastSession, pmCount, tensions);
+ 
+  document.getElementById('facilitator-form').style.display = 'none';
+  document.getElementById('output').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+ 
+function buildQuarterlyAgenda(totalMins, okrStatus, overloaded, hasCapacityTension, hasStrategyTension, noStrategy, lastSession, pmCount, attendees) {
+  const hasExec = attendees.some(a => a.includes('CPO') || a.includes('CEO'));
+  const hasEng = attendees.some(a => a.includes('Engineering'));
+  const blocks = [];
+ 
+  if (noStrategy) {
+    blocks.push({ mins: 20, title: 'Strategic context setting', desc: 'Before anything gets prioritized, establish the strategic lens for this quarter. Without this, the rest of the session is capacity scheduling, not planning.', bullets: ['What are the 2–3 things that must be true by end of quarter?', 'What would make this quarter a failure regardless of what shipped?', 'What are we explicitly not doing this quarter?'], highlight: true });
+  } else {
+    blocks.push({ mins: 15, title: 'OKR and strategic framing', desc: 'Ground the room in the goals before any initiative gets discussed. Every prioritization decision should trace back to this frame.', bullets: ['Review OKRs — are they still the right ones?', 'Call out anything that has changed since OKRs were set', 'Confirm the prioritization filter: does this move the needle on our OKRs?'] });
+  }
+ 
+  if (hasCapacityTension || overloaded) {
+    blocks.push({ mins: 20, title: 'Capacity reality check', desc: 'Do this before reviewing any initiatives. If the room doesn\'t agree on how much can actually get done, the rest of the session will be fantasy football.', bullets: ['Historical delivery rate: what did the team actually ship last quarter vs planned?', 'Available capacity this quarter: headcount changes, known dependencies, Q-end risks', 'Set the ceiling: agree on a max number of active initiatives before the list goes up'], critical: true });
+  }
+ 
+  const reviewMins = Math.min(Math.round(totalMins * 0.30), overloaded ? 50 : 40);
+  blocks.push({ mins: reviewMins, title: 'Initiative review and first cut', desc: 'Go through the full list once — fast. The goal is not to discuss or debate, it\'s to sort into three buckets.', bullets: ['In: clearly fits the strategy and we have capacity', 'Out: doesn\'t fit or we don\'t have capacity — park it', 'Discuss: needs more conversation — flag and move on'], highlight: false });
+ 
+  if (overloaded) {
+    blocks.push({ mins: 30, title: 'Prioritization debate', desc: 'This is the hardest part. Take the "Discuss" pile and work through it with a shared framework. No horse-trading — every decision needs a strategic rationale.', bullets: ['Use the prioritization framework below for each item', 'Call explicit tradeoffs: if this goes in, what comes out?', 'Get commitment in the room — decisions made here are final unless the framework changes'], warning: true });
+  } else {
+    blocks.push({ mins: 20, title: 'Prioritization and tradeoff decisions', desc: 'Work through the contested items. Every item that goes in should have a clear strategic rationale and a named owner.', bullets: ['Use the framework below — apply it consistently', 'Surface any dependencies across teams before committing', 'Assign owners to every committed initiative'] });
+  }
+ 
+  if (pmCount >= 6 || hasEng) {
+    blocks.push({ mins: 20, title: 'Cross-team dependency mapping', desc: 'Surface the work that requires coordination across PM areas or with engineering. These are your highest-risk items.', bullets: ['Which initiatives require another team to deliver something first?', 'Where are the shared resources or bottlenecks?', 'Assign a coordination owner for each dependency'] });
+  }
+ 
+  if (hasExec) {
+    blocks.push({ mins: 15, title: 'Leadership alignment and sign-off', desc: 'Get explicit commitment from leadership on the plan. Vague nodding is not alignment.', bullets: ['Walk through what\'s in and what\'s out — with rationale', 'Surface any items leadership feels differently about', 'Get explicit sign-off: "This is the plan"'] });
+  }
+ 
+  const remainingMins = totalMins - blocks.reduce((a,b) => a+b.mins, 0) - 15;
+  if (remainingMins > 10) {
+    blocks.push({ mins: remainingMins, title: 'Risk and open questions', desc: 'Surface what the team is worried about before leaving the room. Better to name risks now than discover them in week 3.', bullets: ['What are we most uncertain about in this plan?', 'What external factors could invalidate our assumptions?', 'What decisions are we making without full information?'] });
+  }
+ 
+  blocks.push({ mins: 15, title: 'Close and commitments', desc: 'Leave the room with a documented plan and clear next steps. The session isn\'t done until this is captured.', bullets: ['Read back the committed initiative list — confirm agreement', 'Assign next steps: who documents, who communicates, by when', 'Set the date for the first check-in against this plan'] });
+ 
+  return blocks;
+}
+ 
+function buildSprintAgenda(totalMins, okrStatus, overloaded, hasCapacityTension, initiatives, pmCount) {
+  const blocks = [];
+ 
+  blocks.push({ mins: 10, title: 'Context and carryover', desc: 'Start with what\'s already in flight, not what\'s new. Carryover from last sprint is your first capacity constraint.', bullets: ['What\'s carrying over from last sprint and why?', 'Any blockers that need to be resolved before this sprint can start?', 'Confirm available capacity for this sprint — any OOO, dependencies, or unknowns'] });
+ 
+  blocks.push({ mins: Math.round(totalMins * 0.25), title: 'Backlog review — this sprint candidates', desc: 'Go through the top of the backlog. Every item should have a clear definition of done before it gets committed.', bullets: ['Is the acceptance criteria clear enough for engineering to pick up?', 'Is there a dependency that could block this mid-sprint?', 'Is the scope right for a single sprint or does it need to be split?'], highlight: true });
+ 
+  if (hasCapacityTension || overloaded) {
+    blocks.push({ mins: 20, title: 'Capacity check and scope decisions', desc: 'This sprint\'s backlog is too heavy. Make explicit cuts now — don\'t let the sprint run overloaded.', bullets: ['Total story points or items available for this sprint', 'Cut to fit — what moves to next sprint?', 'No partial commitments: if it can\'t finish this sprint, don\'t start it'], warning: true });
+  }
+ 
+  blocks.push({ mins: Math.round(totalMins * 0.20), title: 'Commitment and owner assignment', desc: 'Every item that goes into the sprint needs an owner and a clear definition of done.', bullets: ['Assign owners to every committed item', 'Flag any items with unclear owners or shared responsibility', 'Confirm engineering has what they need to start'] });
+ 
+  const remaining = totalMins - blocks.reduce((a,b) => a+b.mins, 0) - 10;
+  if (remaining > 5) {
+    blocks.push({ mins: remaining, title: 'Risks and blockers', desc: 'Surface anything that could derail the sprint before it starts.', bullets: ['Any dependencies on external teams or systems?', 'Anything that needs a decision before the sprint can move?', 'When\'s the first checkpoint to assess progress?'] });
+  }
+ 
+  blocks.push({ mins: 10, title: 'Close and kickoff', desc: 'Confirm the committed list, set the first standup or check-in, and make sure everyone leaves knowing what they\'re doing.', bullets: ['Read back the sprint commitment — confirm agreement', 'When does the sprint start and what\'s the first milestone?', 'How will we flag blockers before they become misses?'] });
+ 
+  return blocks;
+}
+ 
+function buildFramework(cadence, okrStatus, overloaded, tensions, initiatives) {
+  const el = document.getElementById('out-framework');
+  const hasStrategyTension = tensions.includes('Strategy not clearly defined');
+  const hasStakeholderTension = tensions.includes('Stakeholder pressure vs PM judgment');
+ 
+  if (cadence === 'quarterly') {
+    el.innerHTML = `
+      <div class="framework-card">
+        <div class="framework-card-title"><div class="framework-num">1</div>Strategic alignment — does this move an OKR?</div>
+        <div class="framework-text">Every initiative must connect to a specific OKR or strategic goal. If it can\'t be connected in one sentence, it shouldn\'t be in the plan. This is the first filter — not impact, not effort, not customer request.</div>
+        ${hasStrategyTension ? '<div class="framework-example">// If strategy is unclear: ask "what would have to be true for this to be the right bet?" before discussing it.</div>' : ''}
+      </div>
+      <div class="framework-card">
+        <div class="framework-card-title"><div class="framework-num">2</div>Capacity reality — can we actually finish this?</div>
+        <div class="framework-text">Score each initiative against your historical delivery rate. If a similar-sized initiative took 6 weeks last quarter, plan for 6 weeks — not 4. Capacity is finite and the plan has to fit inside it before commitments are made.</div>
+        ${overloaded ? '<div class="framework-example">// You have ' + initiatives + ' initiatives going in. Historically, most teams can execute 10–15 well per quarter. Cut before you commit.</div>' : ''}
+      </div>
+      <div class="framework-card">
+        <div class="framework-card-title"><div class="framework-num">3</div>Tradeoff clarity — if this goes in, what comes out?</div>
+        <div class="framework-text">Every addition to the plan requires an explicit removal. No initiative gets added late-quarter without a named item being deprioritized. This rule must be agreed in the room before the session ends.</div>
+        ${hasStakeholderTension ? '<div class="framework-example">// Stakeholder pressure: "We can add X if we agree to move Y to next quarter. Which do you prefer?" Always frame as a choice, never a capacity negotiation.</div>' : ''}
+      </div>
+      <div class="framework-card">
+        <div class="framework-card-title"><div class="framework-num">4</div>Owner and readiness — is this actually ready to start?</div>
+        <div class="framework-text">Every committed initiative needs a named PM owner and a clear definition of what "done" looks like. If either is missing, the initiative is not ready to commit — it goes to the parking lot until it is.</div>
+      </div>`;
+  } else {
+    el.innerHTML = `
+      <div class="framework-card">
+        <div class="framework-card-title"><div class="framework-num">1</div>Definition of done — is this actually scoped?</div>
+        <div class="framework-text">No item enters the sprint without a clear, engineering-readable definition of done. Vague items become the source of most mid-sprint scope debates. If it can\'t be described in one sentence of outcome, it\'s not ready.</div>
+      </div>
+      <div class="framework-card">
+        <div class="framework-card-title"><div class="framework-num">2</div>Fit within sprint — can this actually finish?</div>
+        <div class="framework-text">No partial commitments. If an initiative can\'t be completed within the sprint, split it into a sprint-sized piece or move it. Starting things you can\'t finish is the primary driver of sprint carryover.</div>
+        ${overloaded ? '<div class="framework-example">// ' + initiatives + ' items is too many. Trim to what can realistically ship — commit to less, deliver it, and build trust.</div>' : ''}
+      </div>
+      <div class="framework-card">
+        <div class="framework-card-title"><div class="framework-num">3</div>Dependency check — is this blocked by anything?</div>
+        <div class="framework-text">Surface every external dependency before committing. If this item requires something from another team, a third-party system, or a decision that hasn\'t been made — flag it now or plan to descope it mid-sprint.</div>
+      </div>`;
+  }
+}
+ 
+function buildWatchouts(cadence, overloaded, noStrategy, hasCapacityTension, lastSession, pmCount, tensions) {
+  const el = document.getElementById('out-watchouts');
+  const items = [];
+ 
+  if (overloaded) items.push({ critical: true, text: '<strong>Volume risk:</strong> The initiative count going into this session is high. The most common planning failure mode is committing to too much and calling it a plan. Reserve at least 30 minutes specifically for cutting — not adding.' });
+  if (noStrategy) items.push({ critical: true, text: '<strong>Missing strategic anchor:</strong> Without OKRs set before the session, prioritization defaults to gut feel and stakeholder pressure. The first 20 minutes of this session must establish the strategic filter — otherwise every item looks equally valid.' });
+  if (hasCapacityTension) items.push({ critical: false, text: '<strong>Capacity mismatch:</strong> This tension usually means leadership expectations are set from last cycle\'s commitments, not actual delivery rate. Come to the session with historical data — what did the team actually ship vs plan last quarter — as your anchor.' });
+  if (tensions.includes('Stakeholder pressure vs PM judgment')) items.push({ critical: false, text: '<strong>Stakeholder override risk:</strong> If executives or sales are in the room, agenda items can shift from prioritization to negotiation. Agree on the decision framework before the session starts. "We\'re using our OKR filter to make these calls" is harder to override than "we think this is the priority."' });
+  if (tensions.includes('Competing priorities across teams')) items.push({ critical: false, text: '<strong>Cross-team conflict:</strong> Don\'t let this surface for the first time in the session. Identify the top 2–3 cross-team tensions ahead of time and pre-wire a proposed resolution. Walking in with a draft trade-off is more productive than discovering the conflict live.' });
+  if (pmCount >= 8) items.push({ critical: false, text: '<strong>Group size:</strong> With ' + pmCount + ' PMs, whole-group prioritization debates become unproductive quickly. Consider splitting into working groups for the first-cut review and reconvening for final decisions.' });
+  if (lastSession && lastSession.toLowerCase().includes('time')) items.push({ critical: false, text: '<strong>Time management:</strong> Based on what you flagged about the last session — running out of time is almost always a prioritization problem in disguise. If the agenda runs long, it\'s usually because the first-cut review took too long. Timebox it aggressively: 2 minutes per initiative for the first pass.' });
+  if (!items.length) items.push({ critical: false, text: '<strong>Commitment drift:</strong> The most common planning failure isn\'t a bad plan — it\'s a plan that no one fully committed to. End the session with every attendee able to state what\'s in, what\'s out, and what they own personally.' });
+ 
+  el.innerHTML = items.map(i => `
+    <div class="watchout-item">
+      <div class="watchout-dot ${i.critical ? 'critical' : ''}"></div>
+      <div class="watchout-text">${i.text}</div>
+    </div>`).join('');
+}
+ 
+function copyAgenda() {
+  const title = document.getElementById('out-title').textContent;
+  const blocks = document.querySelectorAll('.agenda-block');
+  let text = title + '\n' + '='.repeat(title.length) + '\n\n';
+  blocks.forEach(b => {
+    const time = b.querySelector('.agenda-time').textContent.replace(/\s+/g,' ').trim();
+    const t = b.querySelector('.agenda-block-title').textContent;
+    const desc = b.querySelector('.agenda-desc').textContent;
+    text += time + ' — ' + t + '\n' + desc + '\n';
+    b.querySelectorAll('.agenda-bullet').forEach(bl => { text += '  - ' + bl.textContent + '\n'; });
+    text += '\n';
+  });
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy agenda'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+ 
+function resetFacilitator() {
+  cadence = null; selectedChips = {}; singleChips = {};
+  document.querySelectorAll('.cadence-card, .chip').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll('.field-input').forEach(el => { el.value = ''; });
+  document.getElementById('f-initiatives').value = 20;
+  document.getElementById('initiatives-val').textContent = '20 initiatives';
+  document.getElementById('step1-next').disabled = true;
+  document.getElementById('output').style.display = 'none';
+  document.getElementById('facilitator-form').style.display = 'block';
+  goToStep(1);
+}
+ 
+function switchTool(tool, btn) {
+  if (btn.classList.contains('soon')) return;
+  document.querySelectorAll('.tool-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const map = { assessment:'panel-assessment', audit:'panel-audit', facilitator:'panel-facilitator', playbook:'panel-playbook' };
+  document.getElementById(map[tool]).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
