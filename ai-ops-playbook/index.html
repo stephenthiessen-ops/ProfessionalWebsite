@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Ops Intelligence — Stephen Thiessen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Geist:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0a0a0a; --bg2: #111111; --bg3: #1a1a1a; --bg4: #202020;
+  --border: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.16);
+  --text: #f0ede8; --text-muted: #7a7672; --text-dim: #3d3b38;
+  --accent: #c8f55a; --accent-dim: rgba(200,245,90,0.09); --accent-border: rgba(200,245,90,0.28);
+  --red: #ff5a5a; --amber: #f5a623; --blue: #5a9fff;
+  --p1: #c8f55a; --p2: #5a9fff; --p3: #f5a623; --p4: #c084fc;
+  --serif: 'DM Serif Display', Georgia, serif;
+  --mono: 'DM Mono', monospace;
+  --sans: 'Geist', system-ui, sans-serif;
+}
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15px; line-height: 1.6; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+ 
+/* Nav */
+nav { border-bottom: 1px solid var(--border); padding: 20px 0; position: sticky; top: 0; background: rgba(10,10,10,0.94); backdrop-filter: blur(14px); z-index: 200; }
+.nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 28px; display: flex; align-items: center; justify-content: space-between; }
+.nav-logo { font-family: var(--mono); font-size: 12px; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; }
+.nav-logo span { color: var(--accent); }
+.nav-right { display: flex; align-items: center; gap: 24px; }
+.nav-link { font-size: 12px; color: var(--text-muted); text-decoration: none; font-family: var(--mono); letter-spacing: 0.04em; transition: color 0.2s; }
+.nav-link:hover { color: var(--text); }
+ 
+/* Tool bar */
+.tool-bar { border-bottom: 1px solid var(--border); }
+.tool-bar-inner { max-width: 1100px; margin: 0 auto; padding: 0 28px; display: flex; overflow-x: auto; scrollbar-width: none; }
+.tool-bar-inner::-webkit-scrollbar { display: none; }
+.tool-tab { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); padding: 14px 20px; border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; position: relative; top: 1px; }
+.tool-tab:hover { color: var(--text); }
+.tool-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tool-tab.soon { opacity: 0.4; cursor: default; }
+ 
+.panel { display: none; }
+.panel.active { display: block; }
+ 
+/* Layout: sidebar + content */
+.playbook-layout { display: grid; grid-template-columns: 260px 1fr; min-height: calc(100vh - 110px); max-width: 1100px; margin: 0 auto; padding: 0 28px; gap: 0; }
+ 
+/* Sidebar */
+.sidebar { border-right: 1px solid var(--border); padding: 40px 0; position: sticky; top: 110px; height: calc(100vh - 110px); overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+.sidebar::-webkit-scrollbar { width: 3px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+ 
+.sidebar-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); padding: 0 24px; margin-bottom: 16px; }
+ 
+/* Global progress */
+.global-progress { padding: 0 24px 28px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+.gp-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px; display: flex; justify-content: space-between; }
+.gp-track { height: 3px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.gp-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.4s ease; }
+.gp-count { font-family: var(--mono); font-size: 11px; color: var(--text-muted); margin-top: 8px; }
+ 
+/* Phase nav items */
+.phase-nav { display: flex; flex-direction: column; gap: 2px; padding: 0 12px; }
+.phase-nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; cursor: pointer; transition: all 0.15s; text-decoration: none; border: none; background: transparent; width: 100%; text-align: left; }
+.phase-nav-item:hover { background: var(--bg2); }
+.phase-nav-item.active { background: var(--bg3); }
+.phase-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; border: 1.5px solid; transition: all 0.2s; }
+.phase-dot.p1 { border-color: var(--p1); }
+.phase-dot.p2 { border-color: var(--p2); }
+.phase-dot.p3 { border-color: var(--p3); }
+.phase-dot.p4 { border-color: var(--p4); }
+.phase-dot.complete { background: currentColor; }
+.phase-nav-text { flex: 1; }
+.phase-nav-num { font-family: var(--mono); font-size: 10px; color: var(--text-dim); letter-spacing: 0.08em; display: block; }
+.phase-nav-name { font-size: 13px; color: var(--text-muted); display: block; margin-top: 1px; transition: color 0.15s; }
+.phase-nav-item.active .phase-nav-name { color: var(--text); }
+.phase-nav-pct { font-family: var(--mono); font-size: 10px; color: var(--text-dim); }
+ 
+.sidebar-tools { padding: 24px 24px 0; border-top: 1px solid var(--border); margin-top: 24px; }
+.sidebar-tool-link { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px; color: var(--text-dim); text-decoration: none; padding: 6px 0; transition: color 0.2s; letter-spacing: 0.04em; }
+.sidebar-tool-link:hover { color: var(--accent); }
+ 
+/* Main content */
+.playbook-content { padding: 40px 0 100px 48px; }
+ 
+/* Hero */
+.playbook-hero { margin-bottom: 64px; padding-bottom: 48px; border-bottom: 1px solid var(--border); }
+.hero-eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 20px; }
+.hero-title { font-family: var(--serif); font-size: clamp(36px, 5vw, 56px); line-height: 1.06; font-weight: 400; margin-bottom: 20px; }
+.hero-title em { font-style: italic; color: var(--text-muted); }
+.hero-body { font-size: 16px; color: var(--text-muted); line-height: 1.75; max-width: 580px; margin-bottom: 32px; }
+.hero-stats { display: flex; gap: 32px; flex-wrap: wrap; }
+.hero-stat-val { font-family: var(--serif); font-size: 28px; font-weight: 400; color: var(--text); display: block; }
+.hero-stat-label { font-family: var(--mono); font-size: 10px; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; }
+ 
+/* Phase sections */
+.phase-section { margin-bottom: 80px; scroll-margin-top: 120px; }
+.phase-header { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+.phase-number-badge { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; padding: 4px 12px; border-radius: 20px; border: 1px solid; flex-shrink: 0; margin-top: 4px; }
+.phase-header-text {}
+.phase-eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px; }
+.phase-title { font-family: var(--serif); font-size: 32px; font-weight: 400; line-height: 1.1; margin-bottom: 8px; }
+.phase-desc { font-size: 14px; color: var(--text-muted); line-height: 1.65; max-width: 520px; }
+ 
+/* Phase progress bar */
+.phase-progress { height: 3px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 32px; }
+.phase-progress-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; width: 0%; }
+ 
+/* Dimension tag */
+.dim-tag { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); border: 1px solid var(--border); border-radius: 4px; padding: 3px 10px; margin-bottom: 16px; }
+.dim-tag-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+ 
+/* Accordion moves */
+.move { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; overflow: hidden; transition: border-color 0.2s; }
+.move:hover { border-color: var(--border-hover); }
+.move.done { border-color: rgba(200,245,90,0.2); background: rgba(200,245,90,0.03); }
+.move-header { display: flex; align-items: center; gap: 14px; padding: 18px 20px; cursor: pointer; user-select: none; }
+.move-check { width: 20px; height: 20px; border-radius: 5px; border: 1.5px solid var(--border-hover); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.15s; cursor: pointer; background: transparent; }
+.move-check:hover { border-color: var(--accent); }
+.move.done .move-check { background: var(--accent); border-color: var(--accent); }
+.move.done .move-check::after { content: '✓'; font-size: 11px; color: var(--bg); font-weight: 700; }
+.move-title { flex: 1; font-size: 14px; font-weight: 500; color: var(--text); line-height: 1.4; }
+.move.done .move-title { color: var(--text-muted); text-decoration: line-through; text-decoration-color: var(--text-dim); }
+.move-chevron { font-size: 12px; color: var(--text-dim); transition: transform 0.2s; flex-shrink: 0; }
+.move.open .move-chevron { transform: rotate(180deg); }
+.move-body { display: none; padding: 0 20px 20px 54px; }
+.move.open .move-body { display: block; }
+.move-why { font-size: 13px; color: var(--text-muted); line-height: 1.7; margin-bottom: 14px; }
+.move-how { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px; }
+.move-steps { display: flex; flex-direction: column; gap: 8px; }
+.move-step { display: flex; gap: 10px; font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+.move-step-n { font-family: var(--mono); font-size: 11px; color: var(--text-dim); flex-shrink: 0; width: 16px; }
+.move-signal { background: var(--bg3); border-radius: 6px; padding: 10px 14px; margin-top: 14px; font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+.move-signal strong { color: var(--text-muted); font-weight: 500; }
+.move-ai-tag { display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: 0.06em; background: var(--accent-dim); border: 1px solid var(--accent-border); border-radius: 4px; padding: 2px 8px; margin-top: 10px; }
+ 
+/* CTA */
+.playbook-cta { border: 1px solid var(--accent-border); border-radius: 12px; padding: 40px; background: var(--accent-dim); text-align: center; margin-top: 64px; }
+.playbook-cta h2 { font-family: var(--serif); font-size: 28px; font-weight: 400; margin-bottom: 12px; }
+.playbook-cta p { font-size: 14px; color: var(--text-muted); margin-bottom: 28px; line-height: 1.65; max-width: 440px; margin-left: auto; margin-right: auto; }
+.cta-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.btn-primary { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: var(--bg); font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; padding: 13px 24px; border: none; border-radius: 5px; cursor: pointer; font-weight: 500; text-decoration: none; transition: all 0.2s; }
+.btn-primary:hover { background: #d4ff60; transform: translateY(-1px); }
+.btn-secondary { display: inline-flex; align-items: center; gap: 8px; background: transparent; color: var(--text-muted); font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 13px 24px; border: 1px solid var(--border); border-radius: 5px; cursor: pointer; text-decoration: none; transition: all 0.2s; }
+.btn-secondary:hover { border-color: var(--border-hover); color: var(--text); }
+ 
+.coming-soon { padding: 120px 0; text-align: center; }
+.coming-soon-icon { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 20px; }
+.coming-soon h2 { font-family: var(--serif); font-size: 36px; font-weight: 400; color: var(--text-muted); margin-bottom: 14px; }
+.coming-soon p { font-size: 14px; color: var(--text-dim); max-width: 360px; margin: 0 auto 28px; line-height: 1.65; }
+.shell { max-width: 760px; margin: 0 auto; padding: 0 28px; }
+ 
+footer { border-top: 1px solid var(--border); padding: 28px 0; }
+.footer-inner { max-width: 1100px; margin: 0 auto; padding: 0 28px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.footer-text { font-family: var(--mono); font-size: 11px; color: var(--text-dim); letter-spacing: 0.06em; }
+.footer-link { font-family: var(--mono); font-size: 11px; color: var(--text-muted); text-decoration: none; letter-spacing: 0.06em; transition: color 0.2s; }
+.footer-link:hover { color: var(--accent); }
+ 
+@media (max-width: 800px) {
+  .playbook-layout { grid-template-columns: 1fr; }
+  .sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); padding: 24px 0; }
+  .playbook-content { padding: 32px 0 80px 0; }
+  .phase-header { flex-direction: column; gap: 10px; }
+}
+</style>
+</head>
+<body>
+ 
+<nav>
+  <div class="nav-inner">
+    <a href="https://www.stephen-thiessen.com" class="nav-logo">Product Ops <span>Intelligence</span></a>
+    <div class="nav-right">
+      <a href="https://www.linkedin.com/in/stephenthiessen" target="_blank" class="nav-link">Stephen Thiessen ↗</a>
+    </div>
+  </div>
+</nav>
+ 
+<div class="tool-bar">
+  <div class="tool-bar-inner">
+    <button class="tool-tab" onclick="switchTool('assessment',this)">Ops Maturity Assessment</button>
+    <button class="tool-tab" onclick="switchTool('audit',this)">AI Workflow Audit</button>
+    <button class="tool-tab" onclick="switchTool('facilitator',this)">Planning Session Facilitator</button>
+    <button class="tool-tab active" onclick="switchTool('playbook',this)">AI Ops Playbook</button>
+  </div>
+</div>
+ 
+<div id="panel-assessment" class="panel">
+  <div class="shell"><div class="coming-soon"><div class="coming-soon-icon">// Separate tool</div><h2>Ops Maturity Assessment</h2><p>Diagnose your product org's operating model across six dimensions.</p><a href="../ops-assessment/" class="btn-primary">Take the assessment →</a></div></div>
+</div>
+<div id="panel-audit" class="panel">
+  <div class="shell"><div class="coming-soon"><div class="coming-soon-icon">// Separate tool</div><h2>AI Workflow Audit</h2><p>Map where AI is and isn't working in your product workflows.</p><a href="../ai-workflow-audit/" class="btn-primary">Take the audit →</a></div></div>
+</div>
+<div id="panel-facilitator" class="panel">
+  <div class="shell"><div class="coming-soon"><div class="coming-soon-icon">// Separate tool</div><h2>Planning Session Facilitator</h2><p>Build a structured agenda for your next planning session.</p><a href="../planning-facilitator/" class="btn-primary">Build your session →</a></div></div>
+</div>
+ 
+<div id="panel-playbook" class="panel active">
+  <div class="playbook-layout">
+ 
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="global-progress">
+        <div class="gp-label"><span>Overall progress</span><span id="gp-pct">0%</span></div>
+        <div class="gp-track"><div class="gp-fill" id="gp-fill"></div></div>
+        <div class="gp-count" id="gp-count">0 of 28 moves complete</div>
+      </div>
+ 
+      <div class="sidebar-label">// Phases</div>
+      <nav class="phase-nav">
+        <a class="phase-nav-item active" href="#phase-1" onclick="setActiveNav(this)">
+          <div class="phase-dot p1" id="dot-p1"></div>
+          <div class="phase-nav-text">
+            <span class="phase-nav-num">Phase 01</span>
+            <span class="phase-nav-name">Foundation</span>
+          </div>
+          <span class="phase-nav-pct" id="pct-p1">0%</span>
+        </a>
+        <a class="phase-nav-item" href="#phase-2" onclick="setActiveNav(this)">
+          <div class="phase-dot p2" id="dot-p2"></div>
+          <div class="phase-nav-text">
+            <span class="phase-nav-num">Phase 02</span>
+            <span class="phase-nav-name">Planning Infrastructure</span>
+          </div>
+          <span class="phase-nav-pct" id="pct-p2">0%</span>
+        </a>
+        <a class="phase-nav-item" href="#phase-3" onclick="setActiveNav(this)">
+          <div class="phase-dot p3" id="dot-p3"></div>
+          <div class="phase-nav-text">
+            <span class="phase-nav-num">Phase 03</span>
+            <span class="phase-nav-name">AI Integration</span>
+          </div>
+          <span class="phase-nav-pct" id="pct-p3">0%</span>
+        </a>
+        <a class="phase-nav-item" href="#phase-4" onclick="setActiveNav(this)">
+          <div class="phase-dot p4" id="dot-p4"></div>
+          <div class="phase-nav-text">
+            <span class="phase-nav-num">Phase 04</span>
+            <span class="phase-nav-name">Scale</span>
+          </div>
+          <span class="phase-nav-pct" id="pct-p4">0%</span>
+        </a>
+      </nav>
+ 
+      <div class="sidebar-tools">
+        <div class="sidebar-label" style="padding:0; margin-bottom:12px;">// Related tools</div>
+        <a href="../ops-assessment/" class="sidebar-tool-link">← Ops Maturity Assessment</a>
+        <a href="../ai-workflow-audit/" class="sidebar-tool-link">← AI Workflow Audit</a>
+        <a href="../planning-facilitator/" class="sidebar-tool-link">← Planning Facilitator</a>
+      </div>
+    </aside>
+ 
+    <!-- CONTENT -->
+    <main class="playbook-content">
+ 
+      <div class="playbook-hero">
+        <div class="hero-eyebrow">AI-Powered Product Ops Playbook</div>
+        <h1 class="hero-title">Build the operating system<br>your product org <em>runs on</em></h1>
+        <p class="hero-body">A phase-by-phase framework for standing up product operations from scratch — or fixing one that's broken. Each move is sequenced, explained, and tied to the dimension it addresses. Check them off as you go.</p>
+        <div class="hero-stats">
+          <div><span class="hero-stat-val">4</span><span class="hero-stat-label">Phases</span></div>
+          <div><span class="hero-stat-val">28</span><span class="hero-stat-label">Moves</span></div>
+          <div><span class="hero-stat-val">6</span><span class="hero-stat-label">Dimensions covered</span></div>
+        </div>
+      </div>
+ 
+      <!-- PHASE 1 -->
+      <div class="phase-section" id="phase-1">
+        <div class="phase-header">
+          <div class="phase-number-badge" style="color:var(--p1); border-color:rgba(200,245,90,0.3);">Phase 01</div>
+          <div class="phase-header-text">
+            <div class="phase-eyebrow">Start here — always</div>
+            <div class="phase-title" style="color:var(--p1);">Foundation</div>
+            <div class="phase-desc">Before you build any process, you need to understand the org's current state, where authority lives, and what the team actually needs. Skipping this is why most product ops functions fail within 12 months.</div>
+          </div>
+        </div>
+        <div class="phase-progress"><div class="phase-progress-fill" id="prog-p1" style="background:var(--p1);"></div></div>
+ 
+        <div class="dim-tag"><div class="dim-tag-dot"></div>Dimensions: Strategic Direction · Ops Infrastructure</div>
+ 
+        <div id="moves-p1">
+          <div class="move" id="m-p1-1">
+            <div class="move-header" onclick="toggleMove(this)">
+              <div class="move-check" onclick="event.stopPropagation(); toggleCheck(this)"></div>
+              <div class="move-title">Conduct a current-state audit before touching anything</div>
+              <div class="move-chevron">▾</div>
+            </div>
+            <div class="move-body">
+              <div class="move-why">The fastest way to lose credibility in a new product ops role is to immediately start proposing changes without understanding what already exists and why. Spend the first 2–3 weeks in listening mode — map what's real, not what's documented.</div>
+              <div class="move-how">How to do it</div>
+              <div class="move-steps">
+                <div class="move-step"><span class="move-step-n">1.</span><span>Interview each PM lead: how do you plan, prioritize, and communicate status? What's broken? What works?</span></div>
+                <div class="move-step"><span class="move-step-n">2.</span><span>Shadow a planning cycle from start to finish before redesigning it</span></div>
+                <div class="move-step"><span class="move-step-n">3.</span><span>Map the actual decision-making flow vs the org chart — they're rarely the same</span></div>
+                <div class="move-step"><span class="move-step-n">4.</span><span>Document what exists: templates, rituals, tools, reporting cadences — even informal ones</span></div>
+              </div>
+              <div class="move-signal"><strong>Signal it's working:</strong> You can describe the current planning process accurately enough that a PM says "yes, that's exactly how it works" — including the broken parts.</div>
+            </div>
+          </div>
+ 
+          <div class="move" id="m-p1-2">
+            <div class="move-header" onclick="toggleMove(this)">
+              <div class="move-check" onclick="event.stopPropagation(); toggleCheck(this)"></div>
+              <div class="move-title">Map where strategic direction comes from — and where it gets lost</div>
+              <div class="move-chevron">▾</div>
+            </div>
+            <div class="move-body">
+              <div class="move-why">Strategy dilutes between where it's set and where work gets planned. Understanding that gap is the first step to closing it. Most orgs have strategy at the top and scheduling at the bottom with nothing connecting them.</div>
+              <div class="move-how">How to do it</div>
+              <div class="move-steps">
+                <div class="move-step"><span class="move-step-n">1.</span><span>Get the current strategy doc, OKRs, or goals — whatever form they take</span></div>
+                <div class="move-step"><span class="move-step-n">2.</span><span>Pick 5 items off the current roadmap and trace each one back to a strategic goal</span></div>
+                <div class="move-step"><span class="move-step-n">3.</span><span>Document what percentage can be traced vs what can't — that gap is your first finding</span></div>
+                <div class="move-step"><span class="move-step-n">4.</span><span>Identify at what level the strategic filter breaks down: at the CPO, at the PM leads, or at the IC level</span></div>
+              </div>
+              <div class="move-signal"><strong>Signal it's working:</strong> You can draw a map showing where strategy enters the planning process and where it disappears — with a specific hypothesis about why.</div>
+            </div>
+          </div>
+ 
+          <div class="move" id="m-p1-3">
+            <div class="move-header" onclick="toggleMove(this)">
+              <div class="move-check" onclick="event.stopPropagation(); toggleCheck(this)"></div>
+              <div class="move-title">Establish your operating principles — what this function is and isn't</div>
+              <div class="move-chevron">▾</div>
+            </div>
+            <div class="move-body">
+              <div class="move-why">Without a clear mandate, product ops becomes whatever people need it to be — which usually means escalation management and status reporting. Define the function's purpose early and get it ratified by the CPO or VP Product before you build anything.</div>
+              <div class="move-how">How to do it</div>
+              <div class="move-steps">
+                <div class="move-step"><span class="move-step-n">1.</span><span>Draft a one-page function charter: what product ops owns, what it doesn't, how it measures success</span></div>
+                <div class="move-step"><span class="move-step-n">2.</span><span>Get explicit sign-off from your CPO/VP Product — not just verbal agreement</span></div>
+                <div class="move-step"><span class="move-step-n">3.</span><span>Share with PM leads so they know what to bring you and what not to</span></div>
+                <div class="move-step"><span class="move-step-n">4.</span><span>Review and update quarterly — the mandate should evolve as the function matures</span></div>
+              </div>
+              <div class="move-signal"><strong>Signal it's working:</strong> When someone asks "should I loop in product ops on this?", PMs can answer confidently without asking you.</div>
+            </div>
+          </div>
+ 
+          <div class="move" id="m-p1-4">
+            <div class="move-header" onclick="toggleMove(this)">
+              <div class="move-check" onclick="event.stopPropagation(); toggleCheck(this)"></div>
+              <div class="move-title">Identify your first three wins — pick them deliberately</div>
+              <div class="move-chevron">▾</div>
+            </div>
+            <div class="move-body">
+              <div class="move-why">Your first 90 days set the perception of what this function is. Pick wins that are visible, fast, and directly solve pain the team is currently feeling — not theoretically important things that take months to prove.</div>
+              <div class="move-how">How to do it</div>
+              <div class="move-steps">
+                <div class="move-step"><span class="move-step-n">1.</span><span>From your audit, identify the top 3 complaints about how the team currently operates</span></div>
+                <div class="move-step"><span class="move-step-n">2.</span><span>Choose your first win based on: fast to implement, immediately visible, directly felt by PMs or leadership</span></div>
+                <div class="move-step"><span class="move-step-n">3.</span><span>Ship it within 30 days — imperfect and visible beats perfect and invisible</span></div>
+                <div class="move-step"><span class="move-step-n">4.</span><span>Name it when you ship: "I heard X was a pain point, here's what I did about it"</span></div>
+              </div>
+              <div class="move-signal"><strong>Signal it's working:</strong> A PM or leader says "that made my week easier" without being prompted.</div>
+            </div>
+          </div>
+ 
+          <div class="move" id="m-p1-5">
+            <div class="move-header" onclick="toggleMove(this)">
+              <div class="move-check" onclick="event.stopPropagation(); toggleCheck(this)"></div>
+              <div class="move-title">Audit your tooling stack — don't add tools yet</div>
+              <div class="move-chevron">▾</div>
+            </div>
+            <div class="move-body">
+              <div class="move-why">Most product orgs have more tools than they use and use the ones they have inconsistently. Adding new tooling before understanding adoption patterns creates more fragmentation. Map what exists and how it's actually used first.</div>
+              <div class="move-how">How to do it</div>
+              <div class="move-steps">
+                <div class="move-step"><span class="move-step-n">1.</span><span>List every tool the PM org uses: project management, roadmapping, docs, comms, analytics</span></div>
+                <div class="move-step"><span class="move-step-n">2.</span><span>Score each: consistent adoption / inconsistent / barely used / unknown</span></div>
+                <div class="move-step"><span class="move-step-n">3.</span><span>Identify duplication — two tools doing the same job is a consolidation opportunity</span></div>
+                <div class="move-step"><span class="move-step-n">4.</span><span>Document the gaps: what workflow need has no tool, or has a tool nobody uses?</span></div>
+              </div>
+              <div class="move-signal"><strong>Signal it's working:</strong> You have a single view of your tooling stack with adoption ratings — and a prioritized list of what to fix first.</div>
+            </div>
+          </div>
+          <div class="move" id="m-p1-6">
+            <div class="move-header" onclick="toggleMove(this)">
+              <div class="move-check" onclick="event.stopPropagation(); toggleCheck(this)"></div>
+              <div class="move-title">Build your PM onboarding playbook — even a rough one</div>
+              <div class="move-chevron">▾</div>
+            </div>
+            <div class="move-body">
+              <div class="move-why">If a new PM joined today, how would they learn how your org plans, prioritizes, and communicates? If the answer is "they'd shadow someone," you have an ops infrastructure gap. The onboarding playbook is also the ops documentation — it forces you to make implicit processes explicit.</div>
+              <div class="move-how">How to do it</div>
+              <div class="move-steps">
+                <div class="move-step"><span class="move-step-n">1.</span><span>Write down every process a new PM needs to understand in week one: planning cycle, templates, comms norms, tool access</span></div>
+                <div class="move-step"><span class="move-step-n">2.</span><span>Have an existing PM review it and mark everything that's inaccurate or missing</span></div>
+                <div class="move-step"><span class="move-step-n">3.</span><span>Test it with the next hire — observe where they get confused</span></div>
+                <div class="move-step"><span class="move-step-n">4.</span><span>Assign an owner to keep it current — ideally product ops, not a PM who'll deprioritize it</span></div>
+              </div>
+              <div class="move-signal"><strong>Signal it's working:</strong> A new PM can get up to speed on how the org works in 48 hours without scheduling time with every senior PM.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+ 
+      <!-- PHASE 2 -->
+      <div class="phase-section" id="phase-2">
+        <div class="phase-header">
+          <div class="phase-number-badge" style="color:var(--p2); border-color:rgba(90,159,255,0.3);">Phase 02</div>
+          <div class="phase-header-text">
+            <div class="phase-eyebrow">Where most orgs are broken</div>
+            <div class="phase-title" style="color:var(--p2);">Planning Infrastructure</div>
+            <div class="phase-desc">A planning system that connects strategy to execution, runs consistently, and produces decisions — not just documents. This is the core of product operations and the highest-leverage thing you can build.</div>
+          </div>
+        </div>
+        <div class="phase-progress"><div class="phase-progress-fill" id="prog-p2" style="background:var(--p2);"></div></div>
+ 
+        <div class="dim-tag"><div class="dim-tag-dot" style="background:var(--p2);"></div>Dimensions: Planning Rhythm · Roadmap Process · Strategic Direction</div>
+ 
+        <div id="moves-p2">
+          <div class="move" id="m-p2-1">
+            <div class="move-header" onclick="toggleMove(this)">
+              <div class="move-check" onclick="event.stopPropagation(); toggleCheck(this)"></div>
+              <div class="move-title">Design the planning calendar — then own it</div>
+              <div class="move-chevron">▾</div>
+            </div>
+            <div class="move-body">
+              <div class="move-why">Planning doesn't fail because teams are bad at prioritizing. It fails because no one owns the process of planning itself — it happens differently every quarter based on who has bandwidth. Design it once, run it consistently, improve it each cycle.</div>
+              <div class="move-how">How to do it</div>
+              <div class="move-steps">
+                <div class="move-step"><span class="move-step-n">1.</span><span>Map the full quarterly planning cycle backwards from commitment date: what needs to happen when?</span></div>
+                <div class="move-step"><span class="move-step-n">2.</span><span>Assign each stage an owner, a deadline, and a clear output — not just a meeting</span></div>
+                <div class="move-step"><span class="move-step-n">3.</span><span>Add buffer between stages — most plans fail because there's no time to absorb feedback</span></div>
+                <div class="move-step"><span class="move-step-n">4.</span><span>Publish the calendar 6 weeks before planning starts — not 2</span></div>
+              </div>
+              <div class="move-signal"><strong>Signal it's working:</strong> PMs know when planning starts, what they need to prepare, and who they need to align with — before the first planning meeting happens.</div>
+            </div>
+          </div>
+ 
+          <div class="move" id="m-p2-2">
+            <div class="move-header" onclick="toggleMove(this)">
+              <div class="move-check" onclick="event.stopPropagation(); toggleCheck(this)"></div>
+              <div class="move-title">Introduce a capacity model before commitments are made</div>
+              <div class="move-chevron">▾</div>
+            </div>
+            <div class="move-body">
+              <div class="move-why">The single most common planning failure is committing to more work than the team can deliver. This isn't an execution problem — it's a planning design problem. A simple capacity model run before any initiatives are committed prevents the most expensive form of planning dysfunction.</div>
+              <div class="move-how">How to do it</div>
+              <div class="move-steps">
+                <div class="move-step"><span class="move-step-n">1.</span><span>Pull last 2 quarters of delivery data: initiatives committed vs shipped</span></div>
+                <div class="move-step"><span class="move-step-n">2.</span><span>Calculate historical delivery rate — most teams ship 60–70% of planned scope</span></div>
+                <div class="move-step"><span class="move-step-n">3.</span><span>Set the quarterly initiative ceiling using that rate, not optimism</span></div>
+                <div class="move-step"><span class="move-step-n">4.</span><span>Present this to leadership before planning starts — anchor the conversation in data</span></div>
+              </div>
+              <div class="move-signal"><strong>Signal it's working:</strong> The plan that gets committed is one the team can actually deliver — and leadership knows why the ceiling is where it is.</div>
+            </div>
+          </div>
+ 
+          <div class="move" id="m-p2-3">
+            <div class="move-header" onclick="toggleMove(this)">
+              <div class="move-check" onclick="event.stopPropagation(); toggleCheck(this)"></div>
+              <div class="move-title">Build a shared prioritization framework — and enforce it</div>
+              <div class="move-chevron">▾</div>
+            </div>
+            <div class="move-body">
+              <div class="move-why">When every PM prioritizes differently, cross-team tradeoffs become political rather than strategic. A shared framework doesn't eliminate debate — it makes debate productive by giving everyone the same language and criteria.</div>
+              <div class="move-how">How to do it</div>
+              <div class="move-steps">
+                <div class="move-step"><span class="move-step-n">1.</span><span>Choose or design a framework: OKR alignment + effort + confidence is a strong starting point</span></div>
+                <div class="move-step"><span class="move-step-n">2.</span><span>Pilot it with 2–3 PMs before rolling out — find where it breaks down</span></div>
+                <div class="move-step"><span class="move-step-n">3.</span><span>Make it the required format for any item entering a planning session</span></div>
+                <div class="move-step"><span class="move-step-n">4.</span><span>Use it to resolve stakeholder debates: "Our framework scores this as lower priority — here's why"</span></div>
+              </div>
+              <div class="move-signal"><strong>Signal it's working:</strong> When a stakeholder pushes back on a priority, the PM can explain the decision using the framework — not just assert it.</div>
+            </div>
+          </div>
+ 
+          <div class="move" id="m-p2-4">
+            <div class="move-header" onclick="toggleMove(this)">
+              <div class="move-check" onclick="event.stopPropagation(); toggleCheck(this)"></div>
+              <div class="move-title">Make the roadmap a live decision tool — not a presentation artifact</div>
+              <div class="move-chevron">▾</div>
+            </div>
+            <div class="move-body">
+              <div class="move-why">A roadmap that only gets updated before board meetings or QBRs isn't a roadmap — it's a slide deck. The roadmap should reflect current reality at all times and be the source of truth that drives conversations, not a summary of decisions already made.</div>
+              <div class="move-how">How to do it</div>
+              <div class="move-steps">
+                <div class="move-step"><span class="move-step-n">1.</span><span>Define what "current" means: roadmap items should be updated within 48 hours of any status change</span></div>
+                <div class="move-step"><span class="move-step-n">2.</span><span>Build a lightweight intake process: every new request goes through the framework before it touches the roadmap</span></div>
+                <div class="move-step"><span class="move-step-n">3.</span><span>Establish a tradeoff rule: adding something means removing something — no exceptions</span></div>
+                <div class="move-step"><span class="move-step-n">4.</span><span>Run a monthly roadmap review with stakeholders — not to present, but to discuss</span></div>
+              </div>
+              <div class="move-signal"><strong>Signal it's working:</strong> When a stakeholder asks "what's the status of X?", the answer is "check the roadmap" — and the roadmap is right.</div>
+            </div>
+          </div>
+ 
+          <div class="move" id="m-p2-5">
+            <div class="move-header" onclick="toggleMove(this)">
+              <div class="move-check" onclick="event.stopPropagation(); toggleCheck(this)"></div>
+              <div class="move-title">Design the OKR operationalization process</div>
+              <div class="move-chevron">▾</div>
+            </div>
+            <div class="move-body">
+              <div class="move-why">Most orgs set OKRs. Few orgs make OKRs do anything. The gap between "we have OKRs" and "OKRs drive our decisions" is an ops design problem — someone needs to own the process that connects OKRs to planning, to roadmap decisions, and to weekly check-ins.</div>
+              <div class="move-how">How to do it</div>
+              <div class="move-steps">
+                <div class="move-step"><span class="move-step-n">1.</span><span>Map every stage where OKRs should influence decisions: planning, prioritization, mid-quarter reviews, retrospectives</span></div>
+                <div class="move-step"><span class="move-step-n">2.</span><span>Build the OKR review cadence into the planning calendar — not as a separate meeting, but integrated</span></div>
+                <div class="move-step"><span class="move-step-n">3.</span><span>Create a simple OKR health check: are we on track, off track, or at risk? Run it monthly</span></div>
+                <div class="move-step"><span class="move-step-n">4.</span><span>Own the retrospective that evaluates OKR quality — not just whether we hit them, but whether they were the right ones</span></div>
+              </div>
+              <div class="move-signal"><strong>Signal it's working:</strong> Mid-quarter, leadership can answer "are we on track for our OKRs?" in 5 minutes with data — not a week of prep.</div>
+            </div>
+          </div>
+ 
+          <div class="move" id="m-p2-6">
+            <div class="move-header" onclick="toggleMove(this)">
+              <div class="move-check" onclick="event.stopPropagation(); toggleCheck(this)"></div>
+              <div class="move-title">Build the mid-quarter replan process — before you need it</div>
+              <div class="move-chevron">▾</div>
+            </div>
+            <div class="move-body">
+              <div class="move-why">Every quarter has at least one significant priority shift. Without a defined process for handling it, mid-quarter changes are handled through Slack threads and hallway conversations — producing decisions that aren't documented, communicated, or trusted.</div>
+              <div class="move-how">How to do it</div>
+              <div class="move-steps">
+                <div class="move-step"><span class="move-step-n">1.</span><span>Define what triggers a formal replan: severity threshold, business impact, who can call it</span></div>
+                <div class="move-step"><span class="move-step-n">2.</span><span>Design the replan process: who's involved, what information is needed, how long it takes</span></div>
+                <div class="move-step"><span class="move-step-n">3.</span><span>Build a lightweight impact assessment template: what's affected, what's the tradeoff, who needs to know</span></div>
+                <div class="move-step"><span class="move-step-n">4.</span><span>Document every mid-quarter change — create an institutional record of what changed and why</span></div>
+              </div>
+              <div class="move-signal"><strong>Signal it's working:</strong> The first mid-quarter priority shift gets handled in 48 hours with a documented decision and a team that's informed — not a 2-week scramble.</div>
+            </div>
+          </div>
+ 
+          <div class="move" id="m-p2-7">
+            <div class="move-header" onclick="toggleMove(this)">
+              <div class="move-check" onclick="event.stopPropagation(); toggleCheck(this)"></div>
+              <div class="move-title">Stand up the planning retrospective — make it part of the cycle</div>
+              <div class="move-chevron">▾</div>
+            </div>
+            <div class="move-body">
+              <div class="move-why">Planning improves only if someone is accountable for improving it. A retrospective at the end of every planning cycle — not just on delivery, but on the planning process itself — is what makes the system get better rather than just repeat.</div>
+              <div class="move-how">How to do it</div>
+              <div class="move-steps">
+                <div class="move-step"><span class="move-step-n">1.</span><span>Schedule the planning retro before the next cycle starts — make it non-negotiable</span></div>
+                <div class="move-step"><span class="move-step-n">2.</span><span>Ask three questions: what did we commit to, what did we ship, what does the gap tell us about our planning process?</span></div>
+                <div class="move-step"><span class="move-step-n">3.</span><span>Produce one concrete change to the planning process each cycle — small but deliberate</span></div>
+                <div class="move-step"><span class="move-step-n">4.</span><span>Share the retro findings with leadership — make the planning system visible, not just its outputs</span></div>
+              </div>
+              <div class="move-signal"><strong>Signal it's working:</strong> After 3 cycles, you can point to specific changes made to the planning process based on retro findings — and measure the impact.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+ 
+      <!-- PHASE 3 -->
+      <div class="phase-section" id="phase-3">
+        <div class="phase-header">
+          <div class="phase-number-badge" style="color:var(--p3); border-color:rgba(245,166,35,0.3);">Phase 03</div>
+          <div class="phase-header-text">
+            <div class="phase-eyebrow">The differentiator</div>
+            <div class="phase-title" style="color:var(--p3);">AI Integration</div>
+            <div class="phase-desc">Embedding AI into product ops workflows — not as a productivity shortcut, but as a structural change to how the org plans, reports, reviews, and communicates. The difference between AI-assisted and AI-native is design.</div>
+          </div>
+        </div>
+        <div class="phase-progress"><div class="phase-progress-fill" id="prog-p3" style="background:var(--p3);"></div></div>
+ 
+        <div class="dim-tag"><div class="dim-tag-dot" style="background:var(--p3);"></div>Dimensions: AI Adoption · Reporting & Visibility · Cross-Functional Alignment</div>
+ 
+        <div id="moves-p3">
+          <div class="move" id="m-p3-1">
+            <div class="move-header" onclick="toggleMove(this)">
+              <div class="move-check" onclick="event.stopPropagation(); toggleCheck(this)"></div>
+              <div class="move-title">Build the executive summary agent — automate weekly reporting</div>
+              <div class="move-chevron">▾</div>
+            </div>
+            <div class="move-body">
+              <div class="move-why">Executive reporting is one of the highest-effort, lowest-value uses of product ops time. A workflow that pulls from Jira, Slack, and Confluence to generate a structured weekly summary — reviewed and approved by a human — can replace 3–4 hours of manual work per week and produce more consistent output.</div>
+              <div class="move-how">How to do it</div>
+              <div class="move-steps">
+                <div class="move-step"><span class="move-step-n">1.</span><span>Define the summary format: what sections, what level of detail, what leadership actually reads</span></div>
+                <div class="move-step"><span class="move-step-n">2.</span><span>Build the data pull: Jira status changes, Slack blockers, Confluence initiative updates</span></div>
+                <div class="move-step"><span class="move-step-n">3.</span><span>Write the prompt that structures the aggregated data into the summary format</span></div>
+                <div class="move-step"><span class="move-step-n">4.</span><span>Run for 4 weeks with human review — then reduce review time as quality stabilizes</span></div>
+              </div>
+              <div class="move-signal"><strong>Signal it's working:</strong> Leadership stops asking "what's the status of X?" in meetings because the summary answers it before the meeting happens.</div>
+              <div class="move-ai-tag">⚡ AI workflow</div>
+            </div>
+          </div>
+ 
+          <div class="move" id="m-p3-2">
+            <div class="move-header" onclick="toggleMove(this)">
+              <div class="move-check" onclick="event.stopPropagation(); toggleCheck(this)"></div>
+              <div class="move-title">Implement a PRD quality gate — AI reviews specs before engineering sees them</div>
+              <div class="move-chevron">▾</div>
+            </div>
+            <div class="move-body">
+              <div class="move-why">Spec quality varies by PM and gaps get caught late — in sprint planning or mid-sprint — when they're expensive to address. An AI review step that checks specs against a quality standard before they leave the product team catches the most common gaps early and consistently.</div>
+              <div class="move-how">How to do it</div>
+              <div class="move-steps">
+                <div class="move-step"><span class="move-step-n">1.</span><span>Document your top 10 most common spec gaps: missing acceptance criteria, unclear scope, unaddressed edge cases</span></div>
+                <div class="move-step"><span class="move-step-n">2.</span><span>Write a review prompt that checks every spec against those 10 criteria</span></div>
+                <div class="move-step"><span class="move-step-n">3.</span><span>Make it a shared tool — every PM runs it before marking a spec ready for engineering</span></div>
+                <div class="move-step"><span class="move-step-n">4.</span><span>Track the gap categories caught — use that data to improve spec templates over time</span></div>
+              </div>
+              <div class="move-signal"><strong>Signal it's working:</strong> Engineering sprint planning gets shorter because fewer gaps surface for the first time when engineers read the spec.</div>
+              <div class="move-ai-tag">⚡ AI workflow</div>
+            </div>
+          </div>
+ 
+          <div class="move" id="m-p3-3">
+            <div class="move-header" onclick="toggleMove(this)">
+              <div class="move-check" onclick="event.stopPropagation(); toggleCheck(this)"></div>
+              <div class="move-title">Build the risk and blocker monitor — surface problems before escalation</div>
+              <div class="move-chevron">▾</div>
+            </div>
+            <div class="move-body">
+              <div class="move-why">Most project risk surfaces reactively — someone escalates it, usually too late for an easy fix. A monitoring workflow that scans your project data daily and flags at-risk items proactively changes the conversation from "why didn't we know?" to "here's the option we're taking."</div>
+              <div class="move-how">How to do it</div>
+              <div class="move-steps">
+                <div class="move-step"><span class="move-step-n">1.</span><span>Define your risk signals: tickets blocked >3 days, initiatives with no recent updates, approaching deadlines with open dependencies</span></div>
+                <div class="move-step"><span class="move-step-n">2.</span><span>Build the Jira query or automation that surfaces items matching those signals daily</span></div>
+                <div class="move-step"><span class="move-step-n">3.</span><span>Route the output to a Slack channel with the PM owner tagged — not a dashboard nobody checks</span></div>
+                <div class="move-step"><span class="move-step-n">4.</span><span>Review false positive rate weekly and tune the signals — too many alerts = ignored alerts</span></div>
+              </div>
+              <div class="move-signal"><strong>Signal it's working:</strong> Leadership stops being surprised by at-risk projects. Risk conversations happen earlier and with more options on the table.</div>
+              <div class="move-ai-tag">⚡ AI workflow</div>
+            </div>
+          </div>
+ 
+          <div class="move" id="m-p3-4">
+            <div class="move-header" onclick="toggleMove(this)">
+              <div class="move-check" onclick="event.stopPropagation(); toggleCheck(this)"></div>
+              <div class="move-title">Automate customer signal synthesis — categorize before humans touch it</div>
+              <div class="move-chevron">▾</div>
+            </div>
+            <div class="move-body">
+              <div class="move-why">Customer feedback is only useful if it gets synthesized quickly enough to influence decisions. Most orgs have the data — they just can't process it fast enough. An AI categorization layer processes incoming signals and surfaces themes so PMs are working from pre-synthesized intelligence, not raw data.</div>
+              <div class="move-how">How to do it</div>
+              <div class="move-steps">
+                <div class="move-step"><span class="move-step-n">1.</span><span>Identify your primary feedback sources: support tickets, NPS responses, call recordings, Slack customer channels</span></div>
+                <div class="move-step"><span class="move-step-n">2.</span><span>Define your taxonomy: what categories matter for your product? (Feature gaps, UX friction, performance, pricing, etc.)</span></div>
+                <div class="move-step"><span class="move-step-n">3.</span><span>Build the categorization workflow — route new feedback through AI before it reaches the PM</span></div>
+                <div class="move-step"><span class="move-step-n">4.</span><span>Produce a weekly theme summary: top categories by volume, sentiment trend, urgency signals</span></div>
+              </div>
+              <div class="move-signal"><strong>Signal it's working:</strong> When planning asks "what are customers saying about X?", the answer takes minutes — not a week of manual analysis.</div>
+              <div class="move-ai-tag">⚡ AI workflow</div>
+            </div>
+          </div>
+ 
+          <div class="move" id="m-p3-5">
+            <div class="move-header" onclick="toggleMove(this)">
+              <div class="move-check" onclick="event.stopPropagation(); toggleCheck(this)"></div>
+              <div class="move-title">Create the shared prompt library — institutionalize AI fluency</div>
+              <div class="move-chevron">▾</div>
+            </div>
+            <div class="move-body">
+              <div class="move-why">When AI use is individual, the org can't learn from what works. A shared prompt library captures the workflows that produce consistently good output and makes them available to every PM — turning individual experimentation into institutional capability.</div>
+              <div class="move-how">How to do it</div>
+              <div class="move-steps">
+                <div class="move-step"><span class="move-step-n">1.</span><span>Collect the top 10 AI use cases your PMs already do manually: summarization, gap analysis, competitive research, draft generation</span></div>
+                <div class="move-step"><span class="move-step-n">2.</span><span>Write and test a prompt for each — optimize for output quality, not brevity</span></div>
+                <div class="move-step"><span class="move-step-n">3.</span><span>Host them in a shared, searchable location — Notion, Confluence, or a dedicated doc</span></div>
+                <div class="move-step"><span class="move-step-n">4.</span><span>Run a monthly review: which prompts are used, which produce poor output, what's missing?</span></div>
+              </div>
+              <div class="move-signal"><strong>Signal it's working:</strong> A PM who's never used a particular AI workflow can produce quality output on their first try because the prompt does the heavy lifting.</div>
+              <div class="move-ai-tag">⚡ AI workflow</div>
+            </div>
+          </div>
+ 
+          <div class="move" id="m-p3-6">
+            <div class="move-header" onclick="toggleMove(this)">
+              <div class="move-check" onclick="event.stopPropagation(); toggleCheck(this)"></div>
+              <div class="move-title">Automate release notes and internal comms — eliminate the manual tax</div>
+              <div class="move-chevron">▾</div>
+            </div>
+            <div class="move-body">
+              <div class="move-why">Writing release notes and internal product updates is one of the most repetitive tasks in product ops. A workflow that drafts from merged tickets or completed specs — reviewed by a human before sending — eliminates 80% of the manual effort and ensures GTM teams always have current context.</div>
+              <div class="move-how">How to do it</div>
+              <div class="move-steps">
+                <div class="move-step"><span class="move-step-n">1.</span><span>Define the format: what does a good release note contain for your internal and external audiences?</span></div>
+                <div class="move-step"><span class="move-step-n">2.</span><span>Build the trigger: when a ticket moves to "done" or a spec is marked shipped, generate a draft</span></div>
+                <div class="move-step"><span class="move-step-n">3.</span><span>Route the draft to the PM for 5-minute review and approval — not authorship</span></div>
+                <div class="move-step"><span class="move-step-n">4.</span><span>Distribute automatically to the relevant channels: GTM Slack, CS wiki, external changelog</span></div>
+              </div>
+              <div class="move-signal"><strong>Signal it's working:</strong> CS and sales stop messaging PMs to ask what changed. The information reaches them before they need to ask.</div>
+              <div class="move-ai-tag">⚡ AI workflow</div>
+            </div>
+          </div>
+ 
+          <div class="move" id="m-p3-7">
+            <div class="move-header" onclick="toggleMove(this)">
+              <div class="move-check" onclick="event.stopPropagation(); toggleCheck(this)"></div>
+              <div class="move-title">Build the AI governance framework — norms before tools proliferate</div>
+              <div class="move-chevron">▾</div>
+            </div>
+            <div class="move-body">
+              <div class="move-why">Without governance, AI adoption is fragmented — each PM uses different tools, different standards, different quality bars. A lightweight governance framework sets the norms that allow adoption to compound rather than fragment: which tools are approved, what quality standards apply, how AI outputs get reviewed.</div>
+              <div class="move-how">How to do it</div>
+              <div class="move-steps">
+                <div class="move-step"><span class="move-step-n">1.</span><span>Document approved tools and use cases: what's sanctioned, what needs review, what's prohibited</span></div>
+                <div class="move-step"><span class="move-step-n">2.</span><span>Define the quality standard: AI output goes through human review before any external use</span></div>
+                <div class="move-step"><span class="move-step-n">3.</span><span>Establish the feedback loop: how do PMs flag when AI outputs are consistently poor?</span></div>
+                <div class="move-step"><span class="move-step-n">4.</span><span>Review quarterly — the right governance for an emerging function is lightweight and adaptive, not bureaucratic</span></div>
+              </div>
+              <div class="move-signal"><strong>Signal it's working:</strong> When a new AI tool gets proposed, the team has a clear process for evaluating and adopting it — not a debate from scratch every time.</div>
+              <div class="move-ai-tag">⚡ AI workflow</div>
+            </div>
+          </div>
+        </div>
+      </div>
+ 
+      <!-- PHASE 4 -->
+      <div class="phase-section" id="phase-4">
+        <div class="phase-header">
+          <div class="phase-number-badge" style="color:var(--p4); border-color:rgba(192,132,252,0.3);">Phase 04</div>
+          <div class="phase-header-text">
+            <div class="phase-eyebrow">When the foundation holds</div>
+            <div class="phase-title" style="color:var(--p4);">Scale</div>
+            <div class="phase-desc">Once the planning system and AI workflows are running, the work shifts from building to compounding — scaling what works, closing the remaining gaps, and making the function a strategic asset rather than an operational one.</div>
+          </div>
+        </div>
+        <div class="phase-progress"><div class="phase-progress-fill" id="prog-p4" style="background:var(--p4);"></div></div>
+ 
+        <div class="dim-tag"><div class="dim-tag-dot" style="background:var(--p4);"></div>Dimensions: Cross-Functional Alignment · Ops Infrastructure · All dimensions</div>
+ 
+        <div id="moves-p4">
+          <div class="move" id="m-p4-1">
+            <div class="move-header" onclick="toggleMove(this)">
+              <div class="move-check" onclick="event.stopPropagation(); toggleCheck(this)"></div>
+              <div class="move-title">Build the cross-functional operating cadence</div>
+              <div class="move-chevron">▾</div>
+            </div>
+            <div class="move-body">
+              <div class="move-why">As the product org scales, alignment with engineering, design, and GTM becomes the primary coordination challenge. A structured cross-functional cadence — not more meetings, but the right ones — reduces the ad hoc coordination that eats PM time and creates misalignment.</div>
+              <div class="move-how">How to do it</div>
+              <div class="move-steps">
+                <div class="move-step"><span class="move-step-n">1.</span><span>Map every cross-functional touchpoint: where do product, eng, design, and GTM need to be in sync?</span></div>
+                <div class="move-step"><span class="move-step-n">2.</span><span>Design the minimum cadence that covers those touchpoints — fewer, better meetings</span></div>
+                <div class="move-step"><span class="move-step-n">3.</span><span>Own the agenda for cross-functional rituals — product ops drives the content, not just the calendar</span></div>
+                <div class="move-step"><span class="move-step-n">4.</span><span>Audit quarterly: which meetings are producing decisions vs just consuming time?</span></div>
+              </div>
+              <div class="move-signal"><strong>Signal it's working:</strong> GTM teams stop finding out about product changes after they happen. Engineering stops building the wrong thing. The number of "why didn't I know about this?" moments drops measurably.</div>
+            </div>
+          </div>
+ 
+          <div class="move" id="m-p4-2">
+            <div class="move-header" onclick="toggleMove(this)">
+              <div class="move-check" onclick="event.stopPropagation(); toggleCheck(this)"></div>
+              <div class="move-title">Implement portfolio-level visibility for leadership</div>
+              <div class="move-chevron">▾</div>
+            </div>
+            <div class="move-body">
+              <div class="move-why">As the number of initiatives grows, leadership needs a way to see the full portfolio without scheduling time with every PM. Portfolio-level visibility — what's in flight, what's at risk, what's blocked, what shipped — changes the quality of executive conversations from status updates to strategic decisions.</div>
+              <div class="move-how">How to do it</div>
+              <div class="move-steps">
+                <div class="move-step"><span class="move-step-n">1.</span><span>Define the leadership view: what does a CPO need to see weekly to make good decisions?</span></div>
+                <div class="move-step"><span class="move-step-n">2.</span><span>Build it from existing data — Jira, roadmap tools — not a separate reporting system requiring manual input</span></div>
+                <div class="move-step"><span class="move-step-n">3.</span><span>Layer in AI summarization to produce the narrative alongside the data</span></div>
+                <div class="move-step"><span class="move-step-n">4.</span><span>Present it once, get feedback, iterate — don't build the perfect dashboard before showing it</span></div>
+              </div>
+              <div class="move-signal"><strong>Signal it's working:</strong> The CPO can answer "what are our top 3 at-risk initiatives this quarter?" without scheduling a call with 5 PMs.</div>
+            </div>
+          </div>
+ 
+          <div class="move" id="m-p4-3">
+            <div class="move-header" onclick="toggleMove(this)">
+              <div class="move-check" onclick="event.stopPropagation(); toggleCheck(this)"></div>
+              <div class="move-title">Build the PM enablement program — scale capability, not just process</div>
+              <div class="move-chevron">▾</div>
+            </div>
+            <div class="move-body">
+              <div class="move-why">Operating systems only work if the people using them can use them well. PM enablement — onboarding, skill-building, AI fluency, framework training — is how product ops compounds its impact beyond the systems it builds. A better PM org needs less coordination overhead, not more.</div>
+              <div class="move-how">How to do it</div>
+              <div class="move-steps">
+                <div class="move-step"><span class="move-step-n">1.</span><span>Identify the capability gaps: where do PMs consistently struggle? Prioritization? Stakeholder management? AI fluency?</span></div>
+                <div class="move-step"><span class="move-step-n">2.</span><span>Build lightweight enablement resources: playbooks, templates, prompt libraries, worked examples</span></div>
+                <div class="move-step"><span class="move-step-n">3.</span><span>Run quarterly PM skill sessions — not training theater, but working sessions on real problems</span></div>
+                <div class="move-step"><span class="move-step-n">4.</span><span>Measure enablement quality by outcome: do PMs who go through onboarding ramp faster? Do skill sessions change behavior?</span></div>
+              </div>
+              <div class="move-signal"><strong>Signal it's working:</strong> New PMs reach full productivity faster. Existing PMs can describe their planning and prioritization process consistently — because it's the same process.</div>
+            </div>
+          </div>
+ 
+          <div class="move" id="m-p4-4">
+            <div class="move-header" onclick="toggleMove(this)">
+              <div class="move-check" onclick="event.stopPropagation(); toggleCheck(this)"></div>
+              <div class="move-title">Measure the operating model — create feedback loops that improve it</div>
+              <div class="move-chevron">▾</div>
+            </div>
+            <div class="move-body">
+              <div class="move-why">You can't improve what you don't measure. The operating model itself needs metrics — not just the product it supports. Planning accuracy, roadmap drift, cross-functional satisfaction, AI workflow adoption — these are the signals that tell you whether the system is working and what to fix next.</div>
+              <div class="move-how">How to do it</div>
+              <div class="move-steps">
+                <div class="move-step"><span class="move-step-n">1.</span><span>Define 5–7 operating model metrics: planning accuracy rate, mid-quarter replan frequency, roadmap drift, time spent on reporting, AI workflow adoption</span></div>
+                <div class="move-step"><span class="move-step-n">2.</span><span>Baseline them now — you need a before to measure improvement against</span></div>
+                <div class="move-step"><span class="move-step-n">3.</span><span>Review quarterly alongside the planning retro — what did the metrics tell us about what to change?</span></div>
+                <div class="move-step"><span class="move-step-n">4.</span><span>Share the metrics with leadership — make the health of the operating model visible, not just assumed</span></div>
+              </div>
+              <div class="move-signal"><strong>Signal it's working:</strong> You can show leadership a trend line on planning accuracy that's improving quarter over quarter — with a specific explanation of what changed and why.</div>
+            </div>
+          </div>
+ 
+          <div class="move" id="m-p4-5">
+            <div class="move-header" onclick="toggleMove(this)">
+              <div class="move-check" onclick="event.stopPropagation(); toggleCheck(this)"></div>
+              <div class="move-title">Move from reactive to predictive — use operational data to anticipate problems</div>
+              <div class="move-chevron">▾</div>
+            </div>
+            <div class="move-body">
+              <div class="move-why">The mature state of product ops isn't running a good planning cycle — it's using the data from past cycles to make better decisions in future ones. Historical delivery data, team velocity patterns, dependency complexity — these predict which current initiatives are likely to slip before any signals appear.</div>
+              <div class="move-how">How to do it</div>
+              <div class="move-steps">
+                <div class="move-step"><span class="move-step-n">1.</span><span>Build a delivery pattern model: what attributes of past initiatives correlate with late delivery? Scope size, cross-team dependencies, technical complexity?</span></div>
+                <div class="move-step"><span class="move-step-n">2.</span><span>Apply the model to current commitments — flag the highest-risk items before the quarter begins</span></div>
+                <div class="move-step"><span class="move-step-n">3.</span><span>Present risk predictions to leadership with proposed mitigations — not just the risk</span></div>
+                <div class="move-step"><span class="move-step-n">4.</span><span>Validate the model quarterly: how accurate were the predictions? What did we miss?</span></div>
+              </div>
+              <div class="move-signal"><strong>Signal it's working:</strong> Leadership stops being surprised by late initiatives. You can say "based on our pattern data, these three things are at risk" at the start of the quarter — and be right more often than not.</div>
+              <div class="move-ai-tag">⚡ AI workflow</div>
+            </div>
+          </div>
+ 
+          <div class="move" id="m-p4-6">
+            <div class="move-header" onclick="toggleMove(this)">
+              <div class="move-check" onclick="event.stopPropagation(); toggleCheck(this)"></div>
+              <div class="move-title">Document and share the operating model — make it a durable asset</div>
+              <div class="move-chevron">▾</div>
+            </div>
+            <div class="move-body">
+              <div class="move-why">The operating model you've built is only as durable as its documentation. If it lives in your head or in scattered Confluence pages, it doesn't survive team changes, org restructuring, or leadership transitions. A documented, maintained operating model is a genuine org asset — and evidence of the function's maturity.</div>
+              <div class="move-how">How to do it</div>
+              <div class="move-steps">
+                <div class="move-step"><span class="move-step-n">1.</span><span>Write the operating model document: what the function owns, how each process works, who's accountable for what</span></div>
+                <div class="move-step"><span class="move-step-n">2.</span><span>Include the rationale for key design decisions — future owners need to understand why, not just what</span></div>
+                <div class="move-step"><span class="move-step-n">3.</span><span>Assign a review cadence: quarterly update minimum, major review annually</span></div>
+                <div class="move-step"><span class="move-step-n">4.</span><span>Share it with leadership and new PM hires — it should be part of the onboarding package</span></div>
+              </div>
+              <div class="move-signal"><strong>Signal it's working:</strong> If you left tomorrow, the next person could understand how the org operates and why within their first week — from the documentation alone.</div>
+            </div>
+          </div>
+ 
+          <div class="move" id="m-p4-7">
+            <div class="move-header" onclick="toggleMove(this)">
+              <div class="move-check" onclick="event.stopPropagation(); toggleCheck(this)"></div>
+              <div class="move-title">Position product ops as a strategic function — not a support function</div>
+              <div class="move-chevron">▾</div>
+            </div>
+            <div class="move-body">
+              <div class="move-why">Product ops functions that survive and grow are the ones that are perceived as strategic — contributing to decisions, not just enabling them. This requires active positioning: showing leadership the business impact of what you've built, not just the outputs.</div>
+              <div class="move-how">How to do it</div>
+              <div class="move-steps">
+                <div class="move-step"><span class="move-step-n">1.</span><span>Connect every ops improvement to a business outcome: better planning accuracy → fewer missed commitments → higher customer trust</span></div>
+                <div class="move-step"><span class="move-step-n">2.</span><span>Present the operating model health metrics to leadership quarterly — frame them as strategic signals, not ops reports</span></div>
+                <div class="move-step"><span class="move-step-n">3.</span><span>Be in the room for strategic planning conversations — not as a note-taker, but as a contributor</span></div>
+                <div class="move-step"><span class="move-step-n">4.</span><span>Regularly ask: "what decision could leadership make better if they had clearer operational visibility?" Then build that visibility</span></div>
+              </div>
+              <div class="move-signal"><strong>Signal it's working:</strong> Leadership invites product ops into strategic conversations proactively — not just when something breaks.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+ 
+      <div class="playbook-cta">
+        <h2>Ready to build this for your org?</h2>
+        <p>I design and implement product operating models end to end — the planning infrastructure, the AI workflows, and the cross-functional systems that make this playbook real. Let's talk.</p>
+        <div class="cta-btns">
+          <a href="https://www.linkedin.com/in/stephenthiessen" target="_blank" class="btn-primary">Connect on LinkedIn →</a>
+          <a href="../ops-assessment/" class="btn-secondary">Take the maturity assessment</a>
+        </div>
+      </div>
+ 
+    </main>
+  </div>
+</div>
+ 
+<footer>
+  <div class="footer-inner">
+    <span class="footer-text">Product Ops Intelligence — built by Stephen Thiessen</span>
+    <a href="https://www.linkedin.com/in/stephenthiessen" target="_blank" class="footer-link">LinkedIn ↗</a>
+  </div>
+</footer>
+ 
+<script>
+const PHASE_COUNTS = { p1: 6, p2: 7, p3: 7, p4: 7 };
+const checked = {};
+const TOTAL = 27;
+ 
+function toggleMove(header) {
+  const move = header.closest('.move');
+  move.classList.toggle('open');
+}
+ 
+function toggleCheck(checkEl) {
+  const move = checkEl.closest('.move');
+  const id = move.id;
+  move.classList.toggle('done');
+  checked[id] = move.classList.contains('done');
+  updateProgress();
+}
+ 
+function updateProgress() {
+  const total = Object.values(checked).filter(Boolean).length;
+  const pct = Math.round((total / TOTAL) * 100);
+  document.getElementById('gp-fill').style.width = pct + '%';
+  document.getElementById('gp-pct').textContent = pct + '%';
+  document.getElementById('gp-count').textContent = total + ' of ' + TOTAL + ' moves complete';
+ 
+  ['p1','p2','p3','p4'].forEach(phase => {
+    const count = PHASE_COUNTS[phase];
+    let done = 0;
+    for (let i = 1; i <= count; i++) {
+      if (checked['m-' + phase + '-' + i]) done++;
+    }
+    const phasePct = Math.round((done / count) * 100);
+    const fill = document.getElementById('prog-' + phase);
+    if (fill) fill.style.width = phasePct + '%';
+    const pctEl = document.getElementById('pct-' + phase);
+    if (pctEl) pctEl.textContent = phasePct + '%';
+    const dot = document.getElementById('dot-' + phase);
+    if (dot) {
+      if (phasePct === 100) dot.classList.add('complete');
+      else dot.classList.remove('complete');
+    }
+  });
+ 
+  localStorage.setItem('playbook_progress', JSON.stringify(checked));
+}
+ 
+function setActiveNav(el) {
+  setTimeout(() => {
+    document.querySelectorAll('.phase-nav-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+  }, 100);
+}
+ 
+function switchTool(tool, btn) {
+  if (btn.classList.contains('soon')) return;
+  document.querySelectorAll('.tool-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const map = { assessment:'panel-assessment', audit:'panel-audit', facilitator:'panel-facilitator', playbook:'panel-playbook' };
+  document.getElementById(map[tool]).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+ 
+// Restore progress from localStorage
+function restoreProgress() {
+  const saved = localStorage.getItem('playbook_progress');
+  if (!saved) return;
+  const data = JSON.parse(saved);
+  Object.entries(data).forEach(([id, val]) => {
+    if (val) {
+      const el = document.getElementById(id);
+      if (el) { el.classList.add('done'); checked[id] = true; }
+    }
+  });
+  updateProgress();
+}
+ 
+// Scroll spy for sidebar
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const id = e.target.id;
+      const phaseNum = id.replace('phase-','');
+      document.querySelectorAll('.phase-nav-item').forEach(i => i.classList.remove('active'));
+      const target = document.querySelector(`.phase-nav-item[href="#${id}"]`);
+      if (target) target.classList.add('active');
+    }
+  });
+}, { threshold: 0.2 });
+ 
+document.querySelectorAll('.phase-section').forEach(s => observer.observe(s));
+restoreProgress();
+</script>
+</body>
+</html>
