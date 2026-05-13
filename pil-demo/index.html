@@ -4,853 +4,619 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PRD Intake Agent — PIL Demo · Stephen Thiessen</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: #0a0c10; margin: 0; padding: 0; }
+:root {
+  --bg:#0a0c10; --surface:#111318; --surface2:#181c23; --surface3:#1e2330;
+  --border:#252a35; --border-bright:#3a4255;
+  --accent:#4f8ef7; --accent2:#7c5cfc; --accent3:#f7934f; --accent4:#4ff7c0; --accent5:#f74f7e;
+  --text:#e8eaf0; --text-dim:#8892a4; --text-dimmer:#4a5568;
+  --mono:'IBM Plex Mono',monospace; --sans:'IBM Plex Sans',sans-serif;
+}
+body { background:var(--bg); color:var(--text); font-family:var(--sans); margin:0; min-height:100vh; -webkit-font-smoothing:antialiased; }
 
-/* Site nav */
-.site-nav {
-  background: rgba(10,12,16,0.95);
-  backdrop-filter: blur(14px);
-  border-bottom: 1px solid #252a35;
-  padding: 16px 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky;
-  top: 0;
-  z-index: 300;
-}
-.site-nav-logo {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px;
-  color: #8892a4;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  text-decoration: none;
-}
-.site-nav-logo span { color: #c8f55a; }
-.site-nav-right { display: flex; align-items: center; gap: 20px; }
-.site-nav-back {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  color: #8892a4;
-  text-decoration: none;
-  letter-spacing: 0.06em;
-  transition: color 0.2s;
-}
-.site-nav-back:hover { color: #e8eaf0; }
+.site-nav { background:rgba(10,12,16,.95); backdrop-filter:blur(14px); border-bottom:1px solid var(--border); padding:16px 28px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:300; }
+.nav-logo { font-family:var(--mono); font-size:12px; color:var(--text-dim); letter-spacing:.08em; text-transform:uppercase; text-decoration:none; }
+.nav-logo span { color:#c8f55a; }
+.nav-right { display:flex; align-items:center; gap:16px; }
+.mode-sw { display:flex; align-items:center; gap:4px; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:4px; }
+.mode-btn { font-family:var(--mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase; padding:6px 14px; border-radius:5px; border:none; cursor:pointer; transition:all .2s; color:var(--text-dimmer); background:transparent; }
+.mode-btn.active { background:var(--surface2); }
+.mode-btn.real.active { color:var(--accent); }
+.mode-btn.scr.active { color:var(--accent4); }
+.nav-back { font-family:var(--mono); font-size:11px; color:var(--text-dim); text-decoration:none; letter-spacing:.06em; transition:color .2s; }
+.nav-back:hover { color:var(--text); }
 
-/* Mode switcher */
-.mode-switcher {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: #111318;
-  border: 1px solid #252a35;
-  border-radius: 8px;
-  padding: 4px;
-}
-.mode-btn {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 6px 14px;
-  border-radius: 5px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: #4a5568;
-  background: transparent;
-}
-.mode-btn.active {
-  background: #252a35;
-  color: #e8eaf0;
-}
-.mode-btn.real.active { color: #4f8ef7; }
-.mode-btn.scripted.active { color: #4ff7c0; }
+.ctx-bar { background:#0d1017; border-bottom:1px solid var(--border); padding:10px 28px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+.ctx-tag { font-family:var(--mono); font-size:10px; letter-spacing:.08em; color:var(--text-dimmer); }
+.ctx-tag b { color:var(--text-dim); font-weight:400; }
+.ctx-div { color:var(--border-bright); }
 
-/* Context banner */
-.context-banner {
-  background: #0f1420;
-  border-bottom: 1px solid #252a35;
-  padding: 10px 28px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-.context-tag {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  color: #4a5568;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.context-tag span { color: #8892a4; }
-.context-divider { color: #252a35; font-size: 12px; }
+.api-overlay { position:fixed; inset:0; background:rgba(10,12,16,.92); backdrop-filter:blur(8px); z-index:500; display:none; align-items:center; justify-content:center; padding:24px; }
+.api-modal { background:var(--surface); border:1px solid var(--border-bright); border-radius:12px; padding:40px; max-width:480px; width:100%; }
+.api-ey { font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); margin-bottom:16px; }
+.api-title { font-size:20px; font-weight:600; color:var(--text); margin-bottom:12px; }
+.api-desc { font-size:13px; color:var(--text-dim); line-height:1.65; margin-bottom:24px; }
+.api-inp { width:100%; background:var(--bg); border:1px solid var(--border-bright); border-radius:8px; color:var(--text); font-family:var(--mono); font-size:12px; padding:12px 16px; outline:none; margin-bottom:16px; transition:border-color .2s; letter-spacing:.04em; }
+.api-inp:focus { border-color:var(--accent); }
+.api-inp::placeholder { color:var(--text-dimmer); }
+.api-btns { display:flex; gap:10px; }
+.api-go { background:var(--accent); color:#fff; border:none; border-radius:6px; font-family:var(--mono); font-size:11px; letter-spacing:.08em; font-weight:600; padding:10px 20px; cursor:pointer; flex:1; transition:all .2s; }
+.api-go:hover { background:#3d7de8; }
+.api-skip { background:transparent; color:var(--accent4); border:1px solid rgba(79,247,192,.25); border-radius:6px; font-family:var(--mono); font-size:11px; padding:10px 20px; cursor:pointer; transition:all .2s; }
+.api-note { font-family:var(--mono); font-size:10px; color:var(--text-dimmer); margin-top:14px; line-height:1.6; }
 
-/* API key overlay */
-.api-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(10,12,16,0.92);
-  backdrop-filter: blur(8px);
-  z-index: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-.api-modal {
-  background: #111318;
-  border: 1px solid #3a4255;
-  border-radius: 12px;
-  padding: 40px;
-  max-width: 480px;
-  width: 100%;
-}
-.api-modal-eyebrow {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #4f8ef7;
-  margin-bottom: 16px;
-}
-.api-modal-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: #e8eaf0;
-  margin-bottom: 12px;
-  font-family: 'IBM Plex Sans', sans-serif;
-}
-.api-modal-desc {
-  font-size: 13px;
-  color: #8892a4;
-  line-height: 1.65;
-  margin-bottom: 24px;
-  font-family: 'IBM Plex Sans', sans-serif;
-}
-.api-modal-input {
-  width: 100%;
-  background: #0a0c10;
-  border: 1px solid #3a4255;
-  border-radius: 8px;
-  color: #e8eaf0;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px;
-  padding: 12px 16px;
-  outline: none;
-  margin-bottom: 16px;
-  transition: border-color 0.2s;
-  letter-spacing: 0.04em;
-}
-.api-modal-input:focus { border-color: #4f8ef7; }
-.api-modal-input::placeholder { color: #4a5568; }
-.api-modal-btns { display: flex; gap: 10px; flex-wrap: wrap; }
-.api-modal-go {
-  background: #4f8ef7;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  font-weight: 600;
-  padding: 10px 20px;
-  cursor: pointer;
-  transition: all 0.2s;
-  flex: 1;
-}
-.api-modal-go:hover { background: #3d7de8; }
-.api-modal-skip {
-  background: transparent;
-  color: #4ff7c0;
-  border: 1px solid rgba(79,247,192,0.25);
-  border-radius: 6px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  padding: 10px 20px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.api-modal-skip:hover { background: rgba(79,247,192,0.07); }
-.api-modal-note {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
-  color: #4a5568;
-  margin-top: 14px;
-  line-height: 1.6;
-  letter-spacing: 0.04em;
-}
+.shell { display:flex; height:calc(100vh - 100px); overflow:hidden; }
 
-/* Demo container */
-#demo-root {
-  height: calc(100vh - 100px);
-}
+/* Chat */
+.chat-panel { flex:1; display:flex; flex-direction:column; border-right:1px solid var(--border); overflow:hidden; min-width:0; }
+.role-bar { flex-shrink:0; background:var(--surface); border-bottom:1px solid var(--border); padding:12px 24px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.bar-label { font-family:var(--mono); font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dimmer); }
+.role-sel { background:var(--surface2); border:1px solid var(--border-bright); border-radius:6px; color:var(--text); font-family:var(--mono); font-size:11px; padding:6px 12px; cursor:pointer; outline:none; min-width:180px; }
+.role-sel option { background:var(--surface2); }
+.start-btn { background:var(--accent); border:none; border-radius:6px; color:#fff; font-family:var(--mono); font-size:11px; letter-spacing:.08em; font-weight:600; padding:7px 20px; cursor:pointer; transition:all .2s; }
+.start-btn:disabled { opacity:.4; cursor:not-allowed; }
+.reset-btn { margin-left:auto; background:transparent; border:1px solid var(--border); border-radius:6px; color:var(--text-dimmer); font-family:var(--mono); font-size:10px; padding:6px 14px; cursor:pointer; display:none; }
+.reset-btn:hover { border-color:var(--accent5); color:var(--accent5); }
+
+.messages { flex:1; overflow-y:auto; padding:24px; display:flex; flex-direction:column; gap:16px; }
+.messages::-webkit-scrollbar { width:3px; }
+.messages::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+.msg { display:flex; gap:12px; animation:fadeUp .25s ease-out; }
+.msg.user { flex-direction:row-reverse; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.av { width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:9px; font-weight:600; flex-shrink:0; margin-top:2px; letter-spacing:.06em; }
+.av.agent { background:rgba(79,142,247,.15); border:1px solid rgba(79,142,247,.3); color:var(--accent); }
+.av.user { background:rgba(79,247,192,.1); border:1px solid rgba(79,247,192,.25); color:var(--accent4); }
+.bubble { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:12px 16px; font-size:13.5px; line-height:1.65; max-width:calc(100% - 44px); }
+.msg.user .bubble { background:var(--surface2); border-color:var(--border-bright); }
+.bubble p { margin-bottom:8px; }
+.bubble p:last-child { margin-bottom:0; }
+.bubble strong { color:var(--accent); font-weight:600; }
+.bubble em { color:var(--accent4); font-style:normal; font-weight:500; }
+.msg-time { font-family:var(--mono); font-size:9px; color:var(--text-dimmer); margin-top:4px; padding:0 2px; }
+.msg.user .msg-time { text-align:right; }
+
+.typing { display:flex; gap:12px; align-items:flex-start; }
+.typing-dots { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:14px 18px; display:flex; gap:5px; align-items:center; }
+.dot { width:5px; height:5px; border-radius:50%; background:var(--text-dimmer); animation:bounce 1.2s ease-in-out infinite; }
+.dot:nth-child(2){animation-delay:.2s} .dot:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+
+/* Choices (scripted) */
+.choices-wrap { flex-shrink:0; border-top:1px solid var(--border); background:var(--surface); padding:14px 24px 16px; display:none; flex-direction:column; gap:8px; }
+.choices-label { font-family:var(--mono); font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dimmer); margin-bottom:4px; }
+.choice-btn { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:12px 16px; cursor:pointer; text-align:left; font-size:13px; color:var(--text-dim); line-height:1.5; transition:all .2s; font-family:var(--sans); }
+.choice-btn:hover { border-color:var(--accent4); color:var(--text); background:var(--surface3); }
+
+/* Live input */
+.live-wrap { flex-shrink:0; border-top:1px solid var(--border); padding:16px 24px; background:var(--surface); display:none; gap:10px; align-items:flex-end; }
+.live-inp { flex:1; background:var(--surface2); border:1px solid var(--border-bright); border-radius:8px; color:var(--text); font-family:var(--sans); font-size:13.5px; padding:10px 14px; resize:none; outline:none; min-height:42px; max-height:120px; line-height:1.5; transition:border-color .2s; }
+.live-inp:focus { border-color:var(--accent); }
+.live-inp::placeholder { color:var(--text-dimmer); }
+.live-inp:disabled { opacity:.5; }
+.send-btn { background:var(--accent); border:none; border-radius:8px; color:#fff; font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.08em; padding:10px 18px; cursor:pointer; height:42px; flex-shrink:0; transition:all .2s; }
+.send-btn:disabled { opacity:.4; cursor:not-allowed; }
+
+.phase-bar { flex-shrink:0; padding:10px 20px; border-top:1px solid var(--border); display:none; gap:4px; align-items:center; }
+.ps { flex:1; height:3px; border-radius:2px; background:var(--border); transition:background .4s; }
+.ps.done { background:var(--accent4); }
+.ps.active { background:var(--accent); }
+.ph-label { font-family:var(--mono); font-size:9px; color:var(--text-dimmer); margin-left:8px; white-space:nowrap; letter-spacing:.08em; }
+
+.empty-state { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:14px; padding:40px; }
+.empty-icon { font-size:36px; opacity:.3; }
+.empty-txt { font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dimmer); line-height:2; }
+
+/* Output */
+.out-panel { width:420px; flex-shrink:0; display:flex; flex-direction:column; overflow:hidden; background:var(--surface); }
+.out-hdr { flex-shrink:0; padding:16px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.out-hdr-txt { font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--text-dimmer); }
+.out-status { font-family:var(--mono); font-size:9px; padding:3px 8px; border-radius:3px; }
+.s-empty { color:var(--text-dimmer); border:1px solid var(--border); }
+.s-building { color:var(--accent3); border:1px solid rgba(247,147,79,.3); background:rgba(247,147,79,.07); animation:pulse 1.5s ease-in-out infinite; }
+.s-complete { color:var(--accent4); border:1px solid rgba(79,247,192,.3); background:rgba(79,247,192,.07); }
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.out-body { flex:1; overflow-y:auto; padding:20px; }
+.out-body::-webkit-scrollbar{width:3px}
+.out-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.out-empty { height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:40px; text-align:center; }
+.out-empty-icon { font-size:32px; opacity:.3; }
+.out-empty-txt { font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-dimmer); line-height:1.8; }
+
+/* PRD */
+.prd { display:flex; flex-direction:column; gap:0; }
+.prd-top { margin-bottom:24px; padding-bottom:20px; border-bottom:1px solid var(--border); }
+.prd-ey { font-family:var(--mono); font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent3); margin-bottom:8px; }
+.prd-title { font-size:17px; font-weight:700; color:var(--text); line-height:1.2; margin-bottom:14px; }
+.prd-meta { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.prd-ml { font-family:var(--mono); font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-dimmer); margin-bottom:3px; }
+.prd-mv { font-size:11.5px; color:var(--text-dim); line-height:1.4; }
+.prd-sec { margin-bottom:20px; }
+.prd-sec-title { font-family:var(--mono); font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dimmer); margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+.prd-txt { font-size:12.5px; color:var(--text-dim); line-height:1.65; }
+.prd-txt.hi { color:var(--text); font-weight:500; }
+.prd-ul { list-style:none; display:flex; flex-direction:column; gap:5px; }
+.prd-ul li { font-size:12px; color:var(--text-dim); padding-left:18px; position:relative; line-height:1.5; }
+.prd-ul li::before { position:absolute; left:0; color:var(--text-dimmer); }
+.prd-ul.chk li::before { content:'✓'; color:var(--accent4); }
+.prd-ul.x li::before { content:'✗'; color:var(--accent5); }
+.prd-ul.q li::before { content:'?'; color:var(--accent); }
+.prd-ul.w li::before { content:'⚠'; color:var(--accent3); }
+.prd-ul.dot li::before { content:'·'; }
+.okr-tag { display:inline-flex; align-items:center; gap:4px; background:rgba(79,142,247,.1); border:1px solid rgba(79,142,247,.25); border-radius:4px; padding:3px 10px; font-family:var(--mono); font-size:10px; color:var(--accent); margin-top:4px; }
+.own-tag { display:inline-flex; align-items:center; gap:4px; background:rgba(79,247,192,.08); border:1px solid rgba(79,247,192,.2); border-radius:4px; padding:3px 10px; font-family:var(--mono); font-size:10px; color:var(--accent4); margin-top:4px; }
+.score-row { display:flex; align-items:center; gap:12px; margin-top:6px; }
+.score-n { font-family:var(--mono); font-size:24px; font-weight:600; color:var(--accent3); line-height:1; }
+.score-trk { flex:1; height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+.score-fill { height:100%; border-radius:2px; background:linear-gradient(90deg,var(--accent3),var(--accent4)); transition:width 1s ease-out; }
+
+.out-cta { flex-shrink:0; border-top:1px solid var(--border); padding:16px 20px; display:flex; flex-direction:column; gap:8px; }
+.cta-lbl { font-family:var(--mono); font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dimmer); margin-bottom:2px; }
+.cta { border-radius:6px; font-family:var(--mono); font-size:10px; letter-spacing:.08em; padding:9px 14px; cursor:pointer; transition:all .2s; text-align:center; border:1px solid; font-weight:500; text-decoration:none; display:block; }
+.cta-p { background:var(--accent); border-color:var(--accent); color:#fff; }
+.cta-p:hover { background:#3d7de8; }
+.cta-p:disabled { opacity:.4; cursor:not-allowed; }
+.cta-s { background:transparent; border-color:var(--border-bright); color:var(--text-dim); }
+.cta-s:hover { border-color:var(--accent4); color:var(--accent4); }
+.cta-t { background:transparent; border-color:var(--border); color:var(--text-dimmer); }
+.cta-t:hover { border-color:var(--accent2); color:var(--accent2); }
+
+@media(max-width:768px){.out-panel{display:none}}
 </style>
 </head>
 <body>
 
 <nav class="site-nav">
-  <a href="https://www.stephen-thiessen.com" class="site-nav-logo">Product Ops <span>Intelligence</span></a>
-  <div class="site-nav-right">
-    <div class="mode-switcher">
-      <button class="mode-btn real active" id="btn-real" onclick="setMode('real')">⚡ Live AI</button>
-      <button class="mode-btn scripted" id="btn-scripted" onclick="setMode('scripted')">◎ Scripted</button>
+  <a href="https://www.stephen-thiessen.com" class="nav-logo">Product Ops <span>Intelligence</span></a>
+  <div class="nav-right">
+    <div class="mode-sw">
+      <button class="mode-btn scr active" id="btn-scr" onclick="switchMode('scripted')">◎ Scripted</button>
+      <button class="mode-btn real" id="btn-real" onclick="switchMode('real')">⚡ Live AI</button>
     </div>
-    <a href="https://www.stephen-thiessen.com#pil" class="site-nav-back">← Back</a>
+    <a href="https://www.stephen-thiessen.com#pil" class="nav-back">← Back</a>
   </div>
 </nav>
 
-<div class="context-banner">
-  <div class="context-tag">The Product Intelligence Loop <span>·</span> Layer 1 · Capture</div>
-  <div class="context-divider">|</div>
-  <div class="context-tag">Fictional company: Worklayer <span>·</span> B2B SaaS <span>·</span> Series C <span>·</span> Q3 2026 Planning</div>
-  <div class="context-divider">|</div>
-  <div class="context-tag" id="mode-label">Mode: <span>Live AI (Claude API)</span></div>
+<div class="ctx-bar">
+  <div class="ctx-tag">PIL · Layer 1 · Capture</div>
+  <div class="ctx-div">|</div>
+  <div class="ctx-tag">Worklayer <b>·</b> B2B SaaS <b>·</b> Series C <b>·</b> Q3 2026</div>
+  <div class="ctx-div">|</div>
+  <div class="ctx-tag" id="mode-lbl">Mode: <b>Scripted walkthrough</b></div>
 </div>
 
-<!-- API key modal -->
 <div class="api-overlay" id="api-overlay">
   <div class="api-modal">
-    <div class="api-modal-eyebrow">// Live AI Mode</div>
-    <div class="api-modal-title">Add your Anthropic API key</div>
-    <div class="api-modal-desc">This demo calls the Claude API directly from your browser. Your key is stored locally and never sent anywhere except Anthropic. No backend, no data collection.<br><br>Don't have a key or prefer not to use one? Use Scripted mode for a pre-built walkthrough.</div>
-    <input type="password" class="api-modal-input" id="api-key-input" placeholder="sk-ant-..." autocomplete="off">
-    <div class="api-modal-btns">
-      <button class="api-modal-go" onclick="saveApiKey()">Start live demo →</button>
-      <button class="api-modal-skip" onclick="switchToScripted()">Use scripted mode instead</button>
+    <div class="api-ey">// Live AI Mode</div>
+    <div class="api-title">Add your Anthropic API key</div>
+    <div class="api-desc">This demo calls Claude directly from your browser. Your key is stored locally in this browser — never sent anywhere except Anthropic.<br><br>No key? Scripted mode gives you a fully guided walkthrough — no API required.</div>
+    <input type="password" class="api-inp" id="api-inp" placeholder="sk-ant-...">
+    <div class="api-btns">
+      <button class="api-go" onclick="saveKey()">Start live demo →</button>
+      <button class="api-skip" onclick="switchMode('scripted')">Use scripted mode</button>
     </div>
-    <div class="api-modal-note">Key stored in localStorage · Only sent to api.anthropic.com · Never logged or shared</div>
+    <div class="api-note">Stored in localStorage · Only sent to api.anthropic.com · Never logged</div>
   </div>
 </div>
 
-<div id="demo-root"></div>
-
-<script type="text/babel">
-const { useState, useRef, useEffect, useCallback } = React;
-
-// ── Worklayer context (same as original) ──────────────────────────
-const WORKLAYER_CONTEXT = `
-You are the Product Intake Agent for Worklayer, a mid-market B2B SaaS platform that helps operations and project teams manage cross-functional work. You guide stakeholders through a structured product intake conversation to capture new feature requests and ideas.
-
-COMPANY: Worklayer
-ARR: $34M, ~65% YoY growth | Stage: Series C | Employees: 280 | Customers: ~1,400
-
-Q3 2026 OKRs:
-- O1 — Accelerate Enterprise Expansion: Grow enterprise accounts (>$50K ACV) from 140→185, reduce enterprise churn 8%→5%, launch advanced permissions + audit log
-- O2 — Improve Time to Value: Reduce onboarding from 21→12 days, increase 30-day activation 54%→70%, launch guided setup templates
-- O3 — Platform Extensibility: Launch public API v2, deliver Salesforce + HubSpot native integrations, reach 40 integration partners
-
-ACTIVE INITIATIVES (Q3):
-1. Advanced Permissions & Audit Log — Fatima Al-Hassan — In Development — Score: 91
-2. Guided Onboarding Templates — Sam Liu — In Development — Score: 88
-3. Salesforce Native Integration — Lena Park — In Development — Score: 85
-4. API v2 Public Launch — Priya Nair — In Development — Score: 88
-5. HubSpot Native Integration — Lena Park — Planned — Score: 82
-6. Reporting Dashboard v2 — Derek Solis — In Discovery — Score: 79
-7. Mobile Offline Mode — Chris Reyes — In Discovery — Score: 71
-8. Workflow Automation: Conditional Logic — Aisha Thompson — Backlog — Score: 74
-
-PRODUCT TEAM:
-- Sarah Chen (CPO), Marcus Webb (VP Product Core), Priya Nair (VP Integrations)
-- Aisha Thompson (Workflow Automation), Derek Solis (Reporting), Lena Park (Integrations)
-- Fatima Al-Hassan (Enterprise & Permissions), Sam Liu (Onboarding), Chris Reyes (Mobile)
-
-KNOWN CUSTOMER PAIN THEMES:
-1. Reporting flexibility — custom report builder, top NPS request
-2. Permission complexity — enterprise accounts hitting role limits, blocking 3 expansion deals
-3. Onboarding drop-off — 46% never complete setup, CSMs spending 6+ hrs per account
-4. Integration reliability — Zapier breaks on updates, support ticket spike every release
-5. Mobile gaps — field-based users frustrated with limited mobile functionality
-
-CONVERSATION PHASES — follow in order:
-Phase 1 — WARM OPENING (1-2 exchanges): Greet based on role, ask for their idea. Be warm but not sycophantic.
-Phase 2 — ACTIVE LISTENING + KB SEARCH (2-3 exchanges): Reflect back. Surface any similar active initiatives. Ask if same, adjacent, or net-new.
-Phase 3 — GAP FILLING (3-5 exchanges): One question at a time. Fill: problem statement clarity, affected personas, success metrics, urgency/timeline, scope boundaries.
-Phase 4 — STRATEGIC ALIGNMENT (1-2 exchanges): Map to Q3 OKRs. Tell them which objective this connects to. Give them a chance to sharpen framing.
-Phase 5 — OUTPUT: When all critical gaps are filled, say exactly "INTAKE_COMPLETE" on its own line, then provide a JSON block wrapped in <OUTPUT> tags:
-<OUTPUT>
-{
-  "intake_summary": { "problem_statement": "...", "proposed_solution": "...", "affected_personas": ["..."], "success_metrics": ["..."], "urgency": "...", "constraints": "...", "submitted_by_role": "..." },
-  "prd_outline": { "objective": "...", "background": "...", "personas": ["..."], "success_metrics": ["..."], "scope_in": ["..."], "scope_out": ["..."], "open_questions": ["..."], "risks": ["..."] },
-  "alignment": { "okr": "...", "rationale": "...", "alignment_score": 0 },
-  "routing": { "recommended_owner": "...", "reason": "...", "suggested_reviewers": ["..."] }
-}
-</OUTPUT>
-
-ROLE BEHAVIOR: PM: peer tone, focus on metrics; Eng: technical, feasibility; Sales/CSM: translate customer language, revenue context; Exec: strategic, concise; Other: accessible, guided.
-RULES: One question at a time. Surface overlapping initiatives. Never sycophantic. Keep responses to 2-4 sentences in conversation phases.
-`;
-
-const SAMPLE_REQUEST = "We keep losing enterprise deals because prospects say our permissions aren't flexible enough. Sales has been asking for this for months. We need a way for admins to create custom roles instead of just using the defaults. I think it could also help with the audit log stuff compliance teams ask about.";
-
-const ROLES = [
-  { value: "", label: "Select your role..." },
-  { value: "Product Manager", label: "Product Manager" },
-  { value: "Engineering Lead", label: "Engineering Lead" },
-  { value: "Sales / CSM", label: "Sales / CSM" },
-  { value: "Executive / Leadership", label: "Executive / Leadership" },
-  { value: "Other / Stakeholder", label: "Other / Stakeholder" },
-];
-
-const PHASES = ["Opening", "Listening", "Gap Filling", "Alignment", "Output"];
-
-// ── Scripted conversation ─────────────────────────────────────────
-const SCRIPTED_CONVERSATION = [
-  {
-    trigger: null,
-    agent: `Before we get started — what role are you coming from? That helps me frame the right questions. And go ahead and describe your idea or request in your own words whenever you're ready.`
-  },
-  {
-    trigger: "custom roles",
-    agent: `Got it. You're describing a gap in our permissions model — specifically the inability for admins to define roles beyond our current defaults. I want to flag that we have an active initiative in development: **Advanced Permissions & Audit Log** (score: 91, owner: Fatima Al-Hassan). It's in development now and specifically targets enterprise permission complexity.\n\nIs what you're describing the same initiative, an extension of it, or something different that isn't covered by that work?`
-  },
-  {
-    trigger: "extension",
-    agent: `Understood — so the existing initiative may not go far enough. I want to make sure I understand the scope gap. What does "custom roles" mean concretely for your use case? Are we talking about admins defining role names and assigning permissions à la carte, or something more like role templates that can be duplicated and modified?`
-  },
-  {
-    trigger: "permission",
-    agent: `That's useful. Let me ask about impact: which customer segments or personas are most affected by this gap today? You mentioned enterprise prospects — are there specific account tiers, use cases, or industries where this comes up most frequently?`
-  },
-  {
-    trigger: "enterprise",
-    agent: `That's concrete. Now the success metric question: if we shipped this, how would you know it worked? What would change — in pipeline, in expansion, in support volume — that would tell you this was the right bet?`
-  },
-  {
-    trigger: "churn",
-    agent: `Last thing before I put this together: is there a timeline constraint here? You mentioned sales is feeling urgency. Is there a quarter, a contract, or a specific event this needs to land before?`
-  },
-  {
-    trigger: "Q3",
-    agent: `INTAKE_COMPLETE\n\nThanks — I have enough to generate the intake record. Here's what I've captured:\n\n**Strategic Alignment**: This maps directly to **O1 — Accelerate Enterprise Expansion**, specifically the "reduce enterprise churn 8%→5%" and "advance permissions" components. Alignment score: 88.\n\n**Routing**: Recommended owner is Fatima Al-Hassan (Advanced Permissions & Audit Log). This should be scoped as an extension of the active initiative, not a net-new PRD. Suggested reviewers: Marcus Webb (VP Product Core), relevant Sales leads.\n\nThe full intake record and PRD outline are now in the output panel.`,
-    output: {
-      intake_summary: {
-        problem_statement: "Enterprise admins cannot define custom permission roles beyond Worklayer's built-in defaults, blocking sales deals and increasing churn risk with compliance-sensitive accounts.",
-        proposed_solution: "Expand the permissions model to allow admins to create, name, and configure custom roles with granular permission sets — building on the active Advanced Permissions initiative.",
-        affected_personas: ["Enterprise IT admins", "Compliance teams", "Enterprise Account Executives"],
-        success_metrics: ["Unblock 3+ stalled enterprise expansion deals", "Reduce enterprise churn from 8% toward 5% target", "Decrease permission-related support tickets by 30%"],
-        urgency: "Q3 — tied to active enterprise expansion OKR and specific deals at risk",
-        constraints: "Must be scoped as extension of active initiative (Agent 1.2: no duplicate PRD needed)",
-        submitted_by_role: "Sales / CSM"
-      },
-      prd_outline: {
-        objective: "Enable enterprise admins to define custom permission roles with configurable permission sets, closing the gap between our current defaults and enterprise compliance requirements.",
-        background: "Worklayer's current permissions model supports a fixed set of built-in roles. Enterprise accounts — particularly in regulated industries — require granular role configuration that maps to their internal org structures and compliance obligations. This gap is blocking 3 expansion deals and contributing to enterprise churn.",
-        personas: ["Enterprise IT admin (primary)", "Compliance officer (secondary)", "CSM / Account Executive (informed)"],
-        success_metrics: ["Custom role creation available to all enterprise tier accounts", "3 blocked expansion deals unblocked within 30 days of launch", "Support ticket volume for permissions reduced by 30%"],
-        scope_in: ["Create / edit / delete custom roles", "Assign permissions to custom roles from a defined permission set", "Apply custom roles to users and groups", "Audit log entries for role changes"],
-        scope_out: ["Cross-account role templates", "Role inheritance / hierarchies (v2 consideration)", "API-based role management (defer to API v2)"],
-        open_questions: ["What is the maximum number of custom roles per account?", "Can custom roles inherit from built-in roles?", "Does this require changes to the onboarding flow for enterprise admins?"],
-        risks: ["Scope creep from sales requests for additional role attributes", "Performance impact of permission checks at scale", "Dependency on Audit Log feature (already in development — confirm shared timeline with Fatima)"]
-      },
-      alignment: {
-        okr: "O1 — Accelerate Enterprise Expansion",
-        rationale: "Directly addresses the 'reduce enterprise churn 8%→5%' key result and unblocks the 'grow enterprise accounts 140→185' motion. Custom roles are the most-cited blocker in enterprise sales cycles.",
-        alignment_score: 88
-      },
-      routing: {
-        recommended_owner: "Fatima Al-Hassan",
-        reason: "Active owner of Advanced Permissions & Audit Log initiative. This should be scoped as an extension of that work, not a separate PRD, to avoid scope fragmentation and duplication of effort.",
-        suggested_reviewers: ["Marcus Webb (VP Product Core)", "Sarah Chen (CPO — enterprise OKR owner)", "Enterprise AE lead (confirm deal specifics)"]
-      }
-    }
-  }
-];
-
-// ── Helpers ───────────────────────────────────────────────────────
-function parseOutput(text) {
-  const m = text.match(/<OUTPUT>([\s\S]*?)<\/OUTPUT>/);
-  if (!m) return null;
-  try { return JSON.parse(m[1].trim()); } catch { return null; }
-}
-
-function cleanMessage(text) {
-  return text.replace(/INTAKE_COMPLETE\n?/, "").replace(/<OUTPUT>[\s\S]*?<\/OUTPUT>/, "").trim();
-}
-
-function detectPhase(messages) {
-  const count = messages.filter(m => m.type === "agent").length;
-  if (count === 0) return 0;
-  if (count === 1) return 1;
-  if (count <= 3) return 2;
-  if (count <= 6) return 3;
-  return 4;
-}
-
-// ── Main component ────────────────────────────────────────────────
-function PILDemo({ mode, apiKey }) {
-  const [role, setRole] = useState("");
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [started, setStarted] = useState(false);
-  const [output, setOutput] = useState(null);
-  const [outputStatus, setOutputStatus] = useState("empty");
-  const [scriptedStep, setScriptedStep] = useState(0);
-  const [copied, setCopied] = useState(false);
-  const messagesEndRef = useRef(null);
-  const inputRef = useRef(null);
-
-  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading]);
-
-  const currentPhase = detectPhase(messages);
-
-  async function callClaude(conversationMessages) {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-        "anthropic-dangerous-direct-browser-access": "true"
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1000,
-        system: WORKLAYER_CONTEXT + (role ? `\n\nThe user's role is: ${role}` : ""),
-        messages: conversationMessages
-      })
-    });
-    const data = await res.json();
-    return data.content?.map(b => b.text || "").join("") || "";
-  }
-
-  function getScriptedReply(userText, stepIndex) {
-    if (stepIndex === 0) return { ...SCRIPTED_CONVERSATION[0], nextStep: 1 };
-    for (let i = stepIndex; i < SCRIPTED_CONVERSATION.length; i++) {
-      const s = SCRIPTED_CONVERSATION[i];
-      if (s.trigger && userText.toLowerCase().includes(s.trigger.toLowerCase())) {
-        return { ...s, nextStep: i + 1 };
-      }
-    }
-    const next = SCRIPTED_CONVERSATION[Math.min(scriptedStep, SCRIPTED_CONVERSATION.length - 1)];
-    return { ...next, nextStep: Math.min(scriptedStep + 1, SCRIPTED_CONVERSATION.length - 1) };
-  }
-
-  async function sendMessage() {
-    if (!input.trim() || loading || !role) return;
-    const text = input.trim();
-    setInput("");
-
-    if (!started) {
-      setStarted(true);
-      setOutputStatus("building");
-    }
-
-    const userMsg = { type: "user", text, time: new Date() };
-    const updatedMessages = [...messages, userMsg];
-    setMessages(updatedMessages);
-    setLoading(true);
-
-    await new Promise(r => setTimeout(r, mode === "scripted" ? 900 : 200));
-
-    if (mode === "scripted") {
-      const reply = getScriptedReply(text, scriptedStep);
-      setScriptedStep(reply.nextStep);
-      const clean = cleanMessage(reply.agent);
-      setMessages(prev => [...prev, { type: "agent", text: clean, time: new Date() }]);
-      if (reply.output) { setOutput(reply.output); setOutputStatus("complete"); }
-    } else {
-      try {
-        const apiMessages = updatedMessages.map(m => ({
-          role: m.type === "user" ? "user" : "assistant",
-          content: m.rawText || m.text
-        }));
-        const reply = await callClaude(apiMessages);
-        const parsed = parseOutput(reply);
-        const clean = cleanMessage(reply);
-        setMessages(prev => [...prev, { type: "agent", text: clean, rawText: reply, time: new Date() }]);
-        if (parsed) { setOutput(parsed); setOutputStatus("complete"); }
-      } catch {
-        setMessages(prev => [...prev, { type: "agent", text: "Connection issue — please try again.", time: new Date() }]);
-      }
-    }
-
-    setLoading(false);
-    setTimeout(() => inputRef.current?.focus(), 50);
-  }
-
-  function handleStart() {
-    if (!role) return;
-    setStarted(true);
-    setLoading(true);
-    setOutputStatus("building");
-
-    setTimeout(() => {
-      const opening = mode === "scripted"
-        ? SCRIPTED_CONVERSATION[0].agent
-        : `Hey — glad you're here. I'm the Worklayer product intake agent. Before we dive in, what role are you coming from? That helps me frame the right questions. And go ahead and describe your idea whenever you're ready.`;
-      setMessages([{ type: "agent", text: opening, time: new Date() }]);
-      if (mode === "scripted") setScriptedStep(1);
-      setLoading(false);
-      setTimeout(() => inputRef.current?.focus(), 100);
-    }, 600);
-  }
-
-  function handleKeyDown(e) {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-  }
-
-  function handleSample() {
-    if (!role || started) return;
-    setInput(SAMPLE_REQUEST);
-    setTimeout(() => inputRef.current?.focus(), 50);
-  }
-
-  function handleReset() {
-    setMessages([]); setInput(""); setStarted(false);
-    setOutput(null); setOutputStatus("empty"); setScriptedStep(0); setCopied(false);
-  }
-
-  function copyIntake() {
-    if (!output) return;
-    navigator.clipboard.writeText(JSON.stringify(output.intake_summary, null, 2));
-    setCopied(true); setTimeout(() => setCopied(false), 2000);
-  }
-
-  function formatTime(d) { return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); }
-
-  const colors = {
-    bg: "#0a0c10", surface: "#111318", surface2: "#181c23", surface3: "#1e2330",
-    border: "#252a35", borderBright: "#3a4255", accent: "#4f8ef7", accent4: "#4ff7c0",
-    accent3: "#f7934f", accent2: "#7c5cfc", text: "#e8eaf0", textDim: "#8892a4", textDimmer: "#4a5568"
-  };
-
-  return (
-    <div style={{ display:"flex", flexDirection:"column", height:"calc(100vh - 100px)", background: colors.bg, fontFamily:"'IBM Plex Sans', sans-serif", color: colors.text, overflow:"hidden" }}>
-
-      {/* Setup bar */}
-      <div style={{ flexShrink:0, background: colors.surface, borderBottom:`1px solid ${colors.border}`, padding:"10px 24px", display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" }}>
-        <span style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:9, letterSpacing:".14em", textTransform:"uppercase", color: colors.textDimmer }}>Your Role</span>
-        <select value={role} onChange={e => setRole(e.target.value)} disabled={started}
-          style={{ background: colors.surface, border:`1px solid ${colors.borderBright}`, borderRadius:6, color: colors.text, fontFamily:"'IBM Plex Mono',monospace", fontSize:11, padding:"6px 12px", cursor:"pointer", outline:"none", minWidth:200 }}>
-          {ROLES.map(r => <option key={r.value} value={r.value} style={{ background: colors.surface2 }}>{r.label}</option>)}
-        </select>
-        {!started && role && (
-          <>
-            <button onClick={handleStart}
-              style={{ background: colors.accent, border:"none", borderRadius:6, color:"#fff", fontFamily:"'IBM Plex Mono',monospace", fontSize:11, letterSpacing:".08em", fontWeight:600, padding:"7px 18px", cursor:"pointer" }}>
-              Start →
-            </button>
-            <button onClick={handleSample}
-              style={{ background:"transparent", border:`1px solid ${colors.borderBright}`, borderRadius:6, color: colors.textDim, fontFamily:"'IBM Plex Mono',monospace", fontSize:10, letterSpacing:".08em", padding:"7px 14px", cursor:"pointer" }}>
-              ⚡ Try Sample Request
-            </button>
-          </>
-        )}
-        {started && (
-          <button onClick={handleReset}
-            style={{ marginLeft:"auto", background:"transparent", border:`1px solid ${colors.border}`, borderRadius:6, color: colors.textDimmer, fontFamily:"'IBM Plex Mono',monospace", fontSize:10, padding:"6px 12px", cursor:"pointer" }}>
-            ↺ Reset
-          </button>
-        )}
-      </div>
-
-      {/* Main */}
-      <div style={{ flex:1, display:"flex", overflow:"hidden" }}>
-
-        {/* Chat */}
-        <div style={{ flex:1, display:"flex", flexDirection:"column", borderRight:`1px solid ${colors.border}`, overflow:"hidden" }}>
-          <div style={{ flex:1, overflowY:"auto", padding:24, display:"flex", flexDirection:"column", gap:16 }}>
-            {!started && (
-              <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", textAlign:"center", gap:14, padding:40 }}>
-                <div style={{ fontSize:36, opacity:.3 }}>💬</div>
-                <div style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:10, letterSpacing:".14em", textTransform:"uppercase", color: colors.textDimmer, lineHeight:1.8 }}>
-                  {role ? `Role: ${role} · ${mode === "scripted" ? "Scripted demo mode" : "Live AI mode"}\nSelect a role and click Start to begin` : "Select your role above, then click Start"}
-                </div>
-                {mode === "scripted" && <div style={{ fontSize:12, color: colors.textDimmer, maxWidth:320, lineHeight:1.6 }}>Scripted mode walks through a pre-built conversation showing the intake agent workflow end to end — no API key needed.</div>}
-              </div>
-            )}
-
-            {messages.map((msg, i) => (
-              <div key={i} style={{ display:"flex", gap:12, flexDirection: msg.type === "user" ? "row-reverse" : "row", maxWidth:"100%" }}>
-                <div style={{ width:28, height:28, borderRadius:6, display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"'IBM Plex Mono',monospace", fontSize:9, fontWeight:600, flexShrink:0, marginTop:2, letterSpacing:".06em", background: msg.type === "agent" ? "rgba(79,142,247,.15)" : "rgba(79,247,192,.1)", border: msg.type === "agent" ? "1px solid rgba(79,142,247,.3)" : "1px solid rgba(79,247,192,.25)", color: msg.type === "agent" ? colors.accent : colors.accent4 }}>
-                  {msg.type === "agent" ? "PIL" : role?.slice(0,2).toUpperCase() || "ME"}
-                </div>
-                <div>
-                  <div style={{ background: msg.type === "agent" ? colors.surface : colors.surface2, border:`1px solid ${msg.type === "agent" ? colors.border : colors.borderBright}`, borderRadius:8, padding:"12px 16px", fontSize:13.5, lineHeight:1.65, maxWidth:"calc(100% - 44px)" }}>
-                    {msg.text.split("\n").filter(Boolean).map((line, j) => (
-                      <p key={j} style={{ marginBottom: j < msg.text.split("\n").filter(Boolean).length - 1 ? 8 : 0 }}
-                        dangerouslySetInnerHTML={{ __html: line.replace(/\*\*(.*?)\*\*/g, '<strong style="color:#4f8ef7;font-weight:600">$1</strong>') }} />
-                    ))}
-                  </div>
-                  <div style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:9, color: colors.textDimmer, marginTop:4, paddingLeft:2, textAlign: msg.type === "user" ? "right" : "left" }}>{formatTime(msg.time)}</div>
-                </div>
-              </div>
-            ))}
-
-            {loading && (
-              <div style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
-                <div style={{ width:28, height:28, borderRadius:6, display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"'IBM Plex Mono',monospace", fontSize:9, fontWeight:600, background:"rgba(79,142,247,.15)", border:"1px solid rgba(79,142,247,.3)", color: colors.accent }}>PIL</div>
-                <div style={{ background: colors.surface, border:`1px solid ${colors.border}`, borderRadius:8, padding:"14px 18px", display:"flex", gap:5, alignItems:"center" }}>
-                  {[0,200,400].map(delay => <div key={delay} style={{ width:5, height:5, borderRadius:"50%", background: colors.textDimmer, animation:`bounce 1.2s ${delay}ms ease-in-out infinite` }} />)}
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Phase bar */}
-          {started && (
-            <div style={{ flexShrink:0, padding:"10px 20px", borderTop:`1px solid ${colors.border}`, display:"flex", gap:4, alignItems:"center" }}>
-              {PHASES.map((p, i) => (
-                <div key={p} style={{ flex:1, height:3, borderRadius:2, background: i < currentPhase ? colors.accent4 : i === currentPhase ? colors.accent : colors.border, transition:"background .4s" }} />
-              ))}
-              <span style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:9, color: colors.textDimmer, marginLeft:8, whiteSpace:"nowrap", letterSpacing:".08em" }}>
-                {PHASES[Math.min(currentPhase, PHASES.length-1)]}
-              </span>
-            </div>
-          )}
-
-          {/* Input */}
-          <div style={{ flexShrink:0, borderTop:`1px solid ${colors.border}`, padding:"16px 24px", background: colors.surface, display:"flex", gap:10, alignItems:"flex-end" }}>
-            <textarea ref={inputRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKeyDown}
-              disabled={loading || !role || !started}
-              placeholder={!role ? "Select a role to begin..." : !started ? "Click Start to begin..." : "Describe your idea or continue the conversation..."}
-              rows={1} style={{ flex:1, background: colors.surface2, border:`1px solid ${colors.borderBright}`, borderRadius:8, color: colors.text, fontFamily:"'IBM Plex Sans',sans-serif", fontSize:13.5, padding:"10px 14px", resize:"none", outline:"none", minHeight:42, maxHeight:120, lineHeight:1.5, opacity: (!role || !started) ? .5 : 1 }} />
-            <button onClick={sendMessage} disabled={!input.trim() || loading || !role || !started}
-              style={{ background: colors.accent, border:"none", borderRadius:8, color:"#fff", fontFamily:"'IBM Plex Mono',monospace", fontSize:11, fontWeight:600, letterSpacing:".08em", padding:"10px 18px", cursor:"pointer", height:42, flexShrink:0, opacity: (!input.trim() || loading || !role || !started) ? .4 : 1 }}>
-              Send →
-            </button>
-          </div>
-        </div>
-
-        {/* Output panel */}
-        <div style={{ width:380, flexShrink:0, display:"flex", flexDirection:"column", overflow:"hidden", background: colors.surface }}>
-          <div style={{ flexShrink:0, padding:"16px 20px", borderBottom:`1px solid ${colors.border}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-            <span style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:10, letterSpacing:".16em", textTransform:"uppercase", color: colors.textDimmer }}>Intake Record</span>
-            <span style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:9, padding:"3px 8px", borderRadius:3, ...(outputStatus === "empty" ? { color: colors.textDimmer, border:`1px solid ${colors.border}` } : outputStatus === "building" ? { color: colors.accent3, border:"1px solid rgba(247,147,79,.3)", background:"rgba(247,147,79,.07)" } : { color: colors.accent4, border:"1px solid rgba(79,247,192,.3)", background:"rgba(79,247,192,.07)" }) }}>
-              {outputStatus === "empty" ? "Pending" : outputStatus === "building" ? "Building..." : "Complete"}
-            </span>
-          </div>
-
-          <div style={{ flex:1, overflowY:"auto", padding:20, display:"flex", flexDirection:"column", gap:16 }}>
-            {!output ? (
-              <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:12, padding:"40px 24px", textAlign:"center" }}>
-                <div style={{ fontSize:32, opacity:.3 }}>📋</div>
-                <div style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:10, letterSpacing:".12em", textTransform:"uppercase", color: colors.textDimmer, lineHeight:1.8 }}>Your structured intake record will appear here as the conversation progresses</div>
-              </div>
-            ) : (
-              <>
-                {/* Intake summary */}
-                <div style={{ background: colors.surface2, border:`1px solid ${colors.border}`, borderRadius:8, overflow:"hidden" }}>
-                  <div style={{ padding:"10px 14px", borderBottom:`1px solid ${colors.border}`, display:"flex", alignItems:"center", gap:8 }}>
-                    <span style={{ fontSize:12 }}>📌</span>
-                    <span style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:9, letterSpacing:".14em", textTransform:"uppercase", color: colors.accent }}>Intake Summary</span>
-                  </div>
-                  <div style={{ padding:"12px 14px" }}>
-                    {[
-                      ["Problem Statement", output.intake_summary?.problem_statement, true],
-                      ["Proposed Solution", output.intake_summary?.proposed_solution, false],
-                      ["Affected Personas", output.intake_summary?.affected_personas?.join(", "), false],
-                      ["Urgency", output.intake_summary?.urgency, false]
-                    ].map(([label, val, highlight]) => val && (
-                      <div key={label} style={{ marginBottom:10 }}>
-                        <div style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:9, letterSpacing:".12em", textTransform:"uppercase", color: colors.textDimmer, marginBottom:3 }}>{label}</div>
-                        <div style={{ fontSize:12, color: highlight ? colors.text : colors.textDim, lineHeight:1.55, fontWeight: highlight ? 500 : 400 }}>{val}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Alignment */}
-                <div style={{ background: colors.surface2, border:`1px solid ${colors.border}`, borderRadius:8, overflow:"hidden" }}>
-                  <div style={{ padding:"10px 14px", borderBottom:`1px solid ${colors.border}`, display:"flex", alignItems:"center", gap:8 }}>
-                    <span style={{ fontSize:12 }}>🎯</span>
-                    <span style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:9, letterSpacing:".14em", textTransform:"uppercase", color: colors.accent3 }}>Strategic Alignment</span>
-                  </div>
-                  <div style={{ padding:"12px 14px" }}>
-                    <div style={{ marginBottom:10 }}>
-                      <div style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:9, letterSpacing:".12em", textTransform:"uppercase", color: colors.textDimmer, marginBottom:5 }}>Maps To</div>
-                      <div style={{ display:"inline-flex", alignItems:"center", gap:4, background:"rgba(79,142,247,.1)", border:"1px solid rgba(79,142,247,.25)", borderRadius:4, padding:"3px 8px", fontFamily:"'IBM Plex Mono',monospace", fontSize:10, color: colors.accent }}>⚑ {output.alignment?.okr}</div>
-                    </div>
-                    <div style={{ marginBottom:10 }}>
-                      <div style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:9, letterSpacing:".12em", textTransform:"uppercase", color: colors.textDimmer, marginBottom:3 }}>Rationale</div>
-                      <div style={{ fontSize:12, color: colors.textDim, lineHeight:1.55 }}>{output.alignment?.rationale}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:9, letterSpacing:".12em", textTransform:"uppercase", color: colors.textDimmer, marginBottom:6 }}>Alignment Score</div>
-                      <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                        <div style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:22, fontWeight:600, color: colors.accent3, lineHeight:1 }}>{output.alignment?.alignment_score}</div>
-                        <div style={{ flex:1 }}>
-                          <div style={{ height:4, background: colors.border, borderRadius:2, overflow:"hidden" }}>
-                            <div style={{ height:"100%", borderRadius:2, background:`linear-gradient(90deg, ${colors.accent3}, ${colors.accent4})`, width:`${output.alignment?.alignment_score}%`, transition:"width 1s ease-out" }} />
-                          </div>
-                          <div style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:9, color: colors.textDimmer, marginTop:3 }}>out of 100</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* PRD Outline */}
-                <div style={{ background: colors.surface2, border:`1px solid ${colors.border}`, borderRadius:8, overflow:"hidden" }}>
-                  <div style={{ padding:"10px 14px", borderBottom:`1px solid ${colors.border}`, display:"flex", alignItems:"center", gap:8 }}>
-                    <span style={{ fontSize:12 }}>📄</span>
-                    <span style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:9, letterSpacing:".14em", textTransform:"uppercase", color: colors.accent2 }}>PRD Outline</span>
-                  </div>
-                  <div style={{ padding:"12px 14px" }}>
-                    {[
-                      ["Objective", output.prd_outline?.objective, true],
-                      ["In Scope", output.prd_outline?.scope_in?.map(s => `✓ ${s}`).join("\n"), false],
-                      ["Out of Scope", output.prd_outline?.scope_out?.map(s => `✗ ${s}`).join("\n"), false],
-                      ["Open Questions", output.prd_outline?.open_questions?.map(q => `? ${q}`).join("\n"), false],
-                      ["Risks", output.prd_outline?.risks?.map(r => `⚠ ${r}`).join("\n"), false],
-                    ].map(([label, val, highlight]) => val && (
-                      <div key={label} style={{ marginBottom:10 }}>
-                        <div style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:9, letterSpacing:".12em", textTransform:"uppercase", color: colors.textDimmer, marginBottom:3 }}>{label}</div>
-                        <div style={{ fontSize:12, color: highlight ? colors.text : colors.textDim, lineHeight:1.6, whiteSpace:"pre-line", fontWeight: highlight ? 500 : 400 }}>{val}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Routing */}
-                <div style={{ background: colors.surface2, border:`1px solid ${colors.border}`, borderRadius:8, overflow:"hidden" }}>
-                  <div style={{ padding:"10px 14px", borderBottom:`1px solid ${colors.border}`, display:"flex", alignItems:"center", gap:8 }}>
-                    <span style={{ fontSize:12 }}>🔀</span>
-                    <span style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:9, letterSpacing:".14em", textTransform:"uppercase", color: colors.accent4 }}>Routing</span>
-                  </div>
-                  <div style={{ padding:"12px 14px" }}>
-                    <div style={{ marginBottom:10 }}>
-                      <div style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:9, letterSpacing:".12em", textTransform:"uppercase", color: colors.textDimmer, marginBottom:5 }}>Recommended Owner</div>
-                      <div style={{ display:"inline-flex", alignItems:"center", gap:4, background:"rgba(79,247,192,.08)", border:"1px solid rgba(79,247,192,.2)", borderRadius:4, padding:"3px 8px", fontFamily:"'IBM Plex Mono',monospace", fontSize:10, color: colors.accent4 }}>→ {output.routing?.recommended_owner}</div>
-                    </div>
-                    <div style={{ marginBottom:10 }}>
-                      <div style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:9, letterSpacing:".12em", textTransform:"uppercase", color: colors.textDimmer, marginBottom:3 }}>Reason</div>
-                      <div style={{ fontSize:12, color: colors.textDim, lineHeight:1.55 }}>{output.routing?.reason}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:9, letterSpacing:".12em", textTransform:"uppercase", color: colors.textDimmer, marginBottom:3 }}>Suggested Reviewers</div>
-                      <div style={{ fontSize:12, color: colors.textDim }}>{output.routing?.suggested_reviewers?.join(", ")}</div>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* CTA */}
-          <div style={{ flexShrink:0, borderTop:`1px solid ${colors.border}`, padding:"16px 20px", display:"flex", flexDirection:"column", gap:8 }}>
-            <div style={{ fontFamily:"'IBM Plex Mono',monospace", fontSize:9, letterSpacing:".14em", textTransform:"uppercase", color: colors.textDimmer, marginBottom:4 }}>Next Steps</div>
-            <button onClick={copyIntake} disabled={!output}
-              style={{ borderRadius:6, fontFamily:"'IBM Plex Mono',monospace", fontSize:10, letterSpacing:".08em", padding:"9px 14px", cursor: output ? "pointer" : "not-allowed", background: colors.accent, borderColor: colors.accent, border:"none", color:"#fff", opacity: output ? 1 : .4 }}>
-              {copied ? "✓ Copied" : "Copy Intake Summary"}
-            </button>
-            <button onClick={() => { if (!output) return; const b = new Blob([JSON.stringify(output, null, 2)], {type:"application/json"}); const u = URL.createObjectURL(b); const a = document.createElement("a"); a.href=u; a.download="worklayer-intake-record.json"; a.click(); }} disabled={!output}
-              style={{ borderRadius:6, fontFamily:"'IBM Plex Mono',monospace", fontSize:10, letterSpacing:".08em", padding:"9px 14px", cursor: output ? "pointer" : "not-allowed", background:"transparent", border:`1px solid ${colors.borderBright}`, color: colors.textDim, opacity: output ? 1 : .4 }}>
-              Download PRD Outline
-            </button>
-            <a href="../pil-framework/" style={{ borderRadius:6, fontFamily:"'IBM Plex Mono',monospace", fontSize:10, letterSpacing:".08em", padding:"9px 14px", background:"transparent", border:`1px solid ${colors.border}`, color: colors.textDimmer, textAlign:"center", textDecoration:"none", transition:"all .2s" }}>
-              Explore the PIL Framework →
-            </a>
-            <a href="https://www.linkedin.com/in/stephenthiessen" target="_blank" style={{ borderRadius:6, fontFamily:"'IBM Plex Mono',monospace", fontSize:10, letterSpacing:".08em", padding:"9px 14px", background:"transparent", border:`1px solid ${colors.border}`, color: colors.textDimmer, textAlign:"center", textDecoration:"none" }}>
-              Work with Stephen →
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <style>{`
-        @keyframes bounce {
-          0%,60%,100% { transform:translateY(0); opacity:.4; }
-          30% { transform:translateY(-5px); opacity:1; }
-        }
-      `}</style>
+<div class="shell">
+  <!-- CHAT -->
+  <div class="chat-panel">
+    <div class="role-bar">
+      <span class="bar-label">Your Role</span>
+      <select class="role-sel" id="role-sel" onchange="onRoleChange(this.value)">
+        <option value="">Select your role...</option>
+        <option value="Sales / CSM">Sales / CSM</option>
+        <option value="Product Manager">Product Manager</option>
+        <option value="Engineering Lead">Engineering Lead</option>
+        <option value="Executive / Leadership">Executive / Leadership</option>
+        <option value="Other / Stakeholder">Other / Stakeholder</option>
+      </select>
+      <button class="start-btn" id="start-btn" onclick="startDemo()" disabled>Start →</button>
+      <button class="reset-btn" id="reset-btn" onclick="resetDemo()">↺ Reset</button>
     </div>
-  );
-}
 
-// ── App shell ─────────────────────────────────────────────────────
-function App() {
-  const [mode, setMode] = React.useState(window.__demoMode || "real");
-  const [apiKey, setApiKey] = React.useState(localStorage.getItem("pil_api_key") || "");
-  const [showModal, setShowModal] = React.useState(false);
+    <div class="messages" id="msgs">
+      <div class="empty-state">
+        <div class="empty-icon">💬</div>
+        <div class="empty-txt" id="empty-txt">Select your role and click Start<br>for a guided walkthrough</div>
+      </div>
+    </div>
 
-  React.useEffect(() => {
-    if (mode === "real" && !apiKey) setShowModal(true);
-    else setShowModal(false);
-  }, [mode, apiKey]);
+    <div class="choices-wrap" id="choices-wrap">
+      <div class="choices-label">Your response — click to continue</div>
+      <div id="choices-list"></div>
+    </div>
 
-  window.__setAppMode = (m) => setMode(m);
-  window.__setApiKey = (k) => { setApiKey(k); localStorage.setItem("pil_api_key", k); };
+    <div class="live-wrap" id="live-wrap">
+      <textarea class="live-inp" id="live-inp" rows="1" placeholder="Describe your product idea..."></textarea>
+      <button class="send-btn" id="send-btn" onclick="sendLive()">Send →</button>
+    </div>
 
-  return <PILDemo mode={mode} apiKey={apiKey} />;
-}
+    <div class="phase-bar" id="phase-bar">
+      <div class="ps" id="ps0"></div>
+      <div class="ps" id="ps1"></div>
+      <div class="ps" id="ps2"></div>
+      <div class="ps" id="ps3"></div>
+      <div class="ps" id="ps4"></div>
+      <span class="ph-label" id="ph-label">Opening</span>
+    </div>
+  </div>
 
-ReactDOM.render(<App />, document.getElementById("demo-root"));
-</script>
+  <!-- OUTPUT -->
+  <div class="out-panel">
+    <div class="out-hdr">
+      <span class="out-hdr-txt">PRD Document</span>
+      <span class="out-status s-empty" id="out-status">Pending</span>
+    </div>
+    <div class="out-body" id="out-body">
+      <div class="out-empty">
+        <div class="out-empty-icon">📄</div>
+        <div class="out-empty-txt">Your PRD document<br>builds here as the<br>conversation progresses</div>
+      </div>
+    </div>
+    <div class="out-cta">
+      <div class="cta-lbl">Actions</div>
+      <button class="cta cta-p" id="copy-btn" onclick="copyPRD()" disabled>Copy PRD Summary</button>
+      <button class="cta cta-s" id="dl-btn" onclick="dlPRD()" disabled>Download Full PRD</button>
+      <a href="../pil-framework/" class="cta cta-t">Explore the PIL Framework →</a>
+      <a href="https://www.linkedin.com/in/stephenthiessen" target="_blank" class="cta cta-t">Work with Stephen →</a>
+    </div>
+  </div>
+</div>
 
 <script>
-let currentMode = "real";
-const savedKey = localStorage.getItem("pil_api_key");
-
-function setMode(m) {
-  currentMode = m;
-  window.__demoMode = m;
-  document.getElementById("btn-real").classList.toggle("active", m === "real");
-  document.getElementById("btn-scripted").classList.toggle("active", m === "scripted");
-  const modeLabel = document.getElementById("mode-label");
-  modeLabel.innerHTML = m === "real"
-    ? 'Mode: <span>Live AI (Claude API)</span>'
-    : 'Mode: <span>Scripted walkthrough</span>';
-
-  if (m === "real" && !localStorage.getItem("pil_api_key")) {
-    document.getElementById("api-overlay").style.display = "flex";
-  } else {
-    document.getElementById("api-overlay").style.display = "none";
+// ── Script ──────────────────────────────────────────────────────────
+// Each step has: agent text, then choices array [{label, next}]
+// null choices = conversation end
+const SCRIPT = [
+  { // 0
+    agent:`Good to meet you. Before we dig in — I'll tailor my questions to your role, so that context helps.\n\nWhat are you hoping to get built? Describe it however feels natural — no structure needed yet.`,
+    choices:[{label:`We keep losing enterprise deals because our permissions aren't flexible enough. Admins can only use the default roles we ship — they can't create custom ones. Sales has been flagging this for two quarters.`, next:1}]
+  },
+  { // 1
+    agent:`Got it — you're describing a permissions flexibility gap, specifically the inability for admins to define roles beyond Worklayer's built-in defaults.\n\nI want to flag something before we go further: we have an **active initiative in development** called **Advanced Permissions & Audit Log** (score: 91, owner: Fatima Al-Hassan, currently in dev). It directly targets enterprise permission complexity.\n\nIs this the same work, an extension of it, or something that initiative doesn't cover?`,
+    choices:[{label:`Adjacent but not covered. The active initiative adds audit log and some permission improvements — but it doesn't let admins create and name their own custom roles from scratch. That's the specific gap we're losing deals over.`, next:2}]
+  },
+  { // 2
+    agent:`That distinction matters — you're describing a capability gap beyond the current scope. Good to know before this goes any further in the system.\n\nLet me make sure I understand the scope precisely. When you say "custom roles" — are you talking about admins creating role names and assigning permissions à la carte from a permission matrix, or something closer to role templates they can duplicate and modify?`,
+    choices:[{label:`À la carte. Admins need to define exactly what each role can see and do — the enterprise prospects we're losing have complex org structures and compliance requirements that don't map to our preset roles.`, next:3}]
+  },
+  { // 3
+    agent:`Understood. Fully configurable permission sets, not template-based.\n\nWho are the primary personas affected? You've mentioned enterprise IT admins and compliance teams — are those the right people, and is there anyone else directly impacted by this gap?`,
+    choices:[{label:`Enterprise IT admins are primary. Compliance officers are secondary — they need to demonstrate role-based access controls for audits. And our enterprise AEs are the ones escalating this because they're watching deals stall.`, next:4}]
+  },
+  { // 4
+    agent:`Concrete. Three distinct personas with different stakes — admins need the capability, compliance needs the audit trail, AEs need it to close.\n\nIf we shipped this, how would you measure success? What would change — in pipeline, retention, or support volume — that would tell you this was worth the investment?`,
+    choices:[{label:`Three things: unblock the 3 enterprise expansion deals currently stalled on this. Enterprise churn should improve — we're losing accounts that have outgrown the permissions model. And support tickets for permission workarounds should drop because admins stop hacking around the defaults.`, next:5}]
+  },
+  { // 5
+    agent:`All three are measurable. The deal unblocking one is especially clean — you can name the accounts.\n\nLast question: is there a hard timeline here? You mentioned sales has been asking for two quarters — is there a contract deadline, renewal, or planning cycle this needs to land before to have real impact?`,
+    choices:[{label:`Q3 is critical. Two of the three stalled deals have Q4 renewal conversations — if we don't have something by then, we're likely to lose them. And we're entering Q3 planning now, so the timing to get this prioritized is right.`, next:6}]
+  },
+  { // 6 — final
+    agent:`That's everything I need. Q3 urgency, specific deals named, clear metrics, and a well-defined scope gap beyond the active initiative.\n\nThis maps directly to **O1 — Accelerate Enterprise Expansion** — specifically the "reduce enterprise churn 8%→5%" and "grow enterprise accounts 140→185" key results. Alignment score: **88 out of 100**.\n\nRecommendation: scope this as a formal extension of the active Advanced Permissions initiative, not a new PRD. Owner should remain Fatima Al-Hassan with Marcus Webb's sign-off on capacity implications.\n\nThe full PRD document is in the panel to the right.`,
+    choices: null,
+    complete: true
   }
+];
 
-  if (window.__setAppMode) window.__setAppMode(m);
-}
+const PRD = {
+  title:"Custom Role Configuration for Enterprise Admins",
+  status:"Ready for Review", owner:"Fatima Al-Hassan",
+  submittedBy:"Sales / CSM", targetRelease:"Q3 2026",
+  okr:"O1 — Accelerate Enterprise Expansion", score:88,
+  problem:"Enterprise admins cannot define permission roles beyond Worklayer's built-in defaults, blocking sales deals and increasing churn risk among compliance-sensitive accounts. This gap is causing three enterprise expansion deals to stall and contributing to churn among accounts that have outgrown the existing permissions model.",
+  solution:"Enable enterprise admins to create, name, and configure custom roles with fully configurable permission sets — built as a scope extension of the active Advanced Permissions & Audit Log initiative.",
+  personas:["Enterprise IT admin (primary) — needs roles that map to complex internal org structures","Compliance officer (secondary) — requires demonstrable role-based access for audit purposes","Enterprise Account Executive (informed) — directly affected by deal stalls from this gap"],
+  metrics:["3 stalled enterprise expansion deals unblocked within 30 days of launch","Enterprise churn trending toward 5% target (from current 8%)","Permission-related support tickets reduced by 30%","Enterprise accounts able to onboard without permission workarounds"],
+  in:["Create, edit, and delete custom permission roles","Assign granular permissions from a defined permission matrix","Apply custom roles to users and user groups","Audit log entries for all role creation and modification events","Admin UI for managing custom role library"],
+  out:["Cross-account role templates or sharing between workspaces","Role inheritance or hierarchical permission structures (v2)","API-based role management (defer to API v2 initiative)","Migration tooling for existing role assignments"],
+  questions:["What is the maximum number of custom roles per enterprise account?","Can custom roles inherit from built-in roles, or are they fully independent?","Does this require changes to the enterprise admin onboarding flow?","Is there a permission set limit or does the full matrix apply?"],
+  risks:["Scope creep from additional role attribute requests from Sales","Performance impact of granular permission checks at enterprise scale","Dependency on Audit Log feature — coordinate timeline with Fatima","Q3 capacity risk — Marcus Webb sign-off required"],
+  owner_reason:"Active owner of Advanced Permissions & Audit Log. Scope as an extension to avoid fragmentation.",
+  reviewers:["Marcus Webb (VP Product Core — capacity sign-off)","Sarah Chen (CPO — O1 owner)","Enterprise AE lead (confirm deal specifics)"]
+};
 
-function saveApiKey() {
-  const key = document.getElementById("api-key-input").value.trim();
-  if (!key) return;
-  localStorage.setItem("pil_api_key", key);
-  document.getElementById("api-overlay").style.display = "none";
-  if (window.__setApiKey) window.__setApiKey(key);
-}
+// ── State ──────────────────────────────────────────────────────────
+let mode = 'scripted', role = '', apiKey = localStorage.getItem('pil_api_key')||'';
+let started = false, step = 0, liveMsgs = [], typing = null, prdData = null;
 
-function switchToScripted() {
-  document.getElementById("api-overlay").style.display = "none";
-  setMode("scripted");
-}
-
-// On load — check if key exists
-window.addEventListener("load", () => {
-  const key = localStorage.getItem("pil_api_key");
-  if (!key) {
-    document.getElementById("api-overlay").style.display = "flex";
-  } else {
-    document.getElementById("api-overlay").style.display = "none";
-    if (window.__setApiKey) window.__setApiKey(key);
-  }
+// ── Setup ──────────────────────────────────────────────────────────
+document.getElementById('live-inp').addEventListener('keydown', e => {
+  if (e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendLive();}
+});
+document.getElementById('api-inp').addEventListener('keydown', e => {
+  if (e.key==='Enter') saveKey();
 });
 
-// Allow Enter in API key input
-document.addEventListener("DOMContentLoaded", () => {
-  const input = document.getElementById("api-key-input");
-  if (input) {
-    input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") saveApiKey();
+function onRoleChange(v) {
+  role = v;
+  document.getElementById('start-btn').disabled = !v;
+}
+
+function switchMode(m) {
+  mode = m;
+  document.getElementById('btn-real').classList.toggle('active', m==='real');
+  document.getElementById('btn-scr').classList.toggle('active', m==='scripted');
+  document.getElementById('mode-lbl').innerHTML = m==='real'
+    ? 'Mode: <b>Live AI (Claude API)</b>'
+    : 'Mode: <b>Scripted walkthrough</b>';
+  document.getElementById('empty-txt').innerHTML = m==='scripted'
+    ? 'Select your role and click Start<br>for a guided walkthrough'
+    : 'Select your role and click Start<br>to chat with the live AI agent';
+
+  if (m==='real') {
+    const key = localStorage.getItem('pil_api_key');
+    document.getElementById('api-overlay').style.display = key ? 'none' : 'flex';
+    if (key) apiKey = key;
+  } else {
+    document.getElementById('api-overlay').style.display = 'none';
+  }
+  if (started) resetDemo();
+}
+
+function saveKey() {
+  const k = document.getElementById('api-inp').value.trim();
+  if (!k) return;
+  apiKey = k;
+  localStorage.setItem('pil_api_key', k);
+  document.getElementById('api-overlay').style.display = 'none';
+}
+
+// ── Start ──────────────────────────────────────────────────────────
+function startDemo() {
+  if (!role) return;
+  started = true; step = 0; liveMsgs = []; prdData = null;
+  document.getElementById('msgs').innerHTML = '';
+  document.getElementById('start-btn').disabled = true;
+  document.getElementById('reset-btn').style.display = 'block';
+  document.getElementById('role-sel').disabled = true;
+  document.getElementById('phase-bar').style.display = 'flex';
+  setStatus('building');
+  setPhase(0);
+
+  showTyping();
+  setTimeout(() => {
+    hideTyping();
+    if (mode==='scripted') {
+      addAgent(SCRIPT[0].agent);
+      setTimeout(()=>showChoices(0), 300);
+    } else {
+      callClaude([{role:'user',content:`My role is: ${role}. I am ready to submit a product request.`}]);
+    }
+  }, 800);
+}
+
+// ── Scripted ───────────────────────────────────────────────────────
+function showChoices(s) {
+  const sc = SCRIPT[s];
+  if (!sc||!sc.choices) { document.getElementById('choices-wrap').style.display='none'; return; }
+  const list = document.getElementById('choices-list');
+  list.innerHTML = '';
+  sc.choices.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = c.label;
+    btn.onclick = () => pickChoice(c);
+    list.appendChild(btn);
+  });
+  document.getElementById('choices-wrap').style.display = 'flex';
+}
+
+function pickChoice(c) {
+  document.getElementById('choices-wrap').style.display = 'none';
+  addUser(c.label);
+  step = c.next;
+  setPhase(step);
+  showTyping();
+  setTimeout(() => {
+    hideTyping();
+    const sc = SCRIPT[step];
+    addAgent(sc.agent);
+    if (sc.complete) {
+      renderPRD();
+      setStatus('complete');
+    } else {
+      setTimeout(()=>showChoices(step), 300);
+    }
+  }, 800 + Math.random()*400);
+}
+
+// ── Live AI ────────────────────────────────────────────────────────
+function sendLive() {
+  const inp = document.getElementById('live-inp');
+  const t = inp.value.trim();
+  if (!t) return;
+  inp.value = '';
+  addUser(t);
+  liveMsgs.push({role:'user',content:t});
+  document.getElementById('live-wrap').style.display = 'none';
+  callClaude(liveMsgs);
+}
+
+async function callClaude(msgs) {
+  showTyping();
+  document.getElementById('send-btn').disabled = true;
+  const SYS = `You are the Product Intake Agent for Worklayer (B2B SaaS, Series C, $34M ARR). Guide stakeholders through structured product intake.\n\nQ3 OKRs: O1 Enterprise Expansion (churn 8%→5%, accounts 140→185, permissions+audit log), O2 Time to Value (onboarding 21→12 days), O3 Extensibility (API v2, Salesforce, HubSpot).\n\nActive initiatives: Advanced Permissions & Audit Log (91, Fatima Al-Hassan, In Dev), Guided Onboarding (88, Sam Liu, In Dev), Salesforce Integration (85, Lena Park, In Dev), API v2 (88, Priya Nair, In Dev).\n\nPhases: 1-Opening, 2-Surface overlaps, 3-Gap fill one question at a time (problem/personas/metrics/urgency/scope), 4-OKR alignment, 5-Output.\nWhen done: INTAKE_COMPLETE then <OUTPUT>{json}</OUTPUT> with intake_summary, prd_outline, alignment, routing.\nBe direct, 2-4 sentences max, one question at a time, never sycophantic.\nUser role: ${role}`;
+
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYS,messages:msgs})
     });
+    const d = await r.json();
+    const raw = d.content?.map(b=>b.text||'').join('')||'';
+    hideTyping();
+    const m = raw.match(/<OUTPUT>([\s\S]*?)<\/OUTPUT>/);
+    const clean = raw.replace(/INTAKE_COMPLETE\n?/,'').replace(/<OUTPUT>[\s\S]*?<\/OUTPUT>/,'').trim();
+    addAgent(clean);
+    liveMsgs.push({role:'assistant',content:raw});
+    if (m) { try { renderLivePRD(JSON.parse(m[1].trim())); setStatus('complete'); } catch{} }
+    document.getElementById('live-wrap').style.display = 'flex';
+    document.getElementById('send-btn').disabled = false;
+    setTimeout(()=>document.getElementById('live-inp').focus(),50);
+  } catch {
+    hideTyping();
+    addAgent('Connection issue — check your API key and try again.');
+    document.getElementById('live-wrap').style.display = 'flex';
+    document.getElementById('send-btn').disabled = false;
   }
-});
+}
+
+// ── Messages ───────────────────────────────────────────────────────
+function addAgent(txt) {
+  const msgs = document.getElementById('msgs');
+  const el = document.createElement('div');
+  el.className = 'msg';
+  const html = txt.split('\n').filter(l=>l.trim()).map(l=>`<p>${l.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>')}</p>`).join('');
+  el.innerHTML = `<div class="av agent">PIL</div><div><div class="bubble">${html}</div><div class="msg-time">${ft()}</div></div>`;
+  msgs.appendChild(el); scroll();
+}
+
+function addUser(txt) {
+  const msgs = document.getElementById('msgs');
+  const el = document.createElement('div');
+  el.className = 'msg user';
+  const init = role.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  el.innerHTML = `<div class="av user">${init}</div><div><div class="bubble"><p>${txt.replace(/</g,'&lt;')}</p></div><div class="msg-time">${ft()}</div></div>`;
+  msgs.appendChild(el); scroll();
+}
+
+function showTyping() {
+  if (typing) return;
+  const msgs = document.getElementById('msgs');
+  typing = document.createElement('div');
+  typing.className = 'typing';
+  typing.innerHTML = `<div class="av agent">PIL</div><div class="typing-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+  msgs.appendChild(typing); scroll();
+}
+function hideTyping() { if(typing){typing.remove();typing=null;} }
+function scroll() { const m=document.getElementById('msgs'); setTimeout(()=>{m.scrollTop=m.scrollHeight;},50); }
+function ft() { return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
+
+// ── PRD ────────────────────────────────────────────────────────────
+function renderPRD() {
+  prdData = PRD;
+  document.getElementById('out-body').innerHTML = buildPRD(PRD);
+  document.getElementById('copy-btn').disabled = false;
+  document.getElementById('dl-btn').disabled = false;
+  setTimeout(()=>{ const f=document.getElementById('sf'); if(f)f.style.width=PRD.score+'%'; },400);
+}
+
+function renderLivePRD(p) {
+  const s=p.intake_summary||{}, o=p.prd_outline||{}, a=p.alignment||{}, r=p.routing||{};
+  const d={
+    title:o.objective||s.problem_statement||'Product Request',
+    status:'Ready for Review', owner:r.recommended_owner||'TBD',
+    submittedBy:role, targetRelease:'Current quarter',
+    okr:a.okr||'TBD', score:a.alignment_score||0,
+    problem:s.problem_statement||'', solution:s.proposed_solution||'',
+    personas:s.affected_personas||[], metrics:s.success_metrics||[],
+    in:o.scope_in||[], out:o.scope_out||[], questions:o.open_questions||[], risks:o.risks||[],
+    owner_reason:r.reason||'', reviewers:r.suggested_reviewers||[]
+  };
+  prdData = d;
+  document.getElementById('out-body').innerHTML = buildPRD(d);
+  document.getElementById('copy-btn').disabled = false;
+  document.getElementById('dl-btn').disabled = false;
+  setTimeout(()=>{ const f=document.getElementById('sf'); if(f)f.style.width=d.score+'%'; },400);
+}
+
+function esc(s){return String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function li(arr,cls){return arr.map(i=>`<li>${esc(i)}</li>`).join('');}
+
+function buildPRD(d) {
+  return `<div class="prd">
+  <div class="prd-top">
+    <div class="prd-ey">// Product Requirements Document</div>
+    <div class="prd-title">${esc(d.title)}</div>
+    <div class="prd-meta">
+      <div><div class="prd-ml">Status</div><div class="prd-mv">${esc(d.status)}</div></div>
+      <div><div class="prd-ml">Submitted By</div><div class="prd-mv">${esc(d.submittedBy)}</div></div>
+      <div><div class="prd-ml">Target Release</div><div class="prd-mv">${esc(d.targetRelease)}</div></div>
+      <div><div class="prd-ml">Date</div><div class="prd-mv">${new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div></div>
+    </div>
+  </div>
+  <div class="prd-sec"><div class="prd-sec-title">01 · Problem Statement</div><div class="prd-txt hi">${esc(d.problem)}</div></div>
+  <div class="prd-sec"><div class="prd-sec-title">02 · Proposed Solution</div><div class="prd-txt">${esc(d.solution)}</div></div>
+  <div class="prd-sec"><div class="prd-sec-title">03 · Affected Personas</div><ul class="prd-ul dot">${li(d.personas)}</ul></div>
+  <div class="prd-sec"><div class="prd-sec-title">04 · Success Metrics</div><ul class="prd-ul dot">${li(d.metrics)}</ul></div>
+  <div class="prd-sec"><div class="prd-sec-title">05 · Scope</div>
+    <div style="margin-bottom:10px"><div style="font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent4);margin-bottom:6px">In scope</div><ul class="prd-ul chk">${li(d.in)}</ul></div>
+    <div><div style="font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent5);margin-bottom:6px">Out of scope</div><ul class="prd-ul x">${li(d.out)}</ul></div>
+  </div>
+  <div class="prd-sec"><div class="prd-sec-title">06 · Open Questions</div><ul class="prd-ul q">${li(d.questions)}</ul></div>
+  <div class="prd-sec"><div class="prd-sec-title">07 · Risks</div><ul class="prd-ul w">${li(d.risks)}</ul></div>
+  <div class="prd-sec"><div class="prd-sec-title">08 · Strategic Alignment</div>
+    <div class="prd-ml" style="margin-bottom:5px">OKR</div>
+    <div class="okr-tag">⚑ ${esc(d.okr)}</div>
+    <div class="prd-ml" style="margin-top:14px;margin-bottom:4px">Alignment Score</div>
+    <div class="score-row"><div class="score-n">${d.score}</div><div class="score-trk"><div class="score-fill" id="sf" style="width:0%"></div></div><div style="font-family:var(--mono);font-size:10px;color:var(--text-dimmer)">/100</div></div>
+  </div>
+  <div class="prd-sec"><div class="prd-sec-title">09 · Routing & Ownership</div>
+    <div class="prd-ml" style="margin-bottom:5px">Recommended Owner</div>
+    <div class="own-tag">→ ${esc(d.owner)}</div>
+    <div style="margin-top:12px"><div class="prd-ml" style="margin-bottom:4px">Rationale</div><div class="prd-txt">${esc(d.owner_reason)}</div></div>
+    <div style="margin-top:12px"><div class="prd-ml" style="margin-bottom:6px">Suggested Reviewers</div><ul class="prd-ul dot">${li(d.reviewers)}</ul></div>
+  </div>
+</div>`;
+}
+
+// ── Helpers ────────────────────────────────────────────────────────
+function setStatus(s) {
+  const el = document.getElementById('out-status');
+  el.className = 'out-status';
+  if (s==='building'){el.classList.add('s-building');el.textContent='Building...';}
+  else if (s==='complete'){el.classList.add('s-complete');el.textContent='Complete';}
+  else {el.classList.add('s-empty');el.textContent='Pending';}
+}
+
+const PHASE_NAMES=['Opening','Listening','Gap Filling','Alignment','Output'];
+function setPhase(s) {
+  for(let i=0;i<5;i++){const e=document.getElementById('ps'+i);e.className='ps';if(i<s)e.classList.add('done');else if(i===s)e.classList.add('active');}
+  document.getElementById('ph-label').textContent=PHASE_NAMES[Math.min(Math.floor(s*5/7),4)]||'Output';
+}
+
+function resetDemo() {
+  started=false; step=0; liveMsgs=[]; prdData=null;
+  if(typing){typing.remove();typing=null;}
+  document.getElementById('msgs').innerHTML=`<div class="empty-state"><div class="empty-icon">💬</div><div class="empty-txt" id="empty-txt">${mode==='scripted'?'Select your role and click Start<br>for a guided walkthrough':'Select your role and click Start<br>to chat with the live AI agent'}</div></div>`;
+  document.getElementById('choices-wrap').style.display='none';
+  document.getElementById('live-wrap').style.display='none';
+  document.getElementById('phase-bar').style.display='none';
+  document.getElementById('out-body').innerHTML=`<div class="out-empty"><div class="out-empty-icon">📄</div><div class="out-empty-txt">Your PRD document<br>builds here as the<br>conversation progresses</div></div>`;
+  setStatus('empty');
+  document.getElementById('copy-btn').disabled=true;
+  document.getElementById('dl-btn').disabled=true;
+  document.getElementById('start-btn').disabled=!role;
+  document.getElementById('reset-btn').style.display='none';
+  document.getElementById('role-sel').disabled=false;
+  document.getElementById('live-inp').value='';
+}
+
+function copyPRD() {
+  if(!prdData)return;
+  const d=prdData;
+  const t=['PRD: '+(d.title||''),'','PROBLEM',d.problem||d.problemStatement||'','','SOLUTION',d.solution||d.proposedSolution||'','','METRICS',...(d.metrics||d.successMetrics||[]).map(m=>'· '+m),'','IN SCOPE',...(d.in||d.scopeIn||[]).map(s=>'✓ '+s),'','OUT OF SCOPE',...(d.out||d.scopeOut||[]).map(s=>'✗ '+s),'','OKR: '+(d.okr||''),'SCORE: '+(d.score||d.alignmentScore||0)+'/100','OWNER: '+(d.owner||d.routing?.owner||'')].join('\n');
+  navigator.clipboard.writeText(t);
+  const btn=document.getElementById('copy-btn');
+  btn.textContent='✓ Copied';
+  setTimeout(()=>{btn.textContent='Copy PRD Summary';},2000);
+}
+
+function dlPRD() {
+  if(!prdData)return;
+  const b=new Blob([JSON.stringify(prdData,null,2)],{type:'application/json'});
+  const u=URL.createObjectURL(b);
+  const a=document.createElement('a');a.href=u;a.download='worklayer-prd.json';a.click();
+}
 </script>
 </body>
 </html>
