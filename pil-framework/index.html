@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Product Intelligence Loop — Framework · Stephen Thiessen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Geist:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0a0a0a; --bg2: #111111; --bg3: #1a1a1a;
+  --border: rgba(255,255,255,0.08); --border-hover: rgba(255,255,255,0.16);
+  --text: #f0ede8; --text-muted: #7a7672; --text-dim: #3d3b38;
+  --accent: #c8f55a; --accent-dim: rgba(200,245,90,0.09); --accent-border: rgba(200,245,90,0.28);
+  --l1: #5a9fff; --l1-dim: rgba(90,159,255,0.10); --l1-border: rgba(90,159,255,0.25);
+  --l2: #f5a623; --l2-dim: rgba(245,166,35,0.10); --l2-border: rgba(245,166,35,0.25);
+  --l3: #c8f55a; --l3-dim: rgba(200,245,90,0.09); --l3-border: rgba(200,245,90,0.28);
+  --l4: #c084fc; --l4-dim: rgba(192,132,252,0.10); --l4-border: rgba(192,132,252,0.25);
+  --l5: #4ff7c0; --l5-dim: rgba(79,247,192,0.09); --l5-border: rgba(79,247,192,0.22);
+  --serif: 'DM Serif Display', Georgia, serif;
+  --mono: 'DM Mono', monospace;
+  --sans: 'Geist', system-ui, sans-serif;
+}
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+
+/* Nav */
+nav { border-bottom: 1px solid var(--border); padding: 20px 0; position: sticky; top: 0; background: rgba(10,10,10,0.94); backdrop-filter: blur(14px); z-index: 200; }
+.nav-inner { max-width: 1060px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; }
+.nav-logo { font-family: var(--mono); font-size: 12px; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; }
+.nav-logo span { color: var(--accent); }
+.nav-back { font-family: var(--mono); font-size: 11px; color: var(--text-muted); text-decoration: none; letter-spacing: 0.06em; transition: color 0.2s; }
+.nav-back:hover { color: var(--text); }
+
+/* TOC */
+.toc { border-bottom: 1px solid var(--border); background: var(--bg2); overflow-x: auto; scrollbar-width: none; }
+.toc::-webkit-scrollbar { display: none; }
+.toc-inner { max-width: 1060px; margin: 0 auto; padding: 0 32px; display: flex; }
+.toc-item { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); padding: 14px 18px; white-space: nowrap; text-decoration: none; border-bottom: 2px solid transparent; transition: all 0.2s; position: relative; top: 1px; }
+.toc-item:hover { color: var(--text-muted); border-bottom-color: var(--border-hover); }
+
+/* Layout */
+.content { max-width: 1060px; margin: 0 auto; padding: 64px 32px 100px; }
+
+/* Page header */
+.page-header { padding: 80px 32px 64px; border-bottom: 1px solid var(--border); max-width: 1060px; margin: 0 auto; }
+.header-eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 24px; }
+.header-title { font-family: var(--serif); font-size: clamp(48px, 7vw, 80px); font-weight: 400; line-height: 1.03; letter-spacing: -0.01em; margin-bottom: 24px; }
+.header-title em { font-style: italic; color: var(--text-muted); }
+.header-sub { font-size: 16px; color: var(--text-muted); max-width: 600px; line-height: 1.75; margin-bottom: 40px; }
+.header-meta { display: flex; gap: 40px; flex-wrap: wrap; }
+.meta-item {}
+.meta-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 4px; }
+.meta-value { font-family: var(--serif); font-size: 24px; font-weight: 400; color: var(--text); }
+
+/* Section */
+.section-intro { margin-bottom: 48px; padding-bottom: 32px; border-bottom: 1px solid var(--border); }
+.section-num { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 12px; }
+.section-title { font-family: var(--serif); font-size: 36px; font-weight: 400; letter-spacing: -0.01em; margin-bottom: 14px; line-height: 1.1; }
+.section-desc { font-size: 15px; color: var(--text-muted); max-width: 640px; line-height: 1.75; }
+.section-divider { border: none; border-top: 1px solid var(--border); margin: 72px 0; }
+
+/* Loop diagram */
+.loop-diagram { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin: 48px 0; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
+.loop-cell { padding: 28px 24px; background: var(--bg2); transition: background 0.2s; }
+.loop-cell:hover { background: var(--bg3); }
+.loop-cell-num { font-family: var(--mono); font-size: 10px; font-weight: 500; margin-bottom: 8px; letter-spacing: 0.08em; }
+.loop-cell-name { font-family: var(--serif); font-size: 22px; font-weight: 400; margin-bottom: 8px; }
+.loop-cell-problem { font-size: 13px; color: var(--text-muted); line-height: 1.55; }
+.loop-cell-agents { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 5px; }
+.loop-pill { font-family: var(--mono); font-size: 10px; letter-spacing: 0.05em; padding: 3px 10px; border-radius: 4px; font-weight: 500; border: 1px solid; }
+.loop-cell.l1 .loop-cell-num { color: var(--l1); }
+.loop-cell.l1 .loop-pill { background: var(--l1-dim); color: var(--l1); border-color: var(--l1-border); }
+.loop-cell.l2 .loop-cell-num { color: var(--l2); }
+.loop-cell.l2 .loop-pill { background: var(--l2-dim); color: var(--l2); border-color: var(--l2-border); }
+.loop-cell.l3 .loop-cell-num { color: var(--l3); }
+.loop-cell.l3 .loop-pill { background: var(--l3-dim); color: var(--l3); border-color: var(--l3-border); }
+.loop-cell.l4 .loop-cell-num { color: var(--l4); }
+.loop-cell.l4 .loop-pill { background: var(--l4-dim); color: var(--l4); border-color: var(--l4-border); }
+.loop-cell.l5 .loop-cell-num { color: var(--l5); }
+.loop-cell.l5 .loop-pill { background: var(--l5-dim); color: var(--l5); border-color: var(--l5-border); }
+.loop-cell.full { grid-column: 1 / -1; }
+
+/* Callout */
+.callout { border-left: 2px solid var(--border-hover); padding: 20px 28px; background: var(--bg2); margin: 32px 0; border-radius: 0 8px 8px 0; }
+.callout-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px; }
+.callout-text { font-family: var(--serif); font-size: 17px; line-height: 1.65; color: var(--text-muted); font-style: italic; }
+
+/* Layer block */
+.layer-block { margin-bottom: 80px; }
+.layer-header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 8px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+.layer-num { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; }
+.layer-name { font-family: var(--serif); font-size: 30px; font-weight: 400; }
+.layer-problem { font-size: 14px; color: var(--text-muted); font-style: italic; margin-bottom: 28px; line-height: 1.6; }
+
+/* Agent card */
+.agent-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 14px; overflow: hidden; transition: border-color 0.2s; }
+.agent-card:hover { border-color: var(--border-hover); }
+.agent-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.agent-id { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
+.agent-name { font-family: var(--serif); font-size: 20px; font-weight: 400; color: var(--text); }
+.agent-type-badge { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; padding: 4px 10px; border-radius: 4px; flex-shrink: 0; margin-top: 2px; border: 1px solid; }
+.badge-planning { color: var(--l1); background: var(--l1-dim); border-color: var(--l1-border); }
+.badge-daily { color: var(--l3); background: var(--l3-dim); border-color: var(--l3-border); }
+.badge-gate { color: var(--l4); background: var(--l4-dim); border-color: var(--l4-border); }
+.badge-continuous { color: var(--l5); background: var(--l5-dim); border-color: var(--l5-border); }
+.agent-body { padding: 20px 24px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+.agent-field-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px; }
+.agent-field-text { font-size: 13px; color: var(--text-muted); line-height: 1.65; }
+.agent-value { font-size: 13px; color: var(--text); line-height: 1.5; font-style: italic; }
+
+/* Scoring matrix */
+.matrix-table { width: 100%; border-collapse: collapse; margin: 28px 0; font-size: 13px; }
+.matrix-table th { font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--border); background: var(--bg2); }
+.matrix-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); vertical-align: top; color: var(--text-muted); line-height: 1.5; }
+.matrix-table tr:last-child td { border-bottom: none; }
+.matrix-table tr:hover td { background: var(--bg2); }
+.dim-name { font-weight: 500; color: var(--text); white-space: nowrap; }
+.dim-cat { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 8px; border-radius: 3px; white-space: nowrap; border: 1px solid; }
+.cat-strategic { background: var(--l1-dim); color: var(--l1); border-color: var(--l1-border); }
+.cat-value { background: var(--l3-dim); color: var(--l3); border-color: var(--l3-border); }
+.cat-execution { background: var(--l2-dim); color: var(--l2); border-color: var(--l2-border); }
+.weight-bar-wrap { display: flex; align-items: center; gap: 10px; }
+.weight-bar { height: 3px; border-radius: 2px; background: var(--border); flex: 1; min-width: 60px; overflow: hidden; }
+.weight-fill { height: 100%; border-radius: 2px; background: var(--text-muted); }
+.weight-num { font-family: var(--mono); font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+
+/* Timeline */
+.timeline { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; margin: 32px 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.timeline-phase { padding: 20px 16px; border-right: 1px solid var(--border); background: var(--bg2); }
+.timeline-phase:last-child { border-right: none; }
+.timeline-phase.gate { background: var(--bg3); border-left: 2px solid var(--accent); border-right: 1px solid var(--border); }
+.phase-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; }
+.phase-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 8px; line-height: 1.3; }
+.gate .phase-name { color: var(--accent); }
+.phase-timing { font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-bottom: 12px; }
+.phase-bullets { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+.phase-bullets li { font-size: 11px; color: var(--text-muted); padding-left: 12px; position: relative; line-height: 1.4; }
+.phase-bullets li::before { content: '–'; position: absolute; left: 0; color: var(--text-dim); }
+
+/* Exception grid */
+.exception-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 28px 0; }
+.exception-type { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; transition: border-color 0.2s; }
+.exception-type:hover { border-color: var(--border-hover); }
+.exc-type-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px; }
+.exc-type-name { font-size: 14px; font-weight: 500; margin-bottom: 8px; color: var(--text); }
+.exc-type-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.6; margin-bottom: 10px; }
+.exc-type-example { font-size: 11.5px; color: var(--text-dim); font-style: italic; border-top: 1px solid var(--border); padding-top: 10px; line-height: 1.5; }
+
+/* Exception steps */
+.exception-steps { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin: 28px 0; }
+.exc-step { display: flex; gap: 24px; padding: 24px 28px; border-bottom: 1px solid var(--border); background: var(--bg2); transition: background 0.2s; }
+.exc-step:last-child { border-bottom: none; }
+.exc-step:hover { background: var(--bg3); }
+.exc-step-num { font-family: var(--serif); font-size: 32px; font-weight: 400; color: var(--text-dim); flex-shrink: 0; line-height: 1; margin-top: 2px; width: 32px; }
+.exc-step-name { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+.exc-step-desc { font-size: 13px; color: var(--text-muted); line-height: 1.7; }
+
+/* Integrity grid */
+.integrity-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 28px 0; }
+.integrity-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; }
+.integrity-name { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+.integrity-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.65; }
+.integrity-maturity { margin-top: 12px; font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 10px; border-radius: 3px; display: inline-block; border: 1px solid; }
+.m1 { color: var(--l1); background: var(--l1-dim); border-color: var(--l1-border); }
+.m2 { color: var(--l3); background: var(--l3-dim); border-color: var(--l3-border); }
+.m3 { color: var(--l4); background: var(--l4-dim); border-color: var(--l4-border); }
+
+/* CTA */
+.page-cta { border: 1px solid var(--accent-border); border-radius: 12px; padding: 48px; background: var(--accent-dim); text-align: center; margin-top: 80px; }
+.page-cta h2 { font-family: var(--serif); font-size: 32px; font-weight: 400; margin-bottom: 14px; }
+.page-cta p { font-size: 15px; color: var(--text-muted); margin-bottom: 32px; line-height: 1.65; max-width: 480px; margin-left: auto; margin-right: auto; }
+.cta-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.btn-primary { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: var(--bg); font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; padding: 13px 24px; border: none; border-radius: 5px; cursor: pointer; font-weight: 500; text-decoration: none; transition: all 0.2s; }
+.btn-primary:hover { background: #d4ff60; transform: translateY(-1px); }
+.btn-secondary { display: inline-flex; align-items: center; gap: 8px; background: transparent; color: var(--text-muted); font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; padding: 13px 24px; border: 1px solid var(--border); border-radius: 5px; cursor: pointer; text-decoration: none; transition: all 0.2s; }
+.btn-secondary:hover { border-color: var(--border-hover); color: var(--text); }
+
+footer { border-top: 1px solid var(--border); padding: 28px 0; }
+.footer-inner { max-width: 1060px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.footer-text { font-family: var(--mono); font-size: 11px; color: var(--text-dim); letter-spacing: 0.06em; }
+.footer-link { font-family: var(--mono); font-size: 11px; color: var(--text-muted); text-decoration: none; letter-spacing: 0.06em; transition: color 0.2s; }
+.footer-link:hover { color: var(--accent); }
+
+@media (max-width: 700px) {
+  .page-header { padding: 56px 24px 48px; }
+  .content { padding: 40px 24px 80px; }
+  .agent-body { grid-template-columns: 1fr; }
+  .loop-diagram { grid-template-columns: 1fr; }
+  .timeline { grid-template-columns: 1fr; }
+  .exception-grid, .integrity-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="https://www.stephen-thiessen.com" class="nav-logo">Product Ops <span>Intelligence</span></a>
+    <a href="https://www.stephen-thiessen.com#pil" class="nav-back">← Back to site</a>
+  </div>
+</nav>
+
+<nav class="toc">
+  <div class="toc-inner">
+    <a href="#overview" class="toc-item">Overview</a>
+    <a href="#layer1" class="toc-item">L1 · Capture</a>
+    <a href="#layer2" class="toc-item">L2 · Connect</a>
+    <a href="#layer3" class="toc-item">L3 · Plan</a>
+    <a href="#layer4" class="toc-item">L4 · Monitor</a>
+    <a href="#layer5" class="toc-item">L5 · Learn</a>
+    <a href="#scoring" class="toc-item">Scoring Matrix</a>
+    <a href="#planning-lock" class="toc-item">Planning Lock</a>
+    <a href="#exceptions" class="toc-item">Exception Process</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="header-eyebrow">Framework Documentation · Master Reference · v1.0</div>
+  <h1 class="header-title">The Product<br><em>Intelligence Loop</em></h1>
+  <p class="header-sub">A five-layer agentic framework that closes the gap between product strategy and execution — replacing political prioritization, fragmented knowledge, and reactive planning with a system that surfaces the right work at the right time for the right reasons.</p>
+  <div class="header-meta">
+    <div class="meta-item"><div class="meta-label">Layers</div><div class="meta-value">5</div></div>
+    <div class="meta-item"><div class="meta-label">Agents</div><div class="meta-value">12</div></div>
+    <div class="meta-item"><div class="meta-label">Scoring Dimensions</div><div class="meta-value">8</div></div>
+    <div class="meta-item"><div class="meta-label">Planning Gates</div><div class="meta-value">1</div></div>
+    <div class="meta-item"><div class="meta-label">Version</div><div class="meta-value">1.0 · May 2026</div></div>
+  </div>
+</div>
+
+<div class="content">
+
+  <section id="overview" style="scroll-margin-top:120px;">
+    <div class="section-intro">
+      <div class="section-num">00 · Overview</div>
+      <h2 class="section-title">The Framework at a Glance</h2>
+      <p class="section-desc">The Product Intelligence Loop is a multi-agent system designed around the five most universal failures in product organizations. Each layer addresses a distinct, named problem. The loop closes when insights from Layer 5 feed back into Layer 1 — customer signals, retro learnings, and decision logs become inputs to the next planning cycle.</p>
+    </div>
+
+    <div class="loop-diagram">
+      <div class="loop-cell l1">
+        <div class="loop-cell-num">Layer 1</div>
+        <div class="loop-cell-name">Capture</div>
+        <div class="loop-cell-problem">Discovery is a black box. Ideas get lost, duplicated, or never properly defined.</div>
+        <div class="loop-cell-agents"><span class="loop-pill">Intake Agent</span><span class="loop-pill">Duplicate Detector</span></div>
+      </div>
+      <div class="loop-cell l2">
+        <div class="loop-cell-num">Layer 2</div>
+        <div class="loop-cell-name">Connect</div>
+        <div class="loop-cell-problem">Strategy lives in a deck nobody reads while tickets get built for the wrong reasons.</div>
+        <div class="loop-cell-agents"><span class="loop-pill">Alignment Scorer</span><span class="loop-pill">Routing Agent</span></div>
+      </div>
+      <div class="loop-cell l3 full">
+        <div class="loop-cell-num">Layer 3 · Core Intelligence</div>
+        <div class="loop-cell-name">Plan</div>
+        <div class="loop-cell-problem">Quarterly planning is driven by politics, not data. The loudest voice sets the roadmap. Nobody asks which initiatives are better together.</div>
+        <div class="loop-cell-agents"><span class="loop-pill">Portfolio Scoring Agent</span><span class="loop-pill">Clustering Agent</span><span class="loop-pill">Scenario Modeler</span><span class="loop-pill">Planning Prep Agent</span><span class="loop-pill">Scoring Integrity Layer</span><span class="loop-pill">Planning Lock</span><span class="loop-pill">Exception Process</span></div>
+      </div>
+      <div class="loop-cell l4">
+        <div class="loop-cell-num">Layer 4</div>
+        <div class="loop-cell-name">Monitor</div>
+        <div class="loop-cell-problem">PMs hand off to engineering and go dark. Surprises surface at deadlines, not before.</div>
+        <div class="loop-cell-agents"><span class="loop-pill">Delivery Pulse Agent</span><span class="loop-pill">Decision Capture Agent</span></div>
+      </div>
+      <div class="loop-cell l5">
+        <div class="loop-cell-num">Layer 5</div>
+        <div class="loop-cell-name">Learn</div>
+        <div class="loop-cell-problem">Every sprint ends and the same mistakes recur. Institutional knowledge walks out with every PM departure.</div>
+        <div class="loop-cell-agents"><span class="loop-pill">VoC Synthesis Agent</span><span class="loop-pill">Retro Intelligence Agent</span></div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-label">The Closing of the Loop</div>
+      <div class="callout-text">"Insights from Layer 5 feed directly back into Layer 1. Customer themes inform the next intake conversation. Retro patterns shape the scoring model. Decision logs become knowledge base inputs for future duplication checks. The system compounds over time."</div>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- LAYER 1 -->
+  <section id="layer1" style="scroll-margin-top:120px;">
+    <div class="layer-block">
+      <div class="layer-header">
+        <span class="layer-num" style="color:var(--l1)">Layer 1</span>
+        <span class="layer-name">Capture</span>
+      </div>
+      <p class="layer-problem">"Good ideas get lost, duplicated, or never properly defined before they consume PM time."</p>
+
+      <div class="agent-card">
+        <div class="agent-header">
+          <div><div class="agent-id" style="color:var(--l1)">Agent 1.1</div><div class="agent-name">Product Intake Conversational Agent</div></div>
+          <span class="agent-type-badge badge-continuous">Always Active</span>
+        </div>
+        <div class="agent-body">
+          <div><div class="agent-field-label">Problem It Solves</div><div class="agent-field-text">Stakeholders submit raw, unstructured ideas with no consistency. PMs spend hours in back-and-forth just to understand what's actually being asked.</div></div>
+          <div><div class="agent-field-label">What It Does</div><div class="agent-field-text">Runs an adaptive multi-turn conversation to extract problem statement, personas, goals, constraints, and success metrics. Searches the KB and active projects in real time. Flags gaps and asks targeted follow-ups dynamically.</div></div>
+          <div><div class="agent-field-label">Value In One Line</div><div class="agent-value">Turns a raw idea into a structured intake record in under 5 minutes — without a PM in the room.</div></div>
+        </div>
+      </div>
+
+      <div class="agent-card">
+        <div class="agent-header">
+          <div><div class="agent-id" style="color:var(--l1)">Agent 1.2</div><div class="agent-name">Duplicate & Overlap Detector</div></div>
+          <span class="agent-type-badge badge-continuous">Runs During Intake</span>
+        </div>
+        <div class="agent-body">
+          <div><div class="agent-field-label">Problem It Solves</div><div class="agent-field-text">The same idea gets pitched repeatedly across teams, quarters, and stakeholders. PMs waste weeks scoping work that already exists or was killed for a reason nobody remembers.</div></div>
+          <div><div class="agent-field-label">What It Does</div><div class="agent-field-text">Runs semantic search — not keyword match — across active epics, backlog items, shipped work, and archived PRDs. Returns similarity scores, relationship type (duplicate / adjacent / dependency), and a recommended action.</div></div>
+          <div><div class="agent-field-label">Value In One Line</div><div class="agent-value">Catches redundant work before a PRD ever gets started.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- LAYER 2 -->
+  <section id="layer2" style="scroll-margin-top:120px;">
+    <div class="layer-block">
+      <div class="layer-header">
+        <span class="layer-num" style="color:var(--l2)">Layer 2</span>
+        <span class="layer-name">Connect</span>
+      </div>
+      <p class="layer-problem">"Strategy lives in a deck nobody reads while tickets get built for the wrong reasons."</p>
+
+      <div class="agent-card">
+        <div class="agent-header">
+          <div><div class="agent-id" style="color:var(--l2)">Agent 2.1</div><div class="agent-name">Strategic Alignment Scorer</div></div>
+          <span class="agent-type-badge badge-continuous">Runs Post-Intake</span>
+        </div>
+        <div class="agent-body">
+          <div><div class="agent-field-label">Problem It Solves</div><div class="agent-field-text">Work gets prioritized based on who asked loudest, not whether it moves the business. OKRs are written in January and irrelevant by March.</div></div>
+          <div><div class="agent-field-label">What It Does</div><div class="agent-field-text">Maps each intake record to active OKRs, product principles, and stated company bets. Produces an alignment score with rationale. Flags submissions that conflict with or have no connection to strategic priorities.</div></div>
+          <div><div class="agent-field-label">Value In One Line</div><div class="agent-value">Every piece of work enters the system with a documented reason it matters — or a flag that it doesn't.</div></div>
+        </div>
+      </div>
+
+      <div class="agent-card">
+        <div class="agent-header">
+          <div><div class="agent-id" style="color:var(--l2)">Agent 2.2</div><div class="agent-name">Stakeholder Routing Agent</div></div>
+          <span class="agent-type-badge badge-continuous">Runs Post-Intake</span>
+        </div>
+        <div class="agent-body">
+          <div><div class="agent-field-label">Problem It Solves</div><div class="agent-field-text">Requests land with the wrong team, the wrong PM, or nobody at all. Work sits unowned while the submitter assumes someone is on it.</div></div>
+          <div><div class="agent-field-label">What It Does</div><div class="agent-field-text">Uses product taxonomy, org structure, and historical ownership patterns to recommend the right PM, product area, and stakeholder reviewers. Notifies automatically and logs the routing decision.</div></div>
+          <div><div class="agent-field-label">Value In One Line</div><div class="agent-value">Every submission gets to the right person without a coordinator in the middle.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- LAYER 3 -->
+  <section id="layer3" style="scroll-margin-top:120px;">
+    <div class="layer-block">
+      <div class="layer-header">
+        <span class="layer-num" style="color:var(--l3)">Layer 3</span>
+        <span class="layer-name">Plan</span>
+      </div>
+      <p class="layer-problem">"Quarterly planning is driven by advocacy, not evidence. Nobody asks which initiatives compound each other."</p>
+
+      <div class="agent-card">
+        <div class="agent-header">
+          <div><div class="agent-id" style="color:var(--l3)">Agent 3.1</div><div class="agent-name">Portfolio Scoring Agent</div></div>
+          <span class="agent-type-badge badge-planning">Planning Cycle</span>
+        </div>
+        <div class="agent-body">
+          <div><div class="agent-field-label">Problem It Solves</div><div class="agent-field-text">Every initiative gets scored in isolation, inconsistently, by the person who wants it built. There's no shared rubric, no cross-initiative comparison, and no audit trail.</div></div>
+          <div><div class="agent-field-label">What It Does</div><div class="agent-field-text">Applies an 8-dimension scoring matrix to all in-scope submissions simultaneously. Weights are configured per quarter based on planning mode. Runs in preview mode during open window; full final run triggers at Planning Lock.</div></div>
+          <div><div class="agent-field-label">Value In One Line</div><div class="agent-value">The ranking reflects the strategy and the evidence — not the org chart.</div></div>
+        </div>
+      </div>
+
+      <div class="agent-card">
+        <div class="agent-header">
+          <div><div class="agent-id" style="color:var(--l3)">Agent 3.2 · Differentiator</div><div class="agent-name">Initiative Clustering & Sequencing Agent</div></div>
+          <span class="agent-type-badge badge-gate">Post Planning Lock</span>
+        </div>
+        <div class="agent-body">
+          <div><div class="agent-field-label">Problem It Solves</div><div class="agent-field-text">Teams pick initiatives independently without asking which ones are better together. Shared infrastructure gets built twice. Quick wins that unlock bigger bets get deprioritized because they look small in isolation.</div></div>
+          <div><div class="agent-field-label">What It Does</div><div class="agent-field-text">Reads scored profiles — not just ranks — to find dependency chains, natural bundles, foundation bets, and stranded investments. Recommends which initiatives should be done together and in what sequence to maximize portfolio value, not just individual initiative value.</div></div>
+          <div><div class="agent-field-label">Value In One Line</div><div class="agent-value">Turns a prioritized list into an intelligent sequence — the roadmap tells a coherent story instead of being a stack rank.</div></div>
+        </div>
+      </div>
+
+      <div class="agent-card">
+        <div class="agent-header">
+          <div><div class="agent-id" style="color:var(--l3)">Agent 3.3</div><div class="agent-name">Planning Scenario Modeler</div></div>
+          <span class="agent-type-badge badge-gate">Post Planning Lock</span>
+        </div>
+        <div class="agent-body">
+          <div><div class="agent-field-label">Problem It Solves</div><div class="agent-field-text">Planning produces one roadmap and everyone defends it even when conditions change. There's no lightweight way to model tradeoffs before committing.</div></div>
+          <div><div class="agent-field-label">What It Does</div><div class="agent-field-text">Generates 2–3 roadmap scenarios from the scored, clustered portfolio using different strategic weight configurations. Shows what moves in and out under each scenario. Can be re-run mid-quarter when a major input changes.</div></div>
+          <div><div class="agent-field-label">Value In One Line</div><div class="agent-value">Leadership chooses between informed options instead of building a roadmap from scratch in a conference room.</div></div>
+        </div>
+      </div>
+
+      <div class="agent-card">
+        <div class="agent-header">
+          <div><div class="agent-id" style="color:var(--l3)">Agent 3.4</div><div class="agent-name">Planning Prep Agent</div></div>
+          <span class="agent-type-badge badge-planning">Pre-Meeting</span>
+        </div>
+        <div class="agent-body">
+          <div><div class="agent-field-label">Problem It Solves</div><div class="agent-field-text">Planning meetings start with everyone staring at a Jira board trying to remember context. The first 45 minutes are recap, not decision-making.</div></div>
+          <div><div class="agent-field-label">What It Does</div><div class="agent-field-text">Generates the planning pre-read from gate outputs: current scores, recommended sequence, scenario options, capacity summary, and the specific decisions that require human judgment. Everything else has already been handled.</div></div>
+          <div><div class="agent-field-label">Value In One Line</div><div class="agent-value">The planning meeting starts at the decision, not the recap.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- LAYER 4 -->
+  <section id="layer4" style="scroll-margin-top:120px;">
+    <div class="layer-block">
+      <div class="layer-header">
+        <span class="layer-num" style="color:var(--l4)">Layer 4</span>
+        <span class="layer-name">Monitor</span>
+      </div>
+      <p class="layer-problem">"PMs hand off to engineering and go dark — then get surprised when something slips, changes, or quietly breaks."</p>
+
+      <div class="agent-card">
+        <div class="agent-header">
+          <div><div class="agent-id" style="color:var(--l4)">Agent 4.1</div><div class="agent-name">Delivery Pulse Agent</div></div>
+          <span class="agent-type-badge badge-daily">Daily / Weekly</span>
+        </div>
+        <div class="agent-body">
+          <div><div class="agent-field-label">Problem It Solves</div><div class="agent-field-text">PMs are flying blind between kickoff and launch. Scope changes, blocked tickets, and missed dependencies surface too late for anyone to course-correct without a crisis.</div></div>
+          <div><div class="agent-field-label">What It Does</div><div class="agent-field-text">Watches sprint progress, ticket status changes, PR activity, and blocker flags across active initiatives. Sends PMs a lightweight digest — what's on track, what's drifting, what needs a decision. Escalates anomalies proactively before they become misses.</div></div>
+          <div><div class="agent-field-label">Value In One Line</div><div class="agent-value">PMs stay informed without attending every standup — and can intervene before a slip becomes a miss.</div></div>
+        </div>
+      </div>
+
+      <div class="agent-card">
+        <div class="agent-header">
+          <div><div class="agent-id" style="color:var(--l4)">Agent 4.2</div><div class="agent-name">Decision Capture Agent</div></div>
+          <span class="agent-type-badge badge-continuous">Continuous</span>
+        </div>
+        <div class="agent-body">
+          <div><div class="agent-field-label">Problem It Solves</div><div class="agent-field-text">Critical product decisions get made in Slack threads, standups, and sidebar conversations — and vanish. Six months later nobody remembers why something was built the way it was.</div></div>
+          <div><div class="agent-field-label">What It Does</div><div class="agent-field-text">Monitors Slack channels, Jira comments, and Confluence pages for decision signals. Extracts the decision, rationale, and decision-maker, and writes it to a searchable decision log tied to the relevant initiative.</div></div>
+          <div><div class="agent-field-label">Value In One Line</div><div class="agent-value">Nothing important gets decided and forgotten again.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- LAYER 5 -->
+  <section id="layer5" style="scroll-margin-top:120px;">
+    <div class="layer-block">
+      <div class="layer-header">
+        <span class="layer-num" style="color:var(--l5)">Layer 5</span>
+        <span class="layer-name">Learn</span>
+      </div>
+      <p class="layer-problem">"Every sprint ends, every quarter closes, and the same mistakes get made again because nobody captured what actually happened."</p>
+
+      <div class="agent-card">
+        <div class="agent-header">
+          <div><div class="agent-id" style="color:var(--l5)">Agent 5.1</div><div class="agent-name">Voice of Customer Synthesis Agent</div></div>
+          <span class="agent-type-badge badge-continuous">Continuous</span>
+        </div>
+        <div class="agent-body">
+          <div><div class="agent-field-label">Problem It Solves</div><div class="agent-field-text">Customer signal lives in support tickets, NPS responses, sales calls, CSM notes, and user research. Nobody synthesizes it. The same pain gets reported 40 times before anyone notices a pattern.</div></div>
+          <div><div class="agent-field-label">What It Does</div><div class="agent-field-text">Ingests signals from all connected customer-facing channels. Clusters by theme, tags to product area, tracks volume and urgency trends. Surfaces emerging patterns when a threshold is crossed and links them to relevant backlog items.</div></div>
+          <div><div class="agent-field-label">Value In One Line</div><div class="agent-value">The customer's voice enters every prioritization conversation, automatically.</div></div>
+        </div>
+      </div>
+
+      <div class="agent-card">
+        <div class="agent-header">
+          <div><div class="agent-id" style="color:var(--l5)">Agent 5.2</div><div class="agent-name">Retro Intelligence Agent</div></div>
+          <span class="agent-type-badge badge-planning">End of Sprint / Quarter</span>
+        </div>
+        <div class="agent-body">
+          <div><div class="agent-field-label">Problem It Solves</div><div class="agent-field-text">Retrospectives produce sticky notes that get archived and never referenced again. The same delivery problems recur quarter after quarter with no systemic response.</div></div>
+          <div><div class="agent-field-label">What It Does</div><div class="agent-field-text">After each sprint or quarter close, pulls ticket outcomes, incident notes, delivery metrics, and retro inputs. Produces a structured summary — what shipped, what slipped, root causes, cross-retro patterns, and specific recommendations for the next planning cycle.</div></div>
+          <div><div class="agent-field-label">Value In One Line</div><div class="agent-value">Retros stop being a ritual and start being a real input to how the team works next.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- SCORING MATRIX -->
+  <section id="scoring" style="scroll-margin-top:120px;">
+    <div class="section-intro">
+      <div class="section-num">Appendix A · Scoring</div>
+      <h2 class="section-title">The PIL Scoring Matrix</h2>
+      <p class="section-desc">Eight dimensions across three categories. All scored 1–5. Weights are configured per planning cycle based on the organization's current mode — not fixed across quarters. Strategic Alignment anchors at 20% in all modes; it is the non-negotiable baseline.</p>
+    </div>
+
+    <table class="matrix-table">
+      <thead>
+        <tr>
+          <th>Dimension</th><th>Category</th><th>What a 5 Looks Like</th>
+          <th style="min-width:160px">Growth Mode</th>
+          <th style="min-width:160px">Consolidation</th>
+          <th style="min-width:160px">Competitive Response</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="dim-name">Strategic Alignment</span></td><td><span class="dim-cat cat-strategic">Strategic Fit</span></td><td>Directly named in current company strategy or OKR</td><td><div class="weight-bar-wrap"><div class="weight-bar"><div class="weight-fill" style="width:100%"></div></div><span class="weight-num">20%</span></div></td><td><div class="weight-bar-wrap"><div class="weight-bar"><div class="weight-fill" style="width:100%"></div></div><span class="weight-num">20%</span></div></td><td><div class="weight-bar-wrap"><div class="weight-bar"><div class="weight-fill" style="width:100%"></div></div><span class="weight-num">20%</span></div></td></tr>
+        <tr><td><span class="dim-name">Market Timing</span></td><td><span class="dim-cat cat-strategic">Strategic Fit</span></td><td>Clear time-sensitive window — competitor, regulation, or contract</td><td><div class="weight-bar-wrap"><div class="weight-bar"><div class="weight-fill" style="width:50%"></div></div><span class="weight-num">10%</span></div></td><td><div class="weight-bar-wrap"><div class="weight-bar"><div class="weight-fill" style="width:25%"></div></div><span class="weight-num">5%</span></div></td><td><div class="weight-bar-wrap"><div class="weight-bar"><div class="weight-fill" style="width:75%"></div></div><span class="weight-num">15%</span></div></td></tr>
+        <tr><td><span class="dim-name">Customer Impact</span></td><td><span class="dim-cat cat-value">Value Creation</span></td><td>Transformative improvement for a core persona — validated by research</td><td><div class="weight-bar-wrap"><div class="weight-bar"><div class="weight-fill" style="width:75%"></div></div><span class="weight-num">15%</span></div></td><td><div class="weight-bar-wrap"><div class="weight-bar"><div class="weight-fill" style="width:100%"></div></div><span class="weight-num">20%</span></div></td><td><div class="weight-bar-wrap"><div class="weight-bar"><div class="weight-fill" style="width:50%"></div></div><span class="weight-num">10%</span></div></td></tr>
+        <tr><td><span class="dim-name">Revenue & Retention</span></td><td><span class="dim-cat cat-value">Value Creation</span></td><td>Directly tied to a named revenue lever — new ARR, churn reduction, expansion</td><td><div class="weight-bar-wrap"><div class="weight-bar"><div class="weight-fill" style="width:100%"></div></div><span class="weight-num">20%</span></div></td><td><div class="weight-bar-wrap"><div class="weight-bar"><div class="weight-fill" style="width:75%"></div></div><span class="weight-num">15%</span></div></td><td><div class="weight-bar-wrap"><div class="weight-bar"><div class="weight-fill" style="width:75%"></div></div><span class="weight-num">15%</span></div></td></tr>
+        <tr><td><span class="dim-name">Competitive Differentiation</span></td><td><span class="dim-cat cat-value">Value Creation</span></td><td>Creates a capability competitors can't easily replicate in 2 quarters</td><td><div class="weight-bar-wrap"><div class="weight-bar"><div class="weight-fill" style="width:50%"></div></div><span class="weight-num">10%</span></div></td><td><div class="weight-bar-wrap"><div class="weight-bar"><div class="weight-fill" style="width:25%"></div></div><span class="weight-num">5%</span></div></td><td><div class="weight-bar-wrap"><div class="weight-bar"><div class="weight-fill" style="width:100%"></div></div><span class="weight-num">20%</span></div></td></tr>
+        <tr><td><span class="dim-name">Effort & Complexity</span></td><td><span class="dim-cat cat-execution">Execution Reality</span></td><td>High value, low complexity — well-scoped, familiar tech, small team</td><td><div class="weight-bar-wrap"><div class="weight-bar"><div class="weight-fill" style="width:50%"></div></div><span class="weight-num">10%</span></div></td><td><div class="weight-bar-wrap"><div class="weight-bar"><div class="weight-fill" style="width:75%"></div></div><span class="weight-num">15%</span></div></td><td><div class="weight-bar-wrap"><div class="weight-bar"><div class="weight-fill" style="width:50%"></div></div><span class="weight-num">10%</span></div></td></tr>
+        <tr><td><span class="dim-name">Dependency Risk</span></td><td><span class="dim-cat cat-execution">Execution Reality</span></td><td>Fully self-contained — no external team, system, or decision dependencies</td><td><div class="weight-bar-wrap"><div class="weight-bar"><div class="weight-fill" style="width:40%"></div></div><span class="weight-num">8%</span></div></td><td><div class="weight-bar-wrap"><div class="weight-bar"><div class="weight-fill" style="width:60%"></div></div><span class="weight-num">12%</span></div></td><td><div class="weight-bar-wrap"><div class="weight-bar"><div class="weight-fill" style="width:25%"></div></div><span class="weight-num">5%</span></div></td></tr>
+        <tr><td><span class="dim-name">Confidence Level</span></td><td><span class="dim-cat cat-execution">Execution Reality</span></td><td>Validated problem, clear solution direction, well-scoped and ready to build</td><td><div class="weight-bar-wrap"><div class="weight-bar"><div class="weight-fill" style="width:35%"></div></div><span class="weight-num">7%</span></div></td><td><div class="weight-bar-wrap"><div class="weight-bar"><div class="weight-fill" style="width:40%"></div></div><span class="weight-num">8%</span></div></td><td><div class="weight-bar-wrap"><div class="weight-bar"><div class="weight-fill" style="width:25%"></div></div><span class="weight-num">5%</span></div></td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <div class="callout-label">Scoring Integrity Note</div>
+      <div class="callout-text">"The matrix only works if scores reflect reality, not advocacy. Evidence gating, agent-assisted scoring, consistency auditing, and historical calibration are what give these numbers teeth."</div>
+    </div>
+
+    <div style="margin-top:32px;">
+      <div class="section-num" style="margin-bottom:16px;">Scoring Integrity Layer — Five Mechanisms</div>
+      <div class="integrity-grid">
+        <div class="integrity-card"><div class="integrity-name">1. Evidence-Gated Scoring</div><div class="integrity-desc">No score is accepted without an attached evidence input. The agent validates that evidence is real, retrievable, and actually supports the score claimed. Challenges with a specific rationale if it doesn't.</div><span class="integrity-maturity m1">Level 1 · Start Here</span></div>
+        <div class="integrity-card"><div class="integrity-name">2. Agent-Assisted Scoring</div><div class="integrity-desc">Agents score first. Humans review and can challenge — but must submit a written justification that enters the permanent record. Shifts the burden from catching inflation to explaining disagreement.</div><span class="integrity-maturity m1">Level 1 · Start Here</span></div>
+        <div class="integrity-card"><div class="integrity-name">3. Cross-Initiative Consistency Audit</div><div class="integrity-desc">Flags teams whose average scores are statistical outliers vs. the cohort. Identifies dimensions where distributions are implausibly skewed. Surfaces patterns as calibration flags — not accusations.</div><span class="integrity-maturity m2">Level 2</span></div>
+        <div class="integrity-card"><div class="integrity-name">4. Historical Accuracy Scoring</div><div class="integrity-desc">Post-launch reconciliation compares projected scores to actual outcomes. PMs and teams build a calibration track record over time. Consistent over-scorers receive automatic adjustments on future submissions.</div><span class="integrity-maturity m3">Level 3</span></div>
+        <div class="integrity-card" style="grid-column:1/-1;"><div class="integrity-name">5. Blind Comparative Review</div><div class="integrity-desc">For high-stakes cycles: initiatives presented anonymously to a small review group. Agent aggregates independent scores, surfaces high-variance items (genuine disagreement), and flags outliers vs. group median. A 30-minute async exercise that surfaces where the real debate lives.</div><span class="integrity-maturity m3">Level 3</span></div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- PLANNING LOCK -->
+  <section id="planning-lock" style="scroll-margin-top:120px;">
+    <div class="section-intro">
+      <div class="section-num">Appendix B · Planning Lock</div>
+      <h2 class="section-title">The Planning Cycle Gate Model</h2>
+      <p class="section-desc">The Planning Lock is the moment the scoring agent runs its full final pass. Everything before it is designed to give teams the best possible chance to make their case. Everything after it is designed to hold the line. Five phases govern when each component activates.</p>
+    </div>
+    <div class="timeline">
+      <div class="timeline-phase"><div class="phase-label">Phase 1</div><div class="phase-name">Open Submission Window</div><div class="phase-timing">Weeks 1–3</div><ul class="phase-bullets"><li>Intake agent fully active</li><li>Duplicate detector runs continuously</li><li>Scoring runs in preview mode — directional only</li><li>No rankings visible across teams</li></ul></div>
+      <div class="timeline-phase"><div class="phase-label">Phase 2</div><div class="phase-name">Submission Freeze</div><div class="phase-timing">3–5 Days Pre-Lock</div><ul class="phase-bullets"><li>No new submissions accepted</li><li>Minor evidence edits only</li><li>Pre-gate consistency audit runs</li><li>Teams notified of integrity flags</li></ul></div>
+      <div class="timeline-phase gate"><div class="phase-label">Phase 3</div><div class="phase-name">Planning Lock</div><div class="phase-timing">Gate Day</div><ul class="phase-bullets"><li>Full final scoring run</li><li>Clustering agent runs immediately after</li><li>Scenario modeler generates options</li><li>Record locked with full audit trail</li></ul></div>
+      <div class="timeline-phase"><div class="phase-label">Phase 4</div><div class="phase-name">Planning Discussion</div><div class="phase-timing">Human Layer</div><ul class="phase-bullets"><li>Planning Prep Agent generates pre-read</li><li>Humans decide between scenarios</li><li>Resolve high-variance debates only</li><li>Exception process handles post-lock requests</li></ul></div>
+      <div class="timeline-phase"><div class="phase-label">Phase 5</div><div class="phase-name">Post-Planning Lock</div><div class="phase-timing">After Roadmap Confirmed</div><ul class="phase-bullets"><li>Final scores logged as permanent record</li><li>Historical accuracy tracking begins</li><li>Deferred items tagged for next cycle</li><li>Baseline set for post-launch reconciliation</li></ul></div>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- EXCEPTIONS -->
+  <section id="exceptions" style="scroll-margin-top:120px;">
+    <div class="section-intro">
+      <div class="section-num">Appendix C · Exceptions</div>
+      <h2 class="section-title">The Exception Process</h2>
+      <p class="section-desc">The Planning Lock holds. And legitimate urgency still gets a path forward. The exception process isn't a loophole — it's a pressure valve with a paper trail. Only four recognized triggers qualify. Everything else waits for the next cycle.</p>
+    </div>
+
+    <div class="exception-grid">
+      <div class="exception-type"><div class="exc-type-label">Type 1</div><div class="exc-type-name">Strategic Shift</div><div class="exc-type-desc">Material change in company direction from executive leadership that makes a roadmap item less relevant and a new one urgent. Requires CPO or CEO sign-off.</div><div class="exc-type-example">Ex: Company pivots to enterprise mid-quarter. A new integration becomes critical path.</div></div>
+      <div class="exception-type"><div class="exc-type-label">Type 2</div><div class="exc-type-name">Competitive Emergency</div><div class="exc-type-desc">Direct competitor ships a capability creating demonstrable risk to pipeline, retention, or market position. Evidence required — not a feeling. Sales data or specific customer escalation.</div><div class="exc-type-example">Ex: Competitor releases a feature your top 10 accounts have been requesting. Two flag it in the same week.</div></div>
+      <div class="exception-type"><div class="exc-type-label">Type 3</div><div class="exc-type-name">Customer or Revenue at Risk</div><div class="exc-type-desc">A specific named customer or revenue commitment is at risk without this initiative. Dollar amount and timeline must be specified. CSM or Sales leadership co-signs.</div><div class="exc-type-example">Ex: $400K renewal contingent on a specific capability being delivered this quarter.</div></div>
+      <div class="exception-type"><div class="exc-type-label">Type 4</div><div class="exc-type-name">Compliance or Legal Obligation</div><div class="exc-type-desc">Regulatory deadline, legal requirement, or security obligation not known at planning time. Legal or compliance team co-signs.</div><div class="exc-type-example">Ex: New data residency regulation announced with a 90-day compliance window.</div></div>
+    </div>
+
+    <div style="margin:36px 0 14px;"><div class="section-num">Five-Step Exception Flow</div></div>
+    <div class="exception-steps">
+      <div class="exc-step"><div class="exc-step-num">1</div><div><div class="exc-step-name">Formal Submission</div><div class="exc-step-desc">Full intake record required — same standard as pre-lock. Urgency rationale, exception type, and executive sponsor all mandatory. No Slack messages to the CPO. No verbal asks in meetings.</div></div></div>
+      <div class="exc-step"><div class="exc-step-num">2</div><div><div class="exc-step-name">Immediate Impact Assessment</div><div class="exc-step-desc">Scoring agent runs immediately — no preview mode. Produces three outputs: the exception score vs. the locked portfolio; the displacement analysis (what comes out if this goes in); and the dependency check.</div></div></div>
+      <div class="exc-step"><div class="exc-step-num">3</div><div><div class="exc-step-name">48-Hour Exception Review</div><div class="exc-step-desc">Time-boxed to 48 hours. Attendees: CPO or VP Product, executive sponsor, planning owner, EM or CTO rep. Three outcomes: Approved, Approved with Deferral, or Denied with rationale.</div></div></div>
+      <div class="exc-step"><div class="exc-step-num">4</div><div><div class="exc-step-name">Permanent Logging</div><div class="exc-step-desc">Every exception — approved or denied — logged with submission date, submitter, type, agent scores, displacement analysis, decision-makers, rationale, and outcome. Visible to all planning stakeholders.</div></div></div>
+      <div class="exc-step"><div class="exc-step-num">5</div><div><div class="exc-step-name">Retro Intelligence Flag</div><div class="exc-step-desc">At quarter end, the Retro Intelligence Agent includes an exceptions summary: volume by type, approval rate, whether urgency claims proved accurate. Teams submitting repeated Type 1 exceptions have a strategy problem, not a planning problem.</div></div></div>
+    </div>
+  </section>
+
+  <div class="page-cta">
+    <h2>Want to build this for your org?</h2>
+    <p>The PIL is a real framework designed for real product orgs. I build and implement these systems — the agents, the scoring infrastructure, the planning processes. Let's talk.</p>
+    <div class="cta-btns">
+      <a href="https://www.linkedin.com/in/stephenthiessen" target="_blank" class="btn-primary">Connect on LinkedIn →</a>
+      <a href="../pil-demo/" class="btn-secondary">Try the live demo</a>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <span class="footer-text">The Product Intelligence Loop · v1.0 · Stephen Thiessen</span>
+    <a href="https://www.linkedin.com/in/stephenthiessen" target="_blank" class="footer-link">LinkedIn ↗</a>
+  </div>
+</footer>
+</body>
+</html>
