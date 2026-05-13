@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -113,7 +114,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); margin:
 .empty-txt { font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dimmer); line-height:2; }
 
 /* Output */
-.out-panel { width:420px; flex-shrink:0; display:flex; flex-direction:column; overflow:hidden; background:var(--surface); }
+.out-panel { width:420px; flex-shrink:0; display:flex; flex-direction:column; overflow:hidden; background:var(--surface); min-width:0; }
 .out-hdr { flex-shrink:0; padding:16px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
 .out-hdr-txt { font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--text-dimmer); }
 .out-status { font-family:var(--mono); font-size:9px; padding:3px 8px; border-radius:3px; }
@@ -129,25 +130,26 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); margin:
 .out-empty-txt { font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-dimmer); line-height:1.8; }
 
 /* PRD */
-.prd { display:flex; flex-direction:column; gap:0; }
+.prd { display:flex; flex-direction:column; gap:0; width:100%; min-width:0; overflow:hidden; }
 .prd-top { margin-bottom:24px; padding-bottom:20px; border-bottom:1px solid var(--border); }
 .prd-ey { font-family:var(--mono); font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent3); margin-bottom:8px; }
-.prd-title { font-size:17px; font-weight:700; color:var(--text); line-height:1.2; margin-bottom:14px; }
+.prd-title { font-size:15px; font-weight:700; color:var(--text); line-height:1.3; margin-bottom:14px; word-wrap:break-word; overflow-wrap:break-word; }
 .prd-meta { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 .prd-ml { font-family:var(--mono); font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-dimmer); margin-bottom:3px; }
 .prd-mv { font-size:11.5px; color:var(--text-dim); line-height:1.4; }
-.prd-sec { margin-bottom:20px; }
+.prd-sec { margin-bottom:20px; min-width:0; overflow:hidden; }
 .prd-sec-title { font-family:var(--mono); font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dimmer); margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid var(--border); }
-.prd-txt { font-size:12.5px; color:var(--text-dim); line-height:1.65; }
+.prd-txt { font-size:12.5px; color:var(--text-dim); line-height:1.65; word-wrap:break-word; overflow-wrap:break-word; }
 .prd-txt.hi { color:var(--text); font-weight:500; }
-.prd-ul { list-style:none; display:flex; flex-direction:column; gap:5px; }
-.prd-ul li { font-size:12px; color:var(--text-dim); padding-left:18px; position:relative; line-height:1.5; }
-.prd-ul li::before { position:absolute; left:0; color:var(--text-dimmer); }
-.prd-ul.chk li::before { content:'✓'; color:var(--accent4); }
-.prd-ul.x li::before { content:'✗'; color:var(--accent5); }
-.prd-ul.q li::before { content:'?'; color:var(--accent); }
-.prd-ul.w li::before { content:'⚠'; color:var(--accent3); }
-.prd-ul.dot li::before { content:'·'; }
+.prd-ul { list-style:none; display:flex; flex-direction:column; gap:6px; padding:0; margin:0; width:100%; }
+.prd-ul li { font-size:12px; color:var(--text-dim); display:flex; gap:8px; align-items:flex-start; line-height:1.55; min-width:0; }
+.prd-li-pfx { flex-shrink:0; width:14px; font-size:12px; }
+.prd-li-txt { flex:1; min-width:0; word-wrap:break-word; overflow-wrap:break-word; }
+.prd-ul.chk .prd-li-pfx { color:#4ff7c0; }
+.prd-ul.x .prd-li-pfx { color:#f74f7e; }
+.prd-ul.q .prd-li-pfx { color:#4f8ef7; }
+.prd-ul.w .prd-li-pfx { color:#f7934f; }
+.prd-ul.dot .prd-li-pfx { color:#4a5568; }
 .okr-tag { display:inline-flex; align-items:center; gap:4px; background:rgba(79,142,247,.1); border:1px solid rgba(79,142,247,.25); border-radius:4px; padding:3px 10px; font-family:var(--mono); font-size:10px; color:var(--accent); margin-top:4px; }
 .own-tag { display:inline-flex; align-items:center; gap:4px; background:rgba(79,247,192,.08); border:1px solid rgba(79,247,192,.2); border-radius:4px; padding:3px 10px; font-family:var(--mono); font-size:10px; color:var(--accent4); margin-top:4px; }
 .score-row { display:flex; align-items:center; gap:12px; margin-top:6px; }
@@ -530,7 +532,9 @@ function renderLivePRD(p) {
 }
 
 function esc(s){return String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function li(arr,cls){return arr.map(i=>`<li>${esc(i)}</li>`).join('');}
+function li(arr, pfx) {
+  return arr.map(i => `<li><span class="prd-li-pfx">${pfx}</span><span class="prd-li-txt">${esc(i)}</span></li>`).join('');
+}
 
 function buildPRD(d) {
   return `<div class="prd">
@@ -611,11 +615,156 @@ function copyPRD() {
   setTimeout(()=>{btn.textContent='Copy PRD Summary';},2000);
 }
 
-function dlPRD() {
-  if(!prdData)return;
-  const b=new Blob([JSON.stringify(prdData,null,2)],{type:'application/json'});
-  const u=URL.createObjectURL(b);
-  const a=document.createElement('a');a.href=u;a.download='worklayer-prd.json';a.click();
+async function dlPRD() {
+  if(!prdData) return;
+  const d = prdData;
+  const btn = document.getElementById('dl-btn');
+  btn.textContent = 'Generating...';
+  btn.disabled = true;
+
+  try {
+    const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle } = docx;
+
+    function heading(text, level) {
+      return new Paragraph({
+        text,
+        heading: level || HeadingLevel.HEADING_2,
+        spacing: { before: 280, after: 100 }
+      });
+    }
+
+    function body(text) {
+      return new Paragraph({
+        children: [new TextRun({ text: text || '', font: 'Calibri', size: 22, color: '333333' })],
+        spacing: { before: 60, after: 60 }
+      });
+    }
+
+    function bullet(text, prefix) {
+      return new Paragraph({
+        children: [
+          new TextRun({ text: (prefix || '·') + '  ', font: 'Calibri', size: 22, color: '888888' }),
+          new TextRun({ text: text || '', font: 'Calibri', size: 22, color: '333333' })
+        ],
+        spacing: { before: 40, after: 40 },
+        indent: { left: 360 }
+      });
+    }
+
+    function meta(label, value) {
+      return new Paragraph({
+        children: [
+          new TextRun({ text: label + ': ', font: 'Calibri', size: 20, bold: true, color: '666666' }),
+          new TextRun({ text: value || '', font: 'Calibri', size: 20, color: '333333' })
+        ],
+        spacing: { before: 30, after: 30 }
+      });
+    }
+
+    function divider() {
+      return new Paragraph({
+        border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: 'DDDDDD', space: 1 } },
+        spacing: { before: 60, after: 60 },
+        children: []
+      });
+    }
+
+    const title = d.title || d.prd_outline?.objective || 'Product Requirements Document';
+    const problem = d.problem || d.problemStatement || d.intake_summary?.problem_statement || '';
+    const solution = d.solution || d.proposedSolution || d.intake_summary?.proposed_solution || '';
+    const personas = d.personas || d.intake_summary?.affected_personas || [];
+    const metrics = d.metrics || d.successMetrics || d.intake_summary?.success_metrics || [];
+    const scopeIn = d.in || d.scopeIn || d.prd_outline?.scope_in || [];
+    const scopeOut = d.out || d.scopeOut || d.prd_outline?.scope_out || [];
+    const questions = d.questions || d.openQuestions || d.prd_outline?.open_questions || [];
+    const risks = d.risks || d.prd_outline?.risks || [];
+    const okr = d.okr || d.alignment?.okr || '';
+    const score = d.score || d.alignmentScore || d.alignment?.alignment_score || 0;
+    const owner = d.owner || d.routing?.recommended_owner || '';
+    const ownerReason = d.owner_reason || d.routing?.reason || '';
+    const reviewers = d.reviewers || d.routing?.suggested_reviewers || [];
+
+    const children = [
+      new Paragraph({
+        children: [new TextRun({ text: title, font: 'Calibri', size: 36, bold: true, color: '1a1a1a' })],
+        spacing: { before: 0, after: 120 }
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: 'Product Requirements Document', font: 'Calibri', size: 22, color: '999999', italics: true })],
+        spacing: { before: 0, after: 200 }
+      }),
+      meta('Status', d.status || 'Ready for Review'),
+      meta('Submitted By', d.submittedBy || currentRole),
+      meta('Target Release', d.targetRelease || 'Current Quarter'),
+      meta('Date', new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })),
+      divider(),
+
+      heading('01 · Problem Statement'),
+      body(problem),
+      divider(),
+
+      heading('02 · Proposed Solution'),
+      body(solution),
+      divider(),
+
+      heading('03 · Affected Personas'),
+      ...personas.map(p => bullet(p, '·')),
+      divider(),
+
+      heading('04 · Success Metrics'),
+      ...metrics.map(m => bullet(m, '·')),
+      divider(),
+
+      heading('05 · Scope'),
+      new Paragraph({ children: [new TextRun({ text: 'In Scope', font: 'Calibri', size: 20, bold: true, color: '1a6b45' })], spacing: { before: 100, after: 60 } }),
+      ...scopeIn.map(s => bullet(s, '✓')),
+      new Paragraph({ children: [new TextRun({ text: 'Out of Scope', font: 'Calibri', size: 20, bold: true, color: 'a32d2d' })], spacing: { before: 120, after: 60 } }),
+      ...scopeOut.map(s => bullet(s, '✗')),
+      divider(),
+
+      heading('06 · Open Questions'),
+      ...questions.map(q => bullet(q, '?')),
+      divider(),
+
+      heading('07 · Risks'),
+      ...risks.map(r => bullet(r, '!')),
+      divider(),
+
+      heading('08 · Strategic Alignment'),
+      meta('OKR', okr),
+      meta('Alignment Score', score + ' / 100'),
+      divider(),
+
+      heading('09 · Routing & Ownership'),
+      meta('Recommended Owner', owner),
+      body(ownerReason),
+      new Paragraph({ children: [new TextRun({ text: 'Suggested Reviewers', font: 'Calibri', size: 20, bold: true, color: '666666' })], spacing: { before: 100, after: 60 } }),
+      ...reviewers.map(r => bullet(r, '·')),
+    ];
+
+    const doc = new Document({
+      sections: [{
+        properties: {
+          page: { margin: { top: 1080, right: 1080, bottom: 1080, left: 1080 } }
+        },
+        children
+      }]
+    });
+
+    const blob = await Packer.toBlob(doc);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'worklayer-prd.docx';
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch(err) {
+    console.error('docx error:', err);
+    alert('Could not generate .docx — try Copy PRD Summary instead.');
+  }
+
+  btn.textContent = 'Download Full PRD';
+  btn.disabled = false;
 }
 </script>
 </body>
